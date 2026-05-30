@@ -20,7 +20,7 @@ enum D3ButtonState { idle, loading, success, error }
 ///
 /// - Hybrid foundation: [InkWell] for gesture + ripple + semantics;
 ///   [DecoratedBox] + [ConstrainedBox] for the custom visual shell.
-/// - Height is driven by vertical padding + a [minHeight] floor, NOT a fixed
+/// - Height is driven by vertical padding + a `minHeight` floor, NOT a fixed
 ///   value — so it adapts naturally to the device's text scale setting.
 /// - Press feedback: ripple from tap origin + haptic. No scale transform.
 /// - Icons are fixed at 16dp and do not scale with text size.

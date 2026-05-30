@@ -51,7 +51,7 @@ abstract interface class _D3SearchAnchorActions {
 ///
 /// **[D3SearchAnchor.local] — data already in memory**
 ///
-/// The search page opens with all [items] visible immediately and filters
+/// The search page opens with all `items` visible immediately and filters
 /// them synchronously as the user types. No network request, no spinner.
 /// Ideal for contacts, settings, notes, or any pre-loaded dataset.
 ///
@@ -82,9 +82,9 @@ abstract interface class _D3SearchAnchorActions {
 ///
 /// **[D3SearchAnchor.remote] — data fetched from an API**
 ///
-/// The search page opens with [initialItems] visible (same list the user
+/// The search page opens with `initialItems` visible (same list the user
 /// was already looking at — no blank screen). Typing debounces and calls
-/// [onSearch]; the results replace the initial list until the query is
+/// `onSearch`; the results replace the initial list until the query is
 /// cleared. Ideal for large server-side datasets with pagination.
 ///
 /// ```dart
@@ -106,6 +106,7 @@ class D3SearchAnchor<T> extends StatefulWidget {
   ///
   /// [items] is shown immediately on open and filtered synchronously via
   /// [filterItems] as the user types.
+  // ignore: prefer_const_constructors_in_immutables
   D3SearchAnchor.local({
     super.key,
     required List<T> items,
@@ -129,6 +130,7 @@ class D3SearchAnchor<T> extends StatefulWidget {
   /// [initialItems] is shown on open and after the user clears their query,
   /// keeping the screen populated at all times. Typing debounces and calls
   /// [onSearch]; results replace [initialItems] until the query is cleared.
+  // ignore: prefer_const_constructors_in_immutables
   D3SearchAnchor.remote({
     super.key,
     required List<T> initialItems,

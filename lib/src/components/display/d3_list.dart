@@ -34,8 +34,6 @@ import 'package:d3_ui/d3_ui.dart';
 class D3ListController {
   _D3ListActions? _actions;
 
-  bool get _attached => _actions != null;
-
   // Called by _D3ListState on initState.
   void _attach(_D3ListActions actions) {
     assert(
@@ -347,7 +345,7 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
     if (widget.items.isEmpty) {
       final empty =
           widget.emptyState ??
-          D3EmptyState(
+          const D3EmptyState(
             icon: Icons.inbox_outlined,
             title: 'Nothing here yet',
             message: 'Items will appear here once they are added.',

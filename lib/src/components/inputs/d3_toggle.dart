@@ -70,9 +70,6 @@ class _D3ToggleState extends State<D3Toggle>
   // Drives thumb width squish (0.0 = normal, 1.0 = fully squished).
   late final AnimationController _squishController;
 
-  // Tracks whether a pointer is currently pressing.
-  bool _pressing = false;
-
   // ── Geometry constants ─────────────────────────────────────────────────────
 
   static const double _trackW        = 48;
@@ -129,7 +126,6 @@ class _D3ToggleState extends State<D3Toggle>
 
   void _onTapDown(TapDownDetails _) {
     if (widget._isDisabled) return;
-    setState(() => _pressing = true);
     _squishController.forward();
   }
 
@@ -145,7 +141,6 @@ class _D3ToggleState extends State<D3Toggle>
   }
 
   void _release() {
-    setState(() => _pressing = false);
     _squishController.reverse();
   }
 

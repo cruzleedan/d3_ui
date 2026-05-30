@@ -257,7 +257,7 @@ class _SegmentTrack extends StatelessWidget {
                 Row(
                   children: [
                     for (int i = 0; i < count; i++) ...[
-                      if (i > 0) SizedBox(width: _trackPadding),
+                      if (i > 0) const SizedBox(width: _trackPadding),
                       Expanded(
                         child: _SegmentItem(
                           segment: segments[i],

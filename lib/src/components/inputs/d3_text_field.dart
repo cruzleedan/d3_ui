@@ -345,7 +345,7 @@ class _D3TextFieldState extends State<D3TextField> {
           isEnabled: widget.isEnabled,
         ),
 
-        SizedBox(height: D3Spacing.s6),
+        const SizedBox(height: D3Spacing.s6),
 
         // ── Input container ───────────────────────────────────────────────
         AnimatedContainer(
@@ -611,7 +611,7 @@ class _D3TextFieldState extends State<D3TextField> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children:
-            parts.expand((w) => [w, SizedBox(width: D3Spacing.s8)]).toList()
+            parts.expand((w) => [w, const SizedBox(width: D3Spacing.s8)]).toList()
               ..removeLast(),
       ),
     );
@@ -706,7 +706,7 @@ class _LabelRow extends StatelessWidget {
     if (tooltip != null) {
       content = Semantics(
         button: true,
-        label: '${label}, more info',
+        label: '$label, more info',
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onTooltipTap,
@@ -928,7 +928,7 @@ class _BottomRow extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.only(top: D3Spacing.s4),
+      padding: const EdgeInsets.only(top: D3Spacing.s4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -16,6 +16,7 @@ class D3Shimmer extends StatefulWidget {
 
   final Widget child;
 
+  // ignore: library_private_types_in_public_api
   static _D3ShimmerState? of(BuildContext context) {
     return context.findAncestorStateOfType<_D3ShimmerState>();
   }

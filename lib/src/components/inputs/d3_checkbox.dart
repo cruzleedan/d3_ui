@@ -71,9 +71,6 @@ class _D3CheckboxState extends State<D3Checkbox>
   late final Animation<double>
       _iconAnim; // icon draw progress (leads fill slightly)
 
-  // Tracks the previous value to decide animation direction.
-  bool? _previousValue;
-
   @override
   void initState() {
     super.initState();
@@ -94,8 +91,6 @@ class _D3CheckboxState extends State<D3Checkbox>
       parent: _controller,
       curve: const Interval(0.15, 1.0, curve: Curves.easeOut),
     );
-
-    _previousValue = widget.value;
   }
 
   @override
@@ -112,8 +107,6 @@ class _D3CheckboxState extends State<D3Checkbox>
       _controller.reverse();
     }
     // indeterminate ↔ checked: both have value != false, controller stays at 1.0.
-
-    _previousValue = widget.value;
   }
 
   @override

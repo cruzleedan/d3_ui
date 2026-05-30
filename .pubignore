@@ -22,3 +22,6 @@ docs/
 
 # Test artifacts
 coverage/
+
+# Build artifacts
+build/

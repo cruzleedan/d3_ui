@@ -75,7 +75,7 @@ class D3NumericController extends TextEditingController {
   /// A [TextInputFormatter] that live-formats input to match this controller's
   /// [groupSeparator], [decimalSeparator], and [decimalPlaces] settings.
   ///
-  /// Pass this to [D3TextField.inputFormatters].
+  /// Pass this to `D3TextField.inputFormatters`.
   D3NumericInputFormatter get formatter => D3NumericInputFormatter(
         decimalPlaces: decimalPlaces,
         groupSeparator: groupSeparator,

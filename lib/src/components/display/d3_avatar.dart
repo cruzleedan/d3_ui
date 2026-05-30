@@ -371,14 +371,14 @@ class D3AvatarGroup extends StatelessWidget {
             Positioned(
               left: i * (size.dimension - overlap),
               child: _BorderedAvatar(
+                borderColor: colors.surface,
+                size: size,
                 child: D3Avatar(
                   name: visible[i].name,
                   imageUrl: visible[i].imageUrl,
                   size: size,
                   shape: visible[i].shape,
                 ),
-                borderColor: colors.surface,
-                size: size,
               ),
             ),
 
@@ -386,13 +386,13 @@ class D3AvatarGroup extends StatelessWidget {
             Positioned(
               left: visible.length * (size.dimension - overlap),
               child: _BorderedAvatar(
+                borderColor: colors.surface,
+                size: size,
                 child: _OverflowBadge(
                   count: overflowCount,
                   size: size,
                   colors: colors,
                 ),
-                borderColor: colors.surface,
-                size: size,
               ),
             ),
         ],

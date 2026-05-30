@@ -122,7 +122,7 @@ class _NetworkImage extends StatelessWidget {
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
         if (wasSynchronouslyLoaded || frame != null) return child;
 
-        final skeleton = D3SkeletonBox(
+        const skeleton = D3SkeletonBox(
           borderRadius: BorderRadius.zero,
           height: double.infinity,
         );
@@ -132,7 +132,7 @@ class _NetworkImage extends StatelessWidget {
         // Otherwise create a local D3Shimmer so standalone images still animate.
         return D3Shimmer.of(context) != null
             ? skeleton
-            : D3Shimmer(child: skeleton);
+            : const D3Shimmer(child: skeleton);
       },
       errorBuilder: (context, error, stackTrace) =>
           _ErrorPlaceholder(icon: errorIcon),
