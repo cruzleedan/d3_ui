@@ -1,0 +1,68 @@
+# ── Build output ──────────────────────────────────────────────────────────────
+/build/
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+
+# ── Dart / Flutter tooling ────────────────────────────────────────────────────
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+**/doc/api/
+
+# ── Flutter metadata (machine-generated) ─────────────────────────────────────
+.metadata
+
+# ── Android: generated & local files ─────────────────────────────────────────
+android/.gradle/
+android/local.properties
+android/captures/
+android/generatedDebugSources/
+
+# Android generated plugin registrant (recreated by flutter pub get)
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+
+# ── iOS: generated & ephemeral files ─────────────────────────────────────────
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/ephemeral/
+ios/Flutter/.last_build_id
+ios/.flutter-plugins-dependencies
+
+# iOS generated plugin registrants (recreated by flutter pub get)
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+
+# CocoaPods lock — omit for apps that only target one platform version set;
+# commit if you need reproducible pod installs across the team.
+# ios/Podfile.lock
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.eml
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+**/.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── Miscellaneous ─────────────────────────────────────────────────────────────
+*.class
+*.log
+*.pyc
+*.swp
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+app.*.symbols
+app.*.map.json

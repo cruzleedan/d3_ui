@@ -1,0 +1,24 @@
+# Files to exclude from the published package on pub.dev
+# (Same syntax as .gitignore; takes precedence over .gitignore for publishing)
+
+# The example app's platform runner directories are not useful to pub.dev
+# consumers — only example/lib/ and example/pubspec.yaml matter.
+example/android/
+example/ios/
+example/linux/
+example/macos/
+example/web/
+example/windows/
+
+# IDE and local config inside example
+example/.idea/
+example/.vscode/
+example/.metadata
+example/*.iml
+example/android.iml
+
+# Docs directory (internal roadmap, not for consumers)
+docs/
+
+# Test artifacts
+coverage/
