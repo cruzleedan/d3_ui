@@ -61,7 +61,7 @@ class D3Toast {
   // ── Durations ──────────────────────────────────────────────────────────────
 
   static const _shortDuration = Duration(seconds: 3);
-  static const _longDuration  = Duration(seconds: 5);
+  static const _longDuration = Duration(seconds: 5);
 
   static Duration _durationFor(D3ToastVariant variant) =>
       (variant == D3ToastVariant.error || variant == D3ToastVariant.warning)

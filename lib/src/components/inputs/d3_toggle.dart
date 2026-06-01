@@ -59,8 +59,7 @@ class D3Toggle extends StatefulWidget {
   State<D3Toggle> createState() => _D3ToggleState();
 }
 
-class _D3ToggleState extends State<D3Toggle>
-    with TickerProviderStateMixin {
+class _D3ToggleState extends State<D3Toggle> with TickerProviderStateMixin {
   // ── Animation controllers ──────────────────────────────────────────────────
 
   // Drives thumb travel (0.0 = off position, 1.0 = on position).
@@ -72,17 +71,17 @@ class _D3ToggleState extends State<D3Toggle>
 
   // ── Geometry constants ─────────────────────────────────────────────────────
 
-  static const double _trackW        = 48;
-  static const double _trackH        = 28;
-  static const double _thumbNormal   = 22;
+  static const double _trackW = 48;
+  static const double _trackH = 28;
+  static const double _thumbNormal = 22;
   static const double _thumbSquished = 26;
-  static const double _thumbInset    = 3;
-  static const double _trackRadius   = _trackH / 2;
+  static const double _thumbInset = 3;
+  static const double _trackRadius = _trackH / 2;
 
   // Off position: left edge + inset.
   // On position: right edge - inset - thumb width.
   static const double _thumbOffLeft = _thumbInset;
-  static const double _thumbOnLeft  = _trackW - _thumbInset - _thumbNormal;
+  static const double _thumbOnLeft = _trackW - _thumbInset - _thumbNormal;
 
   @override
   void initState() {
@@ -109,9 +108,7 @@ class _D3ToggleState extends State<D3Toggle>
   void didUpdateWidget(D3Toggle old) {
     super.didUpdateWidget(old);
     if (old.value != widget.value) {
-      widget.value
-          ? _travelController.forward()
-          : _travelController.reverse();
+      widget.value ? _travelController.forward() : _travelController.reverse();
     }
   }
 
@@ -180,16 +177,17 @@ class _D3ToggleState extends State<D3Toggle>
               )!;
 
               // Thumb width grows on press.
-              final thumbW = _thumbNormal + (_thumbSquished - _thumbNormal) * squish;
+              final thumbW =
+                  _thumbNormal + (_thumbSquished - _thumbNormal) * squish;
 
               // Thumb left position: when squished on the on→off press, anchor
               // the squish to the right so the thumb appears to stretch leftward.
-              final baseLeft = _thumbOffLeft + (_thumbOnLeft - _thumbOffLeft) * travel;
+              final baseLeft =
+                  _thumbOffLeft + (_thumbOnLeft - _thumbOffLeft) * travel;
               // When pressing while ON, shift left by the extra width so the
               // right edge of the thumb stays pinned.
-              final thumbLeft = widget.value
-                  ? baseLeft - (thumbW - _thumbNormal)
-                  : baseLeft;
+              final thumbLeft =
+                  widget.value ? baseLeft - (thumbW - _thumbNormal) : baseLeft;
 
               return SizedBox(
                 width: _trackW,
@@ -216,7 +214,8 @@ class _D3ToggleState extends State<D3Toggle>
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(_thumbNormal / 2),
+                            borderRadius:
+                                BorderRadius.circular(_thumbNormal / 2),
                           ),
                         ),
                       ),

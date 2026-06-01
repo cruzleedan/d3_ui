@@ -50,7 +50,8 @@ void main() {
       expect(find.text('Saving…'), findsOneWidget);
     });
 
-    testWidgets('falls back to label when loadingLabel is null', (tester) async {
+    testWidgets('falls back to label when loadingLabel is null',
+        (tester) async {
       await tester.pumpWidget(_wrap(
         const D3Button(
           label: 'Save',
@@ -78,10 +79,12 @@ void main() {
         ),
       ));
       final sizedBox = tester.widget<SizedBox>(
-        find.ancestor(
-          of: find.text('Full'),
-          matching: find.byType(SizedBox),
-        ).first,
+        find
+            .ancestor(
+              of: find.text('Full'),
+              matching: find.byType(SizedBox),
+            )
+            .first,
       );
       expect(sizedBox.width, double.infinity);
     });

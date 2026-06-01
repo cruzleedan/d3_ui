@@ -1,10 +1,10 @@
 /// Spacing tokens on a 4dp base grid.
 /// Use these everywhere instead of raw doubles.
 abstract final class D3Spacing {
-  static const double s2  = 2;
-  static const double s4  = 4;
-  static const double s6  = 6;
-  static const double s8  = 8;
+  static const double s2 = 2;
+  static const double s4 = 4;
+  static const double s6 = 6;
+  static const double s8 = 8;
   static const double s10 = 10;
   static const double s12 = 12;
   static const double s16 = 16;

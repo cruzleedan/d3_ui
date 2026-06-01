@@ -54,7 +54,6 @@ class ScreenGallery extends StatelessWidget {
           // ── Box variants ────────────────────────────────────────────────
           GallerySection(
             title: 'Box — auto back',
-
             child: _DemoTile(
               label: 'Profile (back arrow)',
               onTap: () => Navigator.push(
@@ -71,7 +70,6 @@ class ScreenGallery extends StatelessWidget {
 
           GallerySection(
             title: 'Box — cancel (modal)',
-
             child: _DemoTile(
               label: 'Edit profile (cancel)',
               onTap: () => showModalBottomSheet(
@@ -88,7 +86,6 @@ class ScreenGallery extends StatelessWidget {
 
           GallerySection(
             title: 'Box — with action',
-
             child: _DemoTile(
               label: 'Contacts (add icon)',
               onTap: () => Navigator.push(
@@ -105,7 +102,6 @@ class ScreenGallery extends StatelessWidget {
 
           GallerySection(
             title: 'Box — text action',
-
             child: _DemoTile(
               label: 'New post (save)',
               onTap: () => Navigator.push(
@@ -122,7 +118,6 @@ class ScreenGallery extends StatelessWidget {
 
           GallerySection(
             title: 'Box — no leading',
-
             child: _DemoTile(
               label: 'Home (no leading)',
               onTap: () => Navigator.push(
@@ -140,7 +135,6 @@ class ScreenGallery extends StatelessWidget {
           // ── Sliver variants ─────────────────────────────────────────────
           GallerySection(
             title: 'Sliver — large title + search',
-
             child: _DemoTile(
               label: 'Contacts (sliver + search)',
               onTap: () => Navigator.push(
@@ -157,7 +151,6 @@ class ScreenGallery extends StatelessWidget {
 
           GallerySection(
             title: 'Sliver — no leading',
-
             child: _DemoTile(
               label: 'Inbox (sliver, no leading)',
               onTap: () => Navigator.push(
@@ -278,7 +271,8 @@ class _BoxBackScreen extends StatelessWidget {
 }
 
 class _CancelModalScreen extends StatelessWidget {
-  const _CancelModalScreen({required this.themeMode, required this.onToggleTheme});
+  const _CancelModalScreen(
+      {required this.themeMode, required this.onToggleTheme});
   final ThemeMode themeMode;
   final VoidCallback onToggleTheme;
 
@@ -300,7 +294,8 @@ class _CancelModalScreen extends StatelessWidget {
 }
 
 class _BoxActionScreen extends StatelessWidget {
-  const _BoxActionScreen({required this.themeMode, required this.onToggleTheme});
+  const _BoxActionScreen(
+      {required this.themeMode, required this.onToggleTheme});
   final ThemeMode themeMode;
   final VoidCallback onToggleTheme;
 
@@ -322,7 +317,8 @@ class _BoxActionScreen extends StatelessWidget {
 }
 
 class _BoxTextActionScreen extends StatelessWidget {
-  const _BoxTextActionScreen({required this.themeMode, required this.onToggleTheme});
+  const _BoxTextActionScreen(
+      {required this.themeMode, required this.onToggleTheme});
   final ThemeMode themeMode;
   final VoidCallback onToggleTheme;
 
@@ -340,7 +336,8 @@ class _BoxTextActionScreen extends StatelessWidget {
 }
 
 class _BoxNoLeadingScreen extends StatelessWidget {
-  const _BoxNoLeadingScreen({required this.themeMode, required this.onToggleTheme});
+  const _BoxNoLeadingScreen(
+      {required this.themeMode, required this.onToggleTheme});
   final ThemeMode themeMode;
   final VoidCallback onToggleTheme;
 
@@ -363,7 +360,8 @@ class _BoxNoLeadingScreen extends StatelessWidget {
 }
 
 class _SliverSearchScreen extends StatelessWidget {
-  const _SliverSearchScreen({required this.themeMode, required this.onToggleTheme});
+  const _SliverSearchScreen(
+      {required this.themeMode, required this.onToggleTheme});
   final ThemeMode themeMode;
   final VoidCallback onToggleTheme;
 
@@ -390,7 +388,8 @@ class _SliverSearchScreen extends StatelessWidget {
 }
 
 class _SliverNoLeadingScreen extends StatelessWidget {
-  const _SliverNoLeadingScreen({required this.themeMode, required this.onToggleTheme});
+  const _SliverNoLeadingScreen(
+      {required this.themeMode, required this.onToggleTheme});
   final ThemeMode themeMode;
   final VoidCallback onToggleTheme;
 

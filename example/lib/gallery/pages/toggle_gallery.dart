@@ -52,11 +52,11 @@ class _ToggleGalleryState extends State<ToggleGallery> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-
           // ── Standalone ────────────────────────────────────────────────────
           GallerySection(
             title: 'Standalone',
-            child: GallerySectionCard(child: Wrap(
+            child: GallerySectionCard(
+                child: Wrap(
               spacing: 24,
               runSpacing: 16,
               children: [
@@ -109,7 +109,8 @@ class _ToggleGalleryState extends State<ToggleGallery> {
           // ── With label ────────────────────────────────────────────────────
           GallerySection(
             title: 'With label',
-            child: GallerySectionCard(child: Column(
+            child: GallerySectionCard(
+                child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 D3Toggle(
@@ -194,10 +195,8 @@ class _ToggleGalleryState extends State<ToggleGallery> {
               ],
             ),
           ),
-
         ],
       ),
     );
   }
 }
-

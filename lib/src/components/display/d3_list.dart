@@ -64,19 +64,22 @@ class D3ListController {
     int index, {
     Duration duration = D3Motion.moderate,
     Curve curve = D3Motion.standard,
-  }) => _actions?.scrollToIndex(index, duration: duration, curve: curve);
+  }) =>
+      _actions?.scrollToIndex(index, duration: duration, curve: curve);
 
   /// Animate the scroll position to the top of the list.
   void scrollToTop({
     Duration duration = D3Motion.moderate,
     Curve curve = D3Motion.decelerate,
-  }) => _actions?.scrollToTop(duration: duration, curve: curve);
+  }) =>
+      _actions?.scrollToTop(duration: duration, curve: curve);
 
   /// Animate the scroll position to the bottom of the list.
   void scrollToBottom({
     Duration duration = D3Motion.moderate,
     Curve curve = D3Motion.decelerate,
-  }) => _actions?.scrollToBottom(duration: duration, curve: curve);
+  }) =>
+      _actions?.scrollToBottom(duration: duration, curve: curve);
 
   /// Release resources. Call this in your widget's [State.dispose].
   void dispose() => _actions = null;
@@ -192,7 +195,7 @@ class D3List<T> extends StatefulWidget {
   /// A header row is inserted above the first item in each new section.
   /// Return null to skip the header for that item.
   final String? Function(BuildContext context, T item, int index)?
-  sectionBuilder;
+      sectionBuilder;
 
   /// Custom separator between items. Defaults to a hairline [Divider].
   final Widget Function(BuildContext context, int index)? separatorBuilder;
@@ -343,8 +346,7 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
 
     // ── Empty state ──────────────────────────────────────────────────────────
     if (widget.items.isEmpty) {
-      final empty =
-          widget.emptyState ??
+      final empty = widget.emptyState ??
           const D3EmptyState(
             icon: Icons.inbox_outlined,
             title: 'Nothing here yet',

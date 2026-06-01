@@ -46,11 +46,11 @@ class _RadioGalleryState extends State<RadioGallery> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-
           // ── Standalone states ─────────────────────────────────────────────
           GallerySection(
             title: 'States',
-            child: GallerySectionCard(child: Wrap(
+            child: GallerySectionCard(
+                child: Wrap(
               spacing: 20,
               runSpacing: 16,
               children: [
@@ -93,7 +93,8 @@ class _RadioGalleryState extends State<RadioGallery> {
           // ── With label — appearance group ─────────────────────────────────
           GallerySection(
             title: 'With label',
-            child: GallerySectionCard(child: Column(
+            child: GallerySectionCard(
+                child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 for (final option in [
@@ -161,7 +162,6 @@ class _RadioGalleryState extends State<RadioGallery> {
               ],
             ),
           ),
-
         ],
       ),
     );

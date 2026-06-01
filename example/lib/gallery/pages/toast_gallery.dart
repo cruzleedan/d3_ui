@@ -25,7 +25,6 @@ class ToastGallery extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               GallerySection(
                 title: 'Variants',
                 child: Column(
@@ -80,7 +79,6 @@ class ToastGallery extends StatelessWidget {
                   ],
                 ),
               ),
-
               GallerySection(
                 title: 'With action',
                 child: Column(
@@ -141,7 +139,6 @@ class ToastGallery extends StatelessWidget {
                   ],
                 ),
               ),
-
               GallerySection(
                 title: 'Persistent (no auto-dismiss)',
                 child: _ToastButton(
@@ -156,7 +153,6 @@ class ToastGallery extends StatelessWidget {
                   ),
                 ),
               ),
-
             ],
           ),
         ),

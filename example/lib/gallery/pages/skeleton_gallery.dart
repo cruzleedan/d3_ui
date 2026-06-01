@@ -39,7 +39,6 @@ class _SkeletonGalleryState extends State<SkeletonGallery> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-
           // ── Skeleton box ──────────────────────────────────────────────────
           GallerySection(
             title: 'D3SkeletonBox',
@@ -148,7 +147,8 @@ class _SkeletonGalleryState extends State<SkeletonGallery> {
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: _loaded
-                        ? _LoadedCard(key: const ValueKey('loaded'), colors: colors)
+                        ? _LoadedCard(
+                            key: const ValueKey('loaded'), colors: colors)
                         : D3Shimmer(
                             key: const ValueKey('skeleton'),
                             child: _SkeletonCard(),
@@ -158,7 +158,6 @@ class _SkeletonGalleryState extends State<SkeletonGallery> {
               ),
             ),
           ),
-
         ],
       ),
     );

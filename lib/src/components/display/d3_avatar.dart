@@ -294,10 +294,10 @@ class _IndicatorDot extends StatelessWidget {
   final Color borderColor;
 
   Color get _dotColor => switch (indicator) {
-        D3AvatarIndicator.online  => const Color(0xFF1D9E75),
-        D3AvatarIndicator.busy    => const Color(0xFFE24B4A),
+        D3AvatarIndicator.online => const Color(0xFF1D9E75),
+        D3AvatarIndicator.busy => const Color(0xFFE24B4A),
         D3AvatarIndicator.offline => const Color(0xFF888780),
-        D3AvatarIndicator.none    => Colors.transparent,
+        D3AvatarIndicator.none => Colors.transparent,
       };
 
   @override
@@ -341,7 +341,8 @@ class D3AvatarGroup extends StatelessWidget {
     this.max = 4,
     this.overlap = 8.0,
     this.size = D3AvatarSize.md,
-  })  : assert(avatars.length > 0, 'D3AvatarGroup requires at least one avatar.'),
+  })  : assert(
+            avatars.length > 0, 'D3AvatarGroup requires at least one avatar.'),
         assert(max >= 1, 'max must be at least 1.');
 
   final List<D3Avatar> avatars;
@@ -381,7 +382,6 @@ class D3AvatarGroup extends StatelessWidget {
                 ),
               ),
             ),
-
           if (overflowCount > 0)
             Positioned(
               left: visible.length * (size.dimension - overlap),

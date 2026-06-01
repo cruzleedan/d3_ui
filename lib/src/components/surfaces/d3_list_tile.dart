@@ -33,7 +33,8 @@ class D3ListTileGroup extends StatelessWidget {
     super.key,
     required this.children,
     this.border,
-  }) : assert(children.length > 0, 'D3ListTileGroup requires at least one child.');
+  }) : assert(children.length > 0,
+            'D3ListTileGroup requires at least one child.');
 
   final List<D3ListTile> children;
 
@@ -43,8 +44,8 @@ class D3ListTileGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
-    final effectiveBorder = border ??
-        BorderSide(color: colors.outline, width: 0.5);
+    final effectiveBorder =
+        border ?? BorderSide(color: colors.outline, width: 0.5);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(D3Radius.lg),
@@ -148,8 +149,7 @@ class D3ListTile extends StatelessWidget {
 
   final String? semanticsLabel;
 
-  bool get _isInteractive =>
-      enabled && (onTap != null || onLongPress != null);
+  bool get _isInteractive => enabled && (onTap != null || onLongPress != null);
 
   @override
   Widget build(BuildContext context) {

@@ -558,8 +558,7 @@ class _InlineButton extends StatelessWidget {
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         textStyle: TextStyle(
           fontSize: 14,
-          fontWeight:
-              action.isDefault ? FontWeight.w600 : FontWeight.w500,
+          fontWeight: action.isDefault ? FontWeight.w600 : FontWeight.w500,
           letterSpacing: 0,
         ),
         shape: RoundedRectangleBorder(

@@ -177,7 +177,7 @@ class _RadioPainter extends CustomPainter {
   final Color primaryColor;
   final Color borderColor;
 
-  static const double _border     = 1.5;
+  static const double _border = 1.5;
   static const double _dotMaxRadius = 5.0; // inner dot at full selection
 
   @override
@@ -204,8 +204,7 @@ class _RadioPainter extends CustomPainter {
     canvas.drawCircle(
       center,
       dotRadius,
-      Paint()
-        ..color = primaryColor.withValues(alpha: progress),
+      Paint()..color = primaryColor.withValues(alpha: progress),
     );
   }
 

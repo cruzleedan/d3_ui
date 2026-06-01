@@ -35,8 +35,8 @@ abstract final class D3ColorPrimitives {
   static const neutral300 = Color(0xFF94A3B8);
   static const neutral200 = Color(0xFFCBD5E1);
   static const neutral100 = Color(0xFFE2E8F0);
-  static const neutral50  = Color(0xFFF1F5F9);
-  static const white      = Color(0xFFFFFFFF);
+  static const neutral50 = Color(0xFFF1F5F9);
+  static const white = Color(0xFFFFFFFF);
 
   D3ColorPrimitives._();
 }
@@ -68,8 +68,8 @@ class D3ColorTokens {
 
   final Color primary;
   final Color onPrimary;
-  final Color primaryContainer;     // tonal fill (primary @ ~12-15%)
-  final Color onPrimaryContainer;   // tonal label
+  final Color primaryContainer; // tonal fill (primary @ ~12-15%)
+  final Color onPrimaryContainer; // tonal label
 
   final Color secondary;
   final Color onSecondary;
@@ -86,58 +86,58 @@ class D3ColorTokens {
   final Color onWarning;
   final Color error;
   final Color onError;
-  final Color errorContainer;       // danger tonal fill
-  final Color onErrorContainer;     // danger tonal label
+  final Color errorContainer; // danger tonal fill
+  final Color onErrorContainer; // danger tonal label
 
-  final Color scrim;                // overlays, modals
+  final Color scrim; // overlays, modals
 
   // ── Predefined light ──────────────────────────────────────────────────────
 
   static const light = D3ColorTokens(
-    primary:             D3ColorPrimitives.blue500,
-    onPrimary:           D3ColorPrimitives.white,
-    primaryContainer:    Color(0x1F5B73E8), // blue500 @ 12%
-    onPrimaryContainer:  D3ColorPrimitives.blue500,
-    secondary:           D3ColorPrimitives.neutral400,
-    onSecondary:         D3ColorPrimitives.white,
-    surface:             D3ColorPrimitives.white,
-    surfaceVariant:      D3ColorPrimitives.neutral50,
-    onSurface:           D3ColorPrimitives.neutral900,
-    onSurfaceVariant:    D3ColorPrimitives.neutral400,
-    outline:             D3ColorPrimitives.neutral200,
-    success:             D3ColorPrimitives.green500,
-    onSuccess:           D3ColorPrimitives.white,
-    warning:             D3ColorPrimitives.amber500,
-    onWarning:           D3ColorPrimitives.white,
-    error:               D3ColorPrimitives.red600,
-    onError:             D3ColorPrimitives.white,
-    errorContainer:      Color(0x1FDC2626), // red600 @ 12%
-    onErrorContainer:    D3ColorPrimitives.red600,
-    scrim:               Color(0x80000000),
+    primary: D3ColorPrimitives.blue500,
+    onPrimary: D3ColorPrimitives.white,
+    primaryContainer: Color(0x1F5B73E8), // blue500 @ 12%
+    onPrimaryContainer: D3ColorPrimitives.blue500,
+    secondary: D3ColorPrimitives.neutral400,
+    onSecondary: D3ColorPrimitives.white,
+    surface: D3ColorPrimitives.white,
+    surfaceVariant: D3ColorPrimitives.neutral50,
+    onSurface: D3ColorPrimitives.neutral900,
+    onSurfaceVariant: D3ColorPrimitives.neutral400,
+    outline: D3ColorPrimitives.neutral200,
+    success: D3ColorPrimitives.green500,
+    onSuccess: D3ColorPrimitives.white,
+    warning: D3ColorPrimitives.amber500,
+    onWarning: D3ColorPrimitives.white,
+    error: D3ColorPrimitives.red600,
+    onError: D3ColorPrimitives.white,
+    errorContainer: Color(0x1FDC2626), // red600 @ 12%
+    onErrorContainer: D3ColorPrimitives.red600,
+    scrim: Color(0x80000000),
   );
 
   // ── Predefined dark ───────────────────────────────────────────────────────
 
   static const dark = D3ColorTokens(
-    primary:             D3ColorPrimitives.blue400,
-    onPrimary:           D3ColorPrimitives.white,
-    primaryContainer:    Color(0x266C8FFF), // blue400 @ 15%
-    onPrimaryContainer:  D3ColorPrimitives.blue400,
-    secondary:           D3ColorPrimitives.neutral300,
-    onSecondary:         D3ColorPrimitives.neutral900,
-    surface:             D3ColorPrimitives.neutral900,
-    surfaceVariant:      D3ColorPrimitives.neutral800,
-    onSurface:           D3ColorPrimitives.neutral100,
-    onSurfaceVariant:    D3ColorPrimitives.neutral300,
-    outline:             D3ColorPrimitives.neutral500,
-    success:             D3ColorPrimitives.green400,
-    onSuccess:           D3ColorPrimitives.neutral900,
-    warning:             D3ColorPrimitives.amber400,
-    onWarning:           D3ColorPrimitives.neutral900,
-    error:               D3ColorPrimitives.red400,
-    onError:             D3ColorPrimitives.neutral900,
-    errorContainer:      Color(0x26F87171), // red400 @ 15%
-    onErrorContainer:    D3ColorPrimitives.red400,
-    scrim:               Color(0x99000000),
+    primary: D3ColorPrimitives.blue400,
+    onPrimary: D3ColorPrimitives.white,
+    primaryContainer: Color(0x266C8FFF), // blue400 @ 15%
+    onPrimaryContainer: D3ColorPrimitives.blue400,
+    secondary: D3ColorPrimitives.neutral300,
+    onSecondary: D3ColorPrimitives.neutral900,
+    surface: D3ColorPrimitives.neutral900,
+    surfaceVariant: D3ColorPrimitives.neutral800,
+    onSurface: D3ColorPrimitives.neutral100,
+    onSurfaceVariant: D3ColorPrimitives.neutral300,
+    outline: D3ColorPrimitives.neutral500,
+    success: D3ColorPrimitives.green400,
+    onSuccess: D3ColorPrimitives.neutral900,
+    warning: D3ColorPrimitives.amber400,
+    onWarning: D3ColorPrimitives.neutral900,
+    error: D3ColorPrimitives.red400,
+    onError: D3ColorPrimitives.neutral900,
+    errorContainer: Color(0x26F87171), // red400 @ 15%
+    onErrorContainer: D3ColorPrimitives.red400,
+    scrim: Color(0x99000000),
   );
 }

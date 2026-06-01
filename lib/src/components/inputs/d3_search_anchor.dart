@@ -111,7 +111,8 @@ class D3SearchAnchor<T> extends StatefulWidget {
     super.key,
     required List<T> items,
     required List<T> Function(List<T> items, String query) filterItems,
-    required Widget Function(BuildContext context, List<T> results, String query)
+    required Widget Function(
+            BuildContext context, List<T> results, String query)
         resultBuilder,
     this.hint = 'Search…',
     this.emptyState,
@@ -135,7 +136,8 @@ class D3SearchAnchor<T> extends StatefulWidget {
     super.key,
     required List<T> initialItems,
     required Future<List<T>?> Function(String query) onSearch,
-    required Widget Function(BuildContext context, List<T> results, String query)
+    required Widget Function(
+            BuildContext context, List<T> results, String query)
         resultBuilder,
     this.hint = 'Search…',
     this.emptyState,

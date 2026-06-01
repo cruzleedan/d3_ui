@@ -58,8 +58,8 @@ class D3Button extends StatefulWidget {
     this.maxLines,
     this.semanticsLabel,
     this.autofocus = false,
-  }) : _iconOnly = false,
-       _iconOnlyIcon = null;
+  })  : _iconOnly = false,
+        _iconOnlyIcon = null;
 
   /// Icon-only variant. Uses square dimensions from the size token.
   const D3Button.icon({
@@ -71,14 +71,14 @@ class D3Button extends StatefulWidget {
     this.buttonState = D3ButtonState.idle,
     this.semanticsLabel,
     this.autofocus = false,
-  }) : label = '',
-       loadingLabel = null,
-       leadingIcon = null,
-       trailingIcon = null,
-       isFullWidth = false,
-       maxLines = 1,
-       _iconOnly = true,
-       _iconOnlyIcon = icon;
+  })  : label = '',
+        loadingLabel = null,
+        leadingIcon = null,
+        trailingIcon = null,
+        isFullWidth = false,
+        maxLines = 1,
+        _iconOnly = true,
+        _iconOnlyIcon = icon;
 
   final String label;
   final VoidCallback? onPressed;
@@ -101,8 +101,7 @@ class D3Button extends StatefulWidget {
   final IconData? _iconOnlyIcon;
 
   bool get _isInteractive =>
-      onPressed != null &&
-      buttonState != D3ButtonState.loading;
+      onPressed != null && buttonState != D3ButtonState.loading;
 
   @override
   State<D3Button> createState() => _D3ButtonState();
@@ -242,14 +241,15 @@ class _D3ButtonState extends State<D3Button> {
 
     Widget? trailing;
     if (widget.trailingIcon != null && state == D3ButtonState.idle) {
-      trailing = Icon(widget.trailingIcon, size: tokens.iconSize - 2, color: fgColor);
+      trailing =
+          Icon(widget.trailingIcon, size: tokens.iconSize - 2, color: fgColor);
     }
 
     // State icon override (success/error)
     IconData? stateIcon = switch (state) {
       D3ButtonState.success => Icons.check_rounded,
-      D3ButtonState.error   => Icons.close_rounded,
-      _                     => null,
+      D3ButtonState.error => Icons.close_rounded,
+      _ => null,
     };
     if (stateIcon != null) {
       leading = Icon(stateIcon, size: tokens.iconSize, color: fgColor);
@@ -287,7 +287,8 @@ class _D3ButtonState extends State<D3Button> {
     D3ButtonState state,
   ) {
     if (state == D3ButtonState.loading) return _spinner(fgColor, tokens);
-    return Icon(widget._iconOnlyIcon, size: tokens.iconSize + 2, color: fgColor);
+    return Icon(widget._iconOnlyIcon,
+        size: tokens.iconSize + 2, color: fgColor);
   }
 
   Widget _spinner(Color color, D3ButtonTokens tokens) {
@@ -304,11 +305,41 @@ class _D3ButtonState extends State<D3Button> {
   /// Returns (hPad, vPad, minHeight, radius, fontSize) for the current size.
   (double, double, double, double, double) _sizeValues(D3ButtonTokens t) {
     return switch (widget.size) {
-      D3ButtonSize.xs => (t.hPaddingXs, t.vPaddingXs, t.minHeightXs, t.radiusXs, D3TypeScale.btnXsSize),
-      D3ButtonSize.sm => (t.hPaddingXs + 4, t.vPaddingXs + 2, t.minHeightSm, t.radiusSm, D3TypeScale.btnSmSize),
-      D3ButtonSize.md => (t.hPaddingMd, t.vPaddingMd, t.minHeightMd, t.radiusMd, D3TypeScale.btnMdSize),
-      D3ButtonSize.lg => (t.hPaddingLg, t.vPaddingLg, t.minHeightLg, t.radiusLg, D3TypeScale.btnLgSize),
-      D3ButtonSize.xl => (t.hPaddingLg + 8, t.vPaddingLg + 2, t.minHeightXl, t.radiusLg, D3TypeScale.btnXlSize),
+      D3ButtonSize.xs => (
+          t.hPaddingXs,
+          t.vPaddingXs,
+          t.minHeightXs,
+          t.radiusXs,
+          D3TypeScale.btnXsSize
+        ),
+      D3ButtonSize.sm => (
+          t.hPaddingXs + 4,
+          t.vPaddingXs + 2,
+          t.minHeightSm,
+          t.radiusSm,
+          D3TypeScale.btnSmSize
+        ),
+      D3ButtonSize.md => (
+          t.hPaddingMd,
+          t.vPaddingMd,
+          t.minHeightMd,
+          t.radiusMd,
+          D3TypeScale.btnMdSize
+        ),
+      D3ButtonSize.lg => (
+          t.hPaddingLg,
+          t.vPaddingLg,
+          t.minHeightLg,
+          t.radiusLg,
+          D3TypeScale.btnLgSize
+        ),
+      D3ButtonSize.xl => (
+          t.hPaddingLg + 8,
+          t.vPaddingLg + 2,
+          t.minHeightXl,
+          t.radiusLg,
+          D3TypeScale.btnXlSize
+        ),
     };
   }
 
@@ -327,11 +358,11 @@ class _D3ButtonState extends State<D3Button> {
     }
 
     return switch (widget.variant) {
-      D3ButtonVariant.filled   => (c.primary, c.onPrimary, null),
-      D3ButtonVariant.tonal    => (c.primaryContainer, c.onPrimaryContainer, null),
+      D3ButtonVariant.filled => (c.primary, c.onPrimary, null),
+      D3ButtonVariant.tonal => (c.primaryContainer, c.onPrimaryContainer, null),
       D3ButtonVariant.outlined => (Colors.transparent, c.onSurface, c.outline),
-      D3ButtonVariant.ghost    => (Colors.transparent, c.primary, null),
-      D3ButtonVariant.danger   => (c.errorContainer, c.onErrorContainer, null),
+      D3ButtonVariant.ghost => (Colors.transparent, c.primary, null),
+      D3ButtonVariant.danger => (c.errorContainer, c.onErrorContainer, null),
     };
   }
 }

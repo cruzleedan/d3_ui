@@ -18,10 +18,22 @@ void main() {
 
     test('all values are positive', () {
       const values = [
-        D3Spacing.s2, D3Spacing.s4, D3Spacing.s6, D3Spacing.s8,
-        D3Spacing.s10, D3Spacing.s12, D3Spacing.s16, D3Spacing.s20,
-        D3Spacing.s22, D3Spacing.s24, D3Spacing.s28, D3Spacing.s32,
-        D3Spacing.s40, D3Spacing.s48, D3Spacing.s56, D3Spacing.s64,
+        D3Spacing.s2,
+        D3Spacing.s4,
+        D3Spacing.s6,
+        D3Spacing.s8,
+        D3Spacing.s10,
+        D3Spacing.s12,
+        D3Spacing.s16,
+        D3Spacing.s20,
+        D3Spacing.s22,
+        D3Spacing.s24,
+        D3Spacing.s28,
+        D3Spacing.s32,
+        D3Spacing.s40,
+        D3Spacing.s48,
+        D3Spacing.s56,
+        D3Spacing.s64,
       ];
       for (final v in values) {
         expect(v, greaterThan(0.0));
@@ -85,7 +97,8 @@ void main() {
 
   group('D3TypeScale', () {
     test('display sizes are larger than headline sizes', () {
-      expect(D3TypeScale.displaySmSize, greaterThan(D3TypeScale.headlineLgSize));
+      expect(
+          D3TypeScale.displaySmSize, greaterThan(D3TypeScale.headlineLgSize));
     });
 
     test('headline sizes are larger than body sizes', () {
