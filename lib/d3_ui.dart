@@ -33,5 +33,6 @@ export 'src/components/display/d3_empty_state.dart';
 export 'src/components/display/d3_list.dart';
 export 'src/components/display/d3_skeleton.dart';
 export 'src/components/display/d3_image.dart';
+export 'src/components/display/d3_poster_card.dart';
 export 'src/components/inputs/d3_chip.dart';
 export 'src/components/feedback/d3_toast.dart';
