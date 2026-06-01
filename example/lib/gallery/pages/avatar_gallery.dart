@@ -33,28 +33,23 @@ class AvatarGallery extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.end,
                   children: [
                     _LabelledAvatar(
-                      avatar: D3Avatar(
-                          name: 'Dan Lee', size: D3AvatarSize.xs),
+                      avatar: D3Avatar(name: 'Dan Lee', size: D3AvatarSize.xs),
                       label: 'xs',
                     ),
                     _LabelledAvatar(
-                      avatar: D3Avatar(
-                          name: 'Dan Lee', size: D3AvatarSize.sm),
+                      avatar: D3Avatar(name: 'Dan Lee', size: D3AvatarSize.sm),
                       label: 'sm',
                     ),
                     _LabelledAvatar(
-                      avatar: D3Avatar(
-                          name: 'Dan Lee', size: D3AvatarSize.md),
+                      avatar: D3Avatar(name: 'Dan Lee', size: D3AvatarSize.md),
                       label: 'md',
                     ),
                     _LabelledAvatar(
-                      avatar: D3Avatar(
-                          name: 'Dan Lee', size: D3AvatarSize.lg),
+                      avatar: D3Avatar(name: 'Dan Lee', size: D3AvatarSize.lg),
                       label: 'lg',
                     ),
                     _LabelledAvatar(
-                      avatar: D3Avatar(
-                          name: 'Dan Lee', size: D3AvatarSize.xl),
+                      avatar: D3Avatar(name: 'Dan Lee', size: D3AvatarSize.xl),
                       label: 'xl',
                     ),
                   ],
