@@ -54,16 +54,20 @@ extension D3WatchStatusExtension on D3WatchStatus {
 
 /// A pre-configured [D3Chip] that displays a [D3WatchStatus] badge.
 class D3StatusChip extends StatelessWidget {
-  const D3StatusChip({super.key, required this.status});
+  const D3StatusChip({super.key, required this.status, this.onTap});
 
   final D3WatchStatus status;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return D3Chip(
-      label: status.label,
-      leadingIcon: status.icon,
-      variant: D3ChipVariant.tonal,
+    return GestureDetector(
+      onTap: onTap,
+      child: D3Chip(
+        label: status.label,
+        leadingIcon: status.icon,
+        variant: D3ChipVariant.tonal,
+      ),
     );
   }
 }

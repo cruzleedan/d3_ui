@@ -29,7 +29,14 @@ class _ChipGalleryState extends State<ChipGallery> {
     final colors = context.d3Colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    const genres = ['Action', 'Romance', 'Sci-fi', 'Fantasy', 'Horror', 'Comedy'];
+    const genres = [
+      'Action',
+      'Romance',
+      'Sci-fi',
+      'Fantasy',
+      'Horror',
+      'Comedy'
+    ];
 
     return D3Screen(
       title: 'D3Chip',
@@ -45,7 +52,6 @@ class _ChipGalleryState extends State<ChipGallery> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-
           // ── Variants ──────────────────────────────────────────────────────
           GallerySection(
             title: 'Variants',
@@ -54,7 +60,8 @@ class _ChipGalleryState extends State<ChipGallery> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  const D3Chip(label: 'Outlined', variant: D3ChipVariant.outlined),
+                  const D3Chip(
+                      label: 'Outlined', variant: D3ChipVariant.outlined),
                   const D3Chip(label: 'Tonal', variant: D3ChipVariant.tonal),
                   const D3Chip(label: 'Filled', variant: D3ChipVariant.filled),
                   D3Chip(
@@ -85,11 +92,13 @@ class _ChipGalleryState extends State<ChipGallery> {
               child: Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: genres.map((g) => D3Chip(
-                  label: g,
-                  selected: _genres.contains(g),
-                  onTap: () => _toggleGenre(g),
-                )).toList(),
+                children: genres
+                    .map((g) => D3Chip(
+                          label: g,
+                          selected: _genres.contains(g),
+                          onTap: () => _toggleGenre(g),
+                        ))
+                    .toList(),
               ),
             ),
           ),
@@ -124,8 +133,8 @@ class _ChipGalleryState extends State<ChipGallery> {
                         status: _status,
                         onTap: () => setState(() {
                           final idx = D3WatchStatus.values.indexOf(_status);
-                          _status = D3WatchStatus.values[
-                              (idx + 1) % D3WatchStatus.values.length];
+                          _status = D3WatchStatus
+                              .values[(idx + 1) % D3WatchStatus.values.length];
                         }),
                       ),
                     ],
@@ -134,7 +143,6 @@ class _ChipGalleryState extends State<ChipGallery> {
               ),
             ),
           ),
-
         ],
       ),
     );

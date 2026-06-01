@@ -37,14 +37,13 @@ class ImageGallery extends StatelessWidget {
       actions: [
         D3ScreenAction.icon(
           isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-          onPressed: widget.onToggleTheme,
+          onPressed: onToggleTheme,
           semanticsLabel: 'Toggle theme',
         ),
       ],
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-
           // ── Fixed size ────────────────────────────────────────────────────
           GallerySection(
             title: 'Fixed size',
@@ -209,7 +208,6 @@ class ImageGallery extends StatelessWidget {
               ),
             ),
           ),
-
         ],
       ),
     );

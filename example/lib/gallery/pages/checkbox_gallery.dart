@@ -72,11 +72,11 @@ class _CheckboxGalleryState extends State<CheckboxGallery> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-
           // ── Standalone states ─────────────────────────────────────────────
           GallerySection(
             title: 'All states',
-            child: GallerySectionCard(child: Wrap(
+            child: GallerySectionCard(
+                child: Wrap(
               spacing: 20,
               runSpacing: 16,
               children: [
@@ -116,7 +116,8 @@ class _CheckboxGalleryState extends State<CheckboxGallery> {
           // ── With label ────────────────────────────────────────────────────
           GallerySection(
             title: 'With label',
-            child: GallerySectionCard(child: Column(
+            child: GallerySectionCard(
+                child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 D3Checkbox(
@@ -167,7 +168,6 @@ class _CheckboxGalleryState extends State<CheckboxGallery> {
 
                 // Individual items
                 ...List.generate(_itemLabels.length, (i) {
-                  final isLast = i == _itemLabels.length - 1;
                   return D3ListTile(
                     leading: D3Checkbox(
                       value: _items[i],
@@ -181,7 +181,6 @@ class _CheckboxGalleryState extends State<CheckboxGallery> {
               ],
             ),
           ),
-
         ],
       ),
     );
