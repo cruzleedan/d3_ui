@@ -177,7 +177,7 @@ class _ButtonGalleryState extends State<ButtonGallery> {
                 onPressed: _simulateAsync,
               ),
             ),
-            GallerySection(
+            const GallerySection(
               title: 'Disabled',
               child: Wrap(
                 spacing: 10,

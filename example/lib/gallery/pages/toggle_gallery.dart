@@ -25,13 +25,13 @@ class _ToggleGalleryState extends State<ToggleGallery> {
   // Labelled states
   bool _sync = true;
   bool _receipts = false;
-  bool _location = true;
+  final bool _location = true;
 
   // Settings screen states
   bool _wifi = true;
   bool _bluetooth = false;
   bool _darkMode = true;
-  bool _notifications = false;
+  final bool _notifications = false;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +86,7 @@ class _ToggleGalleryState extends State<ToggleGallery> {
                 ),
                 Column(
                   children: [
-                    D3Toggle(value: true, onChanged: null),
+                    const D3Toggle(value: true, onChanged: null),
                     const SizedBox(height: 6),
                     Text('on · disabled',
                         style: TextStyle(
@@ -95,7 +95,7 @@ class _ToggleGalleryState extends State<ToggleGallery> {
                 ),
                 Column(
                   children: [
-                    D3Toggle(value: false, onChanged: null),
+                    const D3Toggle(value: false, onChanged: null),
                     const SizedBox(height: 6),
                     Text('off · disabled',
                         style: TextStyle(

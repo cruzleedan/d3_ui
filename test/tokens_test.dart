@@ -145,7 +145,7 @@ void main() {
     });
 
     test('all semantic tokens are non-null in light theme', () {
-      final c = D3ColorTokens.light;
+      const c = D3ColorTokens.light;
       expect(c.primary, isNotNull);
       expect(c.onPrimary, isNotNull);
       expect(c.surface, isNotNull);

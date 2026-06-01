@@ -77,7 +77,7 @@ class EmptyStateGallery extends StatelessWidget {
                   ),
                 ),
               ),
-              GallerySection(
+              const GallerySection(
                 title: 'Compact — no action',
                 child: Row(
                   children: [
@@ -92,7 +92,7 @@ class EmptyStateGallery extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: D3Card(
                         content: D3EmptyState(

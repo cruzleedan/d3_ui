@@ -372,7 +372,7 @@ class _SliverSearchScreen extends StatelessWidget {
       title: 'Contacts',
       subtitle: '12 people',
       layout: D3ScreenLayout.sliver,
-      sliverHeader: D3SearchBar(hint: 'Search contacts…'),
+      sliverHeader: const D3SearchBar(hint: 'Search contacts…'),
       actions: [
         D3ScreenAction.icon(
           Icons.add_rounded,

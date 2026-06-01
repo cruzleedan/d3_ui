@@ -25,7 +25,7 @@ class AvatarGallery extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GallerySection(
+              const GallerySection(
                 title: 'Sizes — initials',
                 child: Wrap(
                   spacing: 16,
@@ -33,39 +33,39 @@ class AvatarGallery extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.end,
                   children: [
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                           name: 'Dan Lee', size: D3AvatarSize.xs),
                       label: 'xs',
                     ),
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                           name: 'Dan Lee', size: D3AvatarSize.sm),
                       label: 'sm',
                     ),
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                           name: 'Dan Lee', size: D3AvatarSize.md),
                       label: 'md',
                     ),
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                           name: 'Dan Lee', size: D3AvatarSize.lg),
                       label: 'lg',
                     ),
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                           name: 'Dan Lee', size: D3AvatarSize.xl),
                       label: 'xl',
                     ),
                   ],
                 ),
               ),
-              GallerySection(
+              const GallerySection(
                 title: 'Deterministic colors',
                 child: Wrap(
                   spacing: 12,
                   runSpacing: 12,
-                  children: const [
+                  children: [
                     D3Avatar(name: 'Alice Brown'),
                     D3Avatar(name: 'Bob Chen'),
                     D3Avatar(name: 'Clara Davis'),
@@ -76,7 +76,7 @@ class AvatarGallery extends StatelessWidget {
                   ],
                 ),
               ),
-              GallerySection(
+              const GallerySection(
                 title: 'Online indicator',
                 child: Wrap(
                   spacing: 16,
@@ -84,7 +84,7 @@ class AvatarGallery extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.end,
                   children: [
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                         name: 'Dan Lee',
                         size: D3AvatarSize.md,
                         indicator: D3AvatarIndicator.online,
@@ -92,7 +92,7 @@ class AvatarGallery extends StatelessWidget {
                       label: 'online',
                     ),
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                         name: 'Jane Kim',
                         size: D3AvatarSize.md,
                         indicator: D3AvatarIndicator.busy,
@@ -100,7 +100,7 @@ class AvatarGallery extends StatelessWidget {
                       label: 'busy',
                     ),
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                         name: 'Mark Santos',
                         size: D3AvatarSize.md,
                         indicator: D3AvatarIndicator.offline,
@@ -108,7 +108,7 @@ class AvatarGallery extends StatelessWidget {
                       label: 'offline',
                     ),
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                         name: 'Amy Chen',
                         size: D3AvatarSize.lg,
                         indicator: D3AvatarIndicator.online,
@@ -116,7 +116,7 @@ class AvatarGallery extends StatelessWidget {
                       label: 'lg',
                     ),
                     _LabelledAvatar(
-                      avatar: const D3Avatar(
+                      avatar: D3Avatar(
                         name: 'Luis Reyes',
                         size: D3AvatarSize.xl,
                         indicator: D3AvatarIndicator.online,
@@ -126,13 +126,13 @@ class AvatarGallery extends StatelessWidget {
                   ],
                 ),
               ),
-              GallerySection(
+              const GallerySection(
                 title: 'Square shape',
                 child: Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   crossAxisAlignment: WrapCrossAlignment.end,
-                  children: const [
+                  children: [
                     D3Avatar(
                         name: 'Dan Lee',
                         size: D3AvatarSize.sm,
@@ -152,12 +152,12 @@ class AvatarGallery extends StatelessWidget {
                   ],
                 ),
               ),
-              GallerySection(
+              const GallerySection(
                 title: 'With image (falls back to initials on error)',
                 child: Wrap(
                   spacing: 12,
                   runSpacing: 12,
-                  children: const [
+                  children: [
                     D3Avatar(
                       name: 'Dan Lee',
                       imageUrl: 'https://i.pravatar.cc/150?img=3',

@@ -39,7 +39,7 @@ class ListTileGallery extends StatelessWidget {
                       onTap: () {},
                     ),
                     D3ListTile(
-                      leading: D3ListTileIcon(
+                      leading: const D3ListTileIcon(
                         icon: Icons.lock_outline_rounded,
                         color: Colors.green,
                       ),
@@ -49,7 +49,7 @@ class ListTileGallery extends StatelessWidget {
                       onTap: () {},
                     ),
                     D3ListTile(
-                      leading: D3ListTileIcon(
+                      leading: const D3ListTileIcon(
                         icon: Icons.palette_outlined,
                         color: Colors.purple,
                       ),
@@ -65,7 +65,7 @@ class ListTileGallery extends StatelessWidget {
                 child: D3ListTileGroup(
                   children: [
                     D3ListTile(
-                      leading: D3ListTileIcon(
+                      leading: const D3ListTileIcon(
                         icon: Icons.wifi_rounded,
                         color: Colors.blue,
                       ),
@@ -76,7 +76,7 @@ class ListTileGallery extends StatelessWidget {
                       ),
                     ),
                     D3ListTile(
-                      leading: D3ListTileIcon(
+                      leading: const D3ListTileIcon(
                         icon: Icons.bluetooth_rounded,
                         color: Colors.indigo,
                       ),

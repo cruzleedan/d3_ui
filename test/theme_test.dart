@@ -51,14 +51,14 @@ void main() {
 
   group('D3TokensExtension', () {
     test('copyWith replaces only specified fields', () {
-      final original = D3TokensExtension.light;
+      const original = D3TokensExtension.light;
       final copy = original.copyWith(colors: D3ColorTokens.dark);
       expect(copy.colors, D3ColorTokens.dark);
       expect(copy.buttonTokens, original.buttonTokens);
     });
 
     test('lerp returns this when other is null', () {
-      final ext = D3TokensExtension.light;
+      const ext = D3TokensExtension.light;
       final result = ext.lerp(null, 0.5);
       expect(result, ext);
     });

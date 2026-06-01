@@ -25,12 +25,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # needed to push the tag (when using GITHUB_TOKEN fallback)
+      contents: write # needed to push the tag (when using GITHUB_TOKEN fallback)
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # full history so we can see all existing tags
+          fetch-depth: 0 # full history so we can see all existing tags
           # Prefer a PAT so the pushed tag triggers publish.yml. Falls back to
           # the default GITHUB_TOKEN if RELEASE_TOKEN is not set (in which case
           # the tag is created but you must publish by pushing the tag yourself,

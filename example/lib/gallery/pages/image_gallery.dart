@@ -155,14 +155,14 @@ class ImageGallery extends StatelessWidget {
             child: GallerySectionCard(
               child: Row(
                 children: [
-                  D3Image(
+                  const D3Image(
                     url: 'https://broken.url/image.jpg',
                     width: 80,
                     aspectRatio: 2 / 3,
                     borderRadius: D3Radius.circularSm,
                   ),
                   const SizedBox(width: 12),
-                  D3Image(
+                  const D3Image(
                     url: null,
                     width: 80,
                     aspectRatio: 2 / 3,

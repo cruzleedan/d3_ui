@@ -70,7 +70,7 @@ class _RadioGalleryState extends State<RadioGallery> {
                     onChanged: (_) {},
                   ),
                 ),
-                _StateItem(
+                const _StateItem(
                   label: 'selected · disabled',
                   child: D3Radio<String>(
                     value: 'a',
@@ -78,7 +78,7 @@ class _RadioGalleryState extends State<RadioGallery> {
                     onChanged: null,
                   ),
                 ),
-                _StateItem(
+                const _StateItem(
                   label: 'unselected · disabled',
                   child: D3Radio<String>(
                     value: 'b',

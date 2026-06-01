@@ -101,11 +101,11 @@ class _CheckboxGalleryState extends State<CheckboxGallery> {
                     onChanged: (_) {},
                   ),
                 ),
-                _StateItem(
+                const _StateItem(
                   label: 'disabled',
                   child: D3Checkbox(value: false, onChanged: null),
                 ),
-                _StateItem(
+                const _StateItem(
                   label: 'checked · disabled',
                   child: D3Checkbox(value: true, onChanged: null),
                 ),
@@ -130,7 +130,7 @@ class _CheckboxGalleryState extends State<CheckboxGallery> {
                   label: 'Send me product updates',
                   onChanged: (v) => setState(() => _marketing = v),
                 ),
-                D3Checkbox(
+                const D3Checkbox(
                   value: false,
                   label: 'Share usage analytics',
                   onChanged: null,

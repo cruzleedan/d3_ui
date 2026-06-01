@@ -32,7 +32,7 @@ void main() {
     testWidgets('does not call onPressed when null (disabled)', (tester) async {
       var tapped = false;
       await tester.pumpWidget(_wrap(
-        D3Button(label: 'Disabled', onPressed: null),
+        const D3Button(label: 'Disabled', onPressed: null),
       ));
       await tester.tap(find.text('Disabled'), warnIfMissed: false);
       expect(tapped, isFalse);

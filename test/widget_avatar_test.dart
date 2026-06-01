@@ -50,7 +50,7 @@ void main() {
     testWidgets('renders without error with multiple avatars', (tester) async {
       await tester.pumpWidget(_wrap(
         D3AvatarGroup(
-          avatars: [
+          avatars: const [
             D3Avatar(name: 'AA'),
             D3Avatar(name: 'BB'),
             D3Avatar(name: 'CC'),

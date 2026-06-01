@@ -40,7 +40,7 @@ class _SkeletonGalleryState extends State<SkeletonGallery> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
           // ── Skeleton box ──────────────────────────────────────────────────
-          GallerySection(
+          const GallerySection(
             title: 'D3SkeletonBox',
             child: GallerySectionCard(
               child: D3Shimmer(
@@ -51,12 +51,12 @@ class _SkeletonGalleryState extends State<SkeletonGallery> {
                       height: 140,
                       borderRadius: D3Radius.circularMd,
                     ),
-                    const SizedBox(height: 12),
-                    const D3SkeletonBox(height: 16, width: 180),
-                    const SizedBox(height: 8),
-                    const D3SkeletonBox(height: 13),
-                    const SizedBox(height: 6),
-                    const D3SkeletonBox(height: 13, width: 240),
+                    SizedBox(height: 12),
+                    D3SkeletonBox(height: 16, width: 180),
+                    SizedBox(height: 8),
+                    D3SkeletonBox(height: 13),
+                    SizedBox(height: 6),
+                    D3SkeletonBox(height: 13, width: 240),
                   ],
                 ),
               ),
@@ -64,13 +64,13 @@ class _SkeletonGalleryState extends State<SkeletonGallery> {
           ),
 
           // ── Skeleton text ─────────────────────────────────────────────────
-          GallerySection(
+          const GallerySection(
             title: 'D3SkeletonText',
             child: GallerySectionCard(
               child: D3Shimmer(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     D3SkeletonText(lines: 1, lineHeight: 18),
                     SizedBox(height: 12),
                     D3SkeletonText(lines: 2),
@@ -111,7 +111,7 @@ class _SkeletonGalleryState extends State<SkeletonGallery> {
                     childAspectRatio: 2 / 3,
                   ),
                   itemCount: 8,
-                  itemBuilder: (_, __) => D3SkeletonBox(
+                  itemBuilder: (_, __) => const D3SkeletonBox(
                     height: double.infinity,
                     borderRadius: D3Radius.circularSm,
                   ),
@@ -191,7 +191,7 @@ class _SkeletonListRow extends StatelessWidget {
 class _SkeletonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         D3SkeletonBox(
@@ -199,8 +199,8 @@ class _SkeletonCard extends StatelessWidget {
           height: 112,
           borderRadius: D3Radius.circularSm,
         ),
-        const SizedBox(width: 12),
-        const Expanded(
+        SizedBox(width: 12),
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
