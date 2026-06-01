@@ -1,0 +1,92 @@
+name: Release on merge to master
+
+# When code is merged into master, this workflow:
+#   1. Runs format, analyze, and test as a quality gate
+#   2. Reads the version from pubspec.yaml
+#   3. If no git tag exists for that version, creates and pushes `v<version>`
+#
+# Pushing the tag triggers `publish.yml`, which publishes to pub.dev via OIDC.
+#
+# To bump the published version: raise `version:` in pubspec.yaml (and add a
+# CHANGELOG entry) in your PR. On merge, the new tag is created automatically.
+# If the version is unchanged, nothing is published.
+
+on:
+  push:
+    branches:
+      - master
+
+# Prevent overlapping runs from racing to create the same tag.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to push the tag (when using GITHUB_TOKEN fallback)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so we can see all existing tags
+          # Use a PAT so the pushed tag triggers publish.yml.
+          # Tags pushed with the default GITHUB_TOKEN do NOT trigger other workflows.
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Read version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | tr -d '[:space:]')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION (tag v$VERSION)"
+
+      - name: Check if tag already exists
+        id: tag_check
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.version.outputs.tag }} already exists — nothing to publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.version.outputs.tag }} does not exist — will create it."
+          fi
+
+      - name: Verify CHANGELOG has an entry for this version
+        if: steps.tag_check.outputs.exists == 'false'
+        run: |
+          if ! grep -q "${{ steps.version.outputs.version }}" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no entry for version ${{ steps.version.outputs.version }}."
+            echo "Add a '## ${{ steps.version.outputs.version }}' section before merging."
+            exit 1
+          fi
+          echo "CHANGELOG entry found."
+
+      - name: Create and push tag
+        if: steps.tag_check.outputs.exists == 'false'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" \
+            -m "Release ${{ steps.version.outputs.version }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+          echo "Pushed ${{ steps.version.outputs.tag }} — publish.yml will now run."
