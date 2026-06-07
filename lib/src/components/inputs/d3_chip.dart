@@ -99,6 +99,19 @@ enum D3ChipVariant {
 /// Pass `enabled: false` to disable. `onTap: null` also makes the chip
 /// non-interactive but keeps full opacity (read-only badge use case).
 ///
+/// For [D3ChipVariant.filled] (and `selected`), [backgroundColor] and
+/// [foregroundColor] override the default `colors.primary`/`colors.onPrimary`
+/// fill — e.g. to render a status-colored badge (success, warning, error).
+///
+/// ```dart
+/// D3Chip(
+///   label: 'Approved',
+///   variant: D3ChipVariant.filled,
+///   backgroundColor: context.d3Colors.success,
+///   foregroundColor: context.d3Colors.onSuccess,
+/// )
+/// ```
+///
 /// ```dart
 /// // Filter chip (toggleable)
 /// D3Chip(
@@ -132,6 +145,8 @@ class D3Chip extends StatelessWidget {
     this.trailingIcon,
     this.onTap,
     this.semanticsLabel,
+    this.backgroundColor,
+    this.foregroundColor,
   });
 
   final String label;
@@ -148,6 +163,16 @@ class D3Chip extends StatelessWidget {
   final VoidCallback? onTap;
   final String? semanticsLabel;
 
+  /// Overrides the background fill for [D3ChipVariant.filled] (including the
+  /// `selected` state). Ignored for `tonal`/`outlined`. Falls back to
+  /// `colors.primary` when null.
+  final Color? backgroundColor;
+
+  /// Overrides the label/icon color for [D3ChipVariant.filled] (including the
+  /// `selected` state). Ignored for `tonal`/`outlined`. Falls back to
+  /// `colors.onPrimary` when null.
+  final Color? foregroundColor;
+
   bool get _interactive => onTap != null && enabled;
 
   @override
@@ -161,8 +186,8 @@ class D3Chip extends StatelessWidget {
 
     switch (effectiveVariant) {
       case D3ChipVariant.filled:
-        bg = colors.primary;
-        fg = colors.onPrimary;
+        bg = backgroundColor ?? colors.primary;
+        fg = foregroundColor ?? colors.onPrimary;
         border = null;
       case D3ChipVariant.tonal:
         bg = colors.primaryContainer;

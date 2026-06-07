@@ -230,7 +230,7 @@ class _D3ListGalleryState extends State<D3ListGallery> {
                         onPressed: () {},
                       ),
                     ),
-                    itemBuilder: (context, contact, index) => D3ListTile(
+                    itemBuilder: (context, contact, index, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
                       leading: D3ListTileIcon(
                         icon: Icons.person_outline_rounded,
                         color: colors.primary,
@@ -257,7 +257,7 @@ class _D3ListGalleryState extends State<D3ListGallery> {
                         onPressed: () {},
                       ),
                     ),
-                    itemBuilder: (_, c, __) => D3ListTile(title: c.name),
+                    itemBuilder: (_, c, __, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(title: c.name),
                   ),
                 'Auto-fill' => _AutoFillDemo(
                     contacts: _autoContacts,
@@ -273,7 +273,7 @@ class _D3ListGalleryState extends State<D3ListGallery> {
                     onRefresh: _onRefresh,
                     sectionBuilder: (_, contact, __) =>
                         contact.name[0].toUpperCase(),
-                    itemBuilder: (context, contact, index) => D3ListTile(
+                    itemBuilder: (context, contact, index, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
                       leading: D3Avatar(
                         name: contact.name,
                         size: D3AvatarSize.sm,
@@ -354,7 +354,7 @@ class _AutoFillDemo extends StatelessWidget {
             hasMore: hasMore,
             onRefresh: onRefresh,
             onLoadMore: onLoadMore,
-            itemBuilder: (context, contact, index) => D3ListTile(
+            itemBuilder: (context, contact, index, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
               leading: D3Avatar(name: contact.name, size: D3AvatarSize.sm),
               title: contact.name,
               subtitle: contact.email,

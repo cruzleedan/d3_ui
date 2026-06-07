@@ -79,6 +79,7 @@ class D3TextField extends StatefulWidget {
     this.keyboardType,
     this.textInputAction,
     this.autofillHints,
+    this.autofocus = false,
     this.autocorrect = true,
     this.variant = D3InputVariant.outlined,
     this.validationMode = D3ValidationMode.onBlurThenChange,
@@ -138,6 +139,7 @@ class D3TextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final Iterable<String>? autofillHints;
+  final bool autofocus;
   final bool autocorrect;
   final D3InputVariant variant;
   final D3ValidationMode validationMode;
@@ -152,10 +154,13 @@ class D3TextField extends StatefulWidget {
   final String? semanticsLabel;
 
   @override
-  State<D3TextField> createState() => _D3TextFieldState();
+  @override
+  State<D3TextField> createState() => D3TextFieldState();
 }
 
-class _D3TextFieldState extends State<D3TextField> {
+/// Public state class — access via a [GlobalKey<D3TextFieldState>] to call
+/// [validate] imperatively (e.g. from a submit button outside a [Form]).
+class D3TextFieldState extends State<D3TextField> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
   bool _ownsController = false;
@@ -206,6 +211,18 @@ class _D3TextFieldState extends State<D3TextField> {
     if (_ownsController) _controller.dispose();
     if (_ownsFocusNode) _focusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // If the initialValue changes after the first build, update the controller.
+      if (widget.initialValue != null &&
+          widget.initialValue != _controller.text) {
+        _controller.text = widget.initialValue!;
+      }
+    });
   }
 
   // ── Focus ──────────────────────────────────────────────────────────────────
@@ -355,7 +372,11 @@ class _D3TextFieldState extends State<D3TextField> {
             borderRadius: BorderRadius.circular(tokens.radius),
             border: Border.all(
               color: borderColor,
-              width: tokens.borderWidth,
+              width: (status == _FieldStatus.focused ||
+                      status == _FieldStatus.error ||
+                      status == _FieldStatus.success)
+                  ? tokens.focusedBorderWidth
+                  : tokens.borderWidth,
               strokeAlign: BorderSide.strokeAlignInside,
             ),
           ),
@@ -413,6 +434,7 @@ class _D3TextFieldState extends State<D3TextField> {
                           widget.maxLengthEnforced ? widget.maxLength : null,
                       keyboardType: widget.keyboardType,
                       textInputAction: widget.textInputAction,
+                      autofocus: widget.autofocus,
                       autofillHints: widget.autofillHints,
                       autocorrect: widget.autocorrect,
                       inputFormatters: widget.inputFormatters,

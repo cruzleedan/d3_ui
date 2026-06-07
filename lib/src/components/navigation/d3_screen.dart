@@ -79,6 +79,14 @@ sealed class D3ScreenAction {
     required VoidCallback onPressed,
   }) =>
       _TextAction(label: label, onPressed: onPressed);
+
+  /// An arbitrary widget in the trailing slot (e.g. a status indicator).
+  factory D3ScreenAction.widget(Widget child) => _WidgetAction(child);
+}
+
+final class _WidgetAction extends D3ScreenAction {
+  const _WidgetAction(this.child) : super._();
+  final Widget child;
 }
 
 final class _IconAction extends D3ScreenAction {
@@ -146,7 +154,12 @@ class D3Screen extends StatelessWidget {
     this.actions = const [],
     this.layout = D3ScreenLayout.box,
     this.sliverHeader,
+    this.tabBar,
+    this.headerSlot,
     required this.body,
+    this.titleBarOverride,
+    this.floatingActionButton,
+    this.floatingActionButtonLocation,
     this.bottomNavigationBar,
     this.backgroundColor,
     this.resizeToAvoidBottomInset = true,
@@ -156,8 +169,6 @@ class D3Screen extends StatelessWidget {
           'cancel occupies the trailing slot.',
         );
 
-  /// Screen title. Shown in the compact toolbar (always) and as the large
-  /// title in sliver layout.
   final String title;
 
   /// Optional subtitle shown beneath the large title in sliver layout only.
@@ -175,15 +186,29 @@ class D3Screen extends StatelessWidget {
   final D3ScreenLayout layout;
 
   /// Widget pinned just below the large title in sliver layout.
-  /// Stays pinned below the compact toolbar while the large title scrolls away.
   /// Ignored in box layout.
   final Widget? sliverHeader;
 
-  /// The screen body.
-  /// In sliver layout this must be a [CustomScrollView]; its slivers are
-  /// extracted and embedded inside a managed [CustomScrollView] so the header
-  /// and body scroll as one unit.
+  /// Optional tab bar rendered below the compact toolbar (box layout only).
+  /// Typically a [TabBar]. Ignored in sliver layout.
+  final PreferredSizeWidget? tabBar;
+
+  /// Optional widget pinned between the title bar and the body (box layout only).
+  /// Retains its height at all times — use [AnimatedOpacity] inside to fade
+  /// content without causing layout shifts.
+  final Widget? headerSlot;
+
   final Widget body;
+
+  /// When set, replaces the title bar with this widget using a crossfade.
+  /// The height stays identical to the normal title bar so the body never moves.
+  final Widget? titleBarOverride;
+
+  /// Passed directly to [Scaffold.floatingActionButton].
+  final Widget? floatingActionButton;
+
+  /// Passed directly to [Scaffold.floatingActionButtonLocation].
+  final FloatingActionButtonLocation? floatingActionButtonLocation;
 
   final Widget? bottomNavigationBar;
 
@@ -214,9 +239,10 @@ class D3Screen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: bg,
         resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+        floatingActionButton: floatingActionButton,
+        floatingActionButtonLocation: floatingActionButtonLocation,
         bottomNavigationBar: bottomNavigationBar,
         body: GestureDetector(
-          // Dismiss keyboard / unfocus any text field when tapping outside it.
           onTap: () => FocusScope.of(context).unfocus(),
           behavior: HitTestBehavior.translucent,
           child: switch (layout) {
@@ -225,8 +251,11 @@ class D3Screen extends StatelessWidget {
                 leading: resolvedLeading,
                 isCancel: isCancel,
                 actions: actions,
+                tabBar: tabBar,
+                headerSlot: headerSlot,
                 body: body,
                 colors: colors,
+                titleBarOverride: titleBarOverride,
               ),
             D3ScreenLayout.sliver => _SliverLayout(
                 title: title,
@@ -268,6 +297,9 @@ class _BoxLayout extends StatelessWidget {
     required this.actions,
     required this.body,
     required this.colors,
+    this.tabBar,
+    this.headerSlot,
+    this.titleBarOverride,
   });
 
   final String title;
@@ -276,22 +308,80 @@ class _BoxLayout extends StatelessWidget {
   final List<D3ScreenAction> actions;
   final Widget body;
   final D3ColorTokens colors;
+  final PreferredSizeWidget? tabBar;
+  final Widget? headerSlot;
+  final Widget? titleBarOverride;
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
+    final normalBar = _CompactBar(
+      title: title,
+      leading: leading,
+      isCancel: isCancel,
+      actions: actions,
+      colors: colors,
+      showBorder: true,
+    );
+
     return Column(
       children: [
-        _CompactBar(
-          title: title,
-          leading: leading,
-          isCancel: isCancel,
-          actions: actions,
-          colors: colors,
-          // Box layout: always show border
-          showBorder: true,
+        AnimatedSwitcher(
+          duration: D3Motion.moderate,
+          transitionBuilder: (child, anim) => FadeTransition(
+            opacity: anim,
+            child: child,
+          ),
+          child: titleBarOverride != null
+              ? _TitleBarShell(
+                  key: const ValueKey('override'),
+                  topPadding: topPadding,
+                  colors: colors,
+                  child: titleBarOverride!,
+                )
+              : KeyedSubtree(
+                  key: const ValueKey('normal'),
+                  child: normalBar,
+                ),
         ),
+        if (tabBar != null) tabBar!,
+        if (headerSlot != null) headerSlot!,
         Expanded(child: body),
       ],
+    );
+  }
+}
+
+/// Wraps an override widget in the same shell as [_CompactBar] so dimensions
+/// match exactly — same background, same status-bar top padding, same 48dp height.
+class _TitleBarShell extends StatelessWidget {
+  const _TitleBarShell({
+    super.key,
+    required this.topPadding,
+    required this.colors,
+    required this.child,
+  });
+
+  final double topPadding;
+  final D3ColorTokens colors;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.primaryContainer,
+        border: Border(
+          bottom: BorderSide(
+            color: colors.outline.withValues(alpha: 0.15),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(top: topPadding),
+        child: SizedBox(height: 48, child: child),
+      ),
     );
   }
 }
@@ -623,6 +713,7 @@ class _ActionWidget extends StatelessWidget {
             ),
           ),
         ),
+      _WidgetAction(:final child) => child,
     };
   }
 }

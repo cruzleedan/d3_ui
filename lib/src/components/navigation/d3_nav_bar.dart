@@ -85,25 +85,27 @@ class D3NavBar extends StatelessWidget {
           ),
         ),
       ),
-      child: Padding(
-        padding: EdgeInsets.only(
-          top: 8,
-          bottom: bottomPadding > 0 ? bottomPadding : 12,
-        ),
-        child: Row(
-          children: List.generate(items.length, (i) {
-            return Expanded(
-              child: _NavBarItem(
-                item: items[i],
-                isSelected: i == selectedIndex,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  onTabSelected(i);
-                },
-                colors: colors,
-              ),
-            );
-          }),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: 8,
+            bottom: bottomPadding > 0 ? bottomPadding : 12,
+          ),
+          child: Row(
+            children: List.generate(items.length, (i) {
+              return Expanded(
+                child: _NavBarItem(
+                  item: items[i],
+                  isSelected: i == selectedIndex,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onTabSelected(i);
+                  },
+                  colors: colors,
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );

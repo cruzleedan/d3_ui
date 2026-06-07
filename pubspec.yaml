@@ -2,7 +2,7 @@ name: d3_ui
 description: >-
   A minimal, flat Flutter design system with semantic color tokens, adaptive
   typography, motion tokens, and 20+ ready-to-use Material 3 components.
-version: 0.1.1
+version: 0.2.0
 homepage: https://github.com/cruzleedan/d3_ui
 repository: https://github.com/cruzleedan/d3_ui
 issue_tracker: https://github.com/cruzleedan/d3_ui/issues

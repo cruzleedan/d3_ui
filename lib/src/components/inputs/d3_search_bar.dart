@@ -47,6 +47,7 @@ class D3SearchBar extends StatefulWidget {
     this.textInputAction = TextInputAction.search,
     this.padding,
     this.focusNode,
+    this.trailingWidget,
   });
 
   /// External controller. A local one is created when null.
@@ -79,6 +80,10 @@ class D3SearchBar extends StatefulWidget {
 
   /// External focus node. A local one is created when null.
   final FocusNode? focusNode;
+
+  /// Optional widget rendered in the trailing slot after the clear button.
+  /// Use for status indicators such as an active-filter icon.
+  final Widget? trailingWidget;
 
   @override
   State<D3SearchBar> createState() => _D3SearchBarState();
@@ -230,6 +235,8 @@ class _D3SearchBarState extends State<D3SearchBar> {
                   )
                 : const SizedBox(key: ValueKey('empty'), width: 12),
           ),
+
+          if (widget.trailingWidget != null) widget.trailingWidget!,
         ],
       ),
     );

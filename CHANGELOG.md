@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.2.0
+
+- **New components**
+  - `D3SplitButton` — primary action with an attached overflow-menu trigger
+  - `D3ListScreen` — scaffolded list screen with search, filters, and a
+    contextual action bar (CAB) for multi-select operations
+  - `D3DateField`, `D3DecimalField`, `D3DropdownField` — themed form fields
+    rounding out `D3TextField` for common structured-input cases
+  - `D3FilterChipRow` — horizontal scrollable row of toggleable filter chips
+  - `D3ExpandableSection` — collapsible content section with animated reveal
+  - `D3ImageViewer` — full-screen pinch-to-zoom image viewer
+  - `D3AdaptiveLayout` — responsive layout helper that swaps arrangements by
+    breakpoint
+- **D3Chip** — `backgroundColor`/`foregroundColor` overrides for the `filled`
+  variant, e.g. to render status-colored badges (success/warning/error) on a
+  filled background
+- **Theming** — `D3AppTheme.light()`/`dark()` now accept `colors`,
+  `inputTokens`, `buttonTokens`, and `extraExtensions` so apps can layer a
+  custom palette and component tokens onto the base theme without replacing
+  it wholesale
+- **D3List**, **D3SearchAnchor**, **D3NavBar**, **D3Screen** — assorted
+  enhancements and refinements (see component docs for details)
+
 ## 0.1.1
 
 - **D3StatusChip** — added `onTap` callback parameter

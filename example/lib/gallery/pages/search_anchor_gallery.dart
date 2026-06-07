@@ -95,7 +95,7 @@ class _LocalModeDemo extends StatefulWidget {
 class _LocalModeDemoState extends State<_LocalModeDemo> {
   final _controller = D3SearchController();
 
-  List<_Contact> _filter(List<_Contact> items, String query) {
+  List<_Contact> _filter(List<_Contact> items, String query, Set<Never> _) {
     final q = query.toLowerCase();
     return items
         .where((c) =>
@@ -118,7 +118,7 @@ class _LocalModeDemoState extends State<_LocalModeDemo> {
     return Column(
       children: [
         // Search anchor — opens with full list immediately
-        D3SearchAnchor<_Contact>.local(
+        D3SearchAnchor<_Contact, Never>.local(
           controller: _controller,
           hint: 'Search contacts…',
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -133,7 +133,7 @@ class _LocalModeDemoState extends State<_LocalModeDemo> {
           ),
           resultBuilder: (context, results, query) => D3List<_Contact>(
             items: results,
-            itemBuilder: (context, contact, _) => D3ListTile(
+            itemBuilder: (context, contact, _, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
               leading: D3Avatar(name: contact.name, size: D3AvatarSize.sm),
               titleWidget: RichText(
                 text: D3SearchAnchor.highlight(
@@ -159,7 +159,7 @@ class _LocalModeDemoState extends State<_LocalModeDemo> {
         Expanded(
           child: D3List<_Contact>(
             items: _contacts,
-            itemBuilder: (context, contact, _) => D3ListTile(
+            itemBuilder: (context, contact, _, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
               leading: D3Avatar(name: contact.name, size: D3AvatarSize.sm),
               title: contact.name,
               subtitle: contact.role ?? contact.email,
@@ -241,7 +241,7 @@ class _RemoteModeDemoState extends State<_RemoteModeDemo> {
     return Column(
       children: [
         // Search anchor — shows initialItems on open, fetches on type
-        D3SearchAnchor<_Contact>.remote(
+        D3SearchAnchor<_Contact, Never>.remote(
           controller: _controller,
           hint: 'Search contacts…',
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -256,7 +256,7 @@ class _RemoteModeDemoState extends State<_RemoteModeDemo> {
           ),
           resultBuilder: (context, results, query) => D3List<_Contact>(
             items: results,
-            itemBuilder: (context, contact, _) => D3ListTile(
+            itemBuilder: (context, contact, _, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
               leading: D3Avatar(name: contact.name, size: D3AvatarSize.sm),
               titleWidget: RichText(
                 text: D3SearchAnchor.highlight(
@@ -285,7 +285,7 @@ class _RemoteModeDemoState extends State<_RemoteModeDemo> {
             hasMore: _hasMore,
             onRefresh: _onRefresh,
             onLoadMore: _onLoadMore,
-            itemBuilder: (context, contact, _) => D3ListTile(
+            itemBuilder: (context, contact, _, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
               leading: D3Avatar(name: contact.name, size: D3AvatarSize.sm),
               title: contact.name,
               subtitle: contact.role ?? contact.email,

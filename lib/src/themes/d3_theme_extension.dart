@@ -127,6 +127,54 @@ class D3ButtonTokens {
     radiusMd: D3Radius.md,
     radiusLg: D3Radius.lg,
   );
+
+  D3ButtonTokens copyWith({
+    double? disabledOpacity,
+    double? pressScale,
+    double? pressOpacity,
+    double? iconSize,
+    double? iconGap,
+    int? maxLines,
+    double? minHeightXs,
+    double? minHeightSm,
+    double? minHeightMd,
+    double? minHeightLg,
+    double? minHeightXl,
+    double? hPaddingXs,
+    double? hPaddingMd,
+    double? hPaddingLg,
+    double? vPaddingXs,
+    double? vPaddingMd,
+    double? vPaddingLg,
+    double? radiusXs,
+    double? radiusSm,
+    double? radiusMd,
+    double? radiusLg,
+  }) {
+    return D3ButtonTokens(
+      disabledOpacity: disabledOpacity ?? this.disabledOpacity,
+      pressScale: pressScale ?? this.pressScale,
+      pressOpacity: pressOpacity ?? this.pressOpacity,
+      iconSize: iconSize ?? this.iconSize,
+      iconGap: iconGap ?? this.iconGap,
+      maxLines: maxLines ?? this.maxLines,
+      minHeightXs: minHeightXs ?? this.minHeightXs,
+      minHeightSm: minHeightSm ?? this.minHeightSm,
+      minHeightMd: minHeightMd ?? this.minHeightMd,
+      minHeightLg: minHeightLg ?? this.minHeightLg,
+      minHeightXl: minHeightXl ?? this.minHeightXl,
+      hPaddingXs: hPaddingXs ?? this.hPaddingXs,
+      hPaddingMd: hPaddingMd ?? this.hPaddingMd,
+      hPaddingLg: hPaddingLg ?? this.hPaddingLg,
+      vPaddingXs: vPaddingXs ?? this.vPaddingXs,
+      vPaddingMd: vPaddingMd ?? this.vPaddingMd,
+      vPaddingLg: vPaddingLg ?? this.vPaddingLg,
+      radiusXs: radiusXs ?? this.radiusXs,
+      radiusSm: radiusSm ?? this.radiusSm,
+      radiusMd: radiusMd ?? this.radiusMd,
+      radiusLg: radiusLg ?? this.radiusLg,
+    );
+  }
 }
 
 /// Input field tokens.
@@ -137,6 +185,7 @@ class D3InputTokens {
     required this.minHeight,
     required this.radius,
     required this.borderWidth,
+    required this.focusedBorderWidth,
     required this.textSize,
     required this.labelSize,
     required this.helperSize,
@@ -155,7 +204,13 @@ class D3InputTokens {
   final double paddingV;
   final double minHeight;
   final double radius;
+
+  /// Border width in idle/disabled/filled state.
   final double borderWidth;
+
+  /// Border width when focused, in error, or in success state.
+  final double focusedBorderWidth;
+
   final double textSize;
   final double labelSize;
   final double helperSize;
@@ -179,7 +234,8 @@ class D3InputTokens {
     paddingV: D3Spacing.s12,
     minHeight: 48,
     radius: D3Radius.md,
-    borderWidth: 1.5,
+    borderWidth: 1.0,
+    focusedBorderWidth: 1.5,
     textSize: 14,
     labelSize: 12,
     helperSize: 11,
@@ -192,6 +248,46 @@ class D3InputTokens {
     tooltipPaddingH: D3Spacing.s12,
     tooltipPaddingV: D3Spacing.s10,
   );
+
+  D3InputTokens copyWith({
+    double? paddingH,
+    double? paddingV,
+    double? minHeight,
+    double? radius,
+    double? borderWidth,
+    double? focusedBorderWidth,
+    double? textSize,
+    double? labelSize,
+    double? helperSize,
+    double? iconSize,
+    double? disabledOpacity,
+    double? counterWarnThreshold,
+    Duration? borderAnimDuration,
+    double? tooltipRadius,
+    double? tooltipMaxWidth,
+    double? tooltipPaddingH,
+    double? tooltipPaddingV,
+  }) {
+    return D3InputTokens(
+      paddingH: paddingH ?? this.paddingH,
+      paddingV: paddingV ?? this.paddingV,
+      minHeight: minHeight ?? this.minHeight,
+      radius: radius ?? this.radius,
+      borderWidth: borderWidth ?? this.borderWidth,
+      focusedBorderWidth: focusedBorderWidth ?? this.focusedBorderWidth,
+      textSize: textSize ?? this.textSize,
+      labelSize: labelSize ?? this.labelSize,
+      helperSize: helperSize ?? this.helperSize,
+      iconSize: iconSize ?? this.iconSize,
+      disabledOpacity: disabledOpacity ?? this.disabledOpacity,
+      counterWarnThreshold: counterWarnThreshold ?? this.counterWarnThreshold,
+      borderAnimDuration: borderAnimDuration ?? this.borderAnimDuration,
+      tooltipRadius: tooltipRadius ?? this.tooltipRadius,
+      tooltipMaxWidth: tooltipMaxWidth ?? this.tooltipMaxWidth,
+      tooltipPaddingH: tooltipPaddingH ?? this.tooltipPaddingH,
+      tooltipPaddingV: tooltipPaddingV ?? this.tooltipPaddingV,
+    );
+  }
 }
 
 /// Convenience extension on BuildContext for clean token access.
