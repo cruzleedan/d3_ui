@@ -89,7 +89,11 @@ class D3TextField extends StatefulWidget {
     this.onTap,
     this.inputFormatters,
     this.semanticsLabel,
+    this.textFieldKey,
   });
+
+  /// Key applied to the inner [TextField] widget, useful for test finders.
+  final Key? textFieldKey;
 
   final String label;
   final TextEditingController? controller;
@@ -423,6 +427,7 @@ class D3TextFieldState extends State<D3TextField> {
                       vertical: tokens.paddingV,
                     ),
                     child: TextField(
+                      key: widget.textFieldKey,
                       controller: _controller,
                       focusNode: _focusNode,
                       enabled: widget.isEnabled,

@@ -92,6 +92,13 @@ class D3BottomSheet {
   ///
   /// [headerAction] is an optional widget in the trailing slot of the header
   /// row, between the title block and the close button (e.g. a "Reset" link).
+  /// Closes the enclosing [D3BottomSheet] and returns [result] to the caller
+  /// of [show]. Use this instead of [Navigator.pop] when calling from a sheet
+  /// child, so the [PopScope] guard is bypassed correctly.
+  static void pop<T>(BuildContext context, [T? result]) {
+    _D3BottomSheetScope.of(context)?._closeWithResult(result);
+  }
+
   static Future<T?> show<T>(
     BuildContext context, {
     String? title,
@@ -108,6 +115,10 @@ class D3BottomSheet {
     final sorted = [...snapPoints]
       ..sort((a, b) => a.fraction.compareTo(b.fraction));
     final resolvedInitial = initialSnap ?? sorted.first;
+
+    // Capture status-bar height before showModalBottomSheet consumes it —
+    // the modal route zeroes out MediaQuery padding for its subtree.
+    final statusBarHeight = MediaQuery.viewPaddingOf(context).top;
 
     return showModalBottomSheet<T>(
       context: context,
@@ -128,10 +139,30 @@ class D3BottomSheet {
         snapPoints: sorted,
         initialSnap: resolvedInitial,
         onConfirmDiscard: onConfirmDiscard,
+        statusBarHeight: statusBarHeight,
         child: child,
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inherited scope — lets child widgets call D3BottomSheet.pop(context, result)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _D3BottomSheetScope extends InheritedWidget {
+  const _D3BottomSheetScope({
+    required this.state,
+    required super.child,
+  });
+
+  final _D3BottomSheetContentState state;
+
+  static _D3BottomSheetContentState? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_D3BottomSheetScope>()?.state;
+
+  @override
+  bool updateShouldNotify(_D3BottomSheetScope old) => state != old.state;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -146,6 +177,7 @@ class _D3BottomSheetContent<T> extends StatefulWidget {
     required this.snapPoints,
     required this.initialSnap,
     this.onConfirmDiscard,
+    required this.statusBarHeight,
     required this.child,
   });
 
@@ -155,6 +187,7 @@ class _D3BottomSheetContent<T> extends StatefulWidget {
   final List<D3SnapPoint> snapPoints;
   final D3SnapPoint initialSnap;
   final Future<bool> Function()? onConfirmDiscard;
+  final double statusBarHeight;
   final Widget child;
 
   @override
@@ -163,7 +196,7 @@ class _D3BottomSheetContent<T> extends StatefulWidget {
 }
 
 class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
-  late final DraggableScrollableController _dsController;
+  late DraggableScrollableController _dsController;
 
   // Prevents concurrent close attempts (e.g. double-tap ×, rapid back taps).
   bool _isClosing = false;
@@ -172,15 +205,37 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
   // canPop: true and doesn't re-intercept our own programmatic pop.
   bool _allowPop = false;
 
-  // Cached minimum snap fraction used by the drag listener.
   late double _minSnapFraction;
+  late double _maxSnapFraction;
+
+  double _lastKeyboardInset = 0;
 
   @override
   void initState() {
     super.initState();
-    _dsController = DraggableScrollableController();
     _minSnapFraction = widget.snapPoints.first.fraction;
+    _maxSnapFraction = widget.snapPoints.last.fraction;
+    _dsController = DraggableScrollableController();
     _dsController.addListener(_onSheetSizeChange);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    final keyboardOpened = keyboardInset > 0 && _lastKeyboardInset == 0;
+    final keyboardClosed = keyboardInset == 0 && _lastKeyboardInset > 0;
+    if (keyboardOpened || keyboardClosed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_dsController.isAttached) return;
+        _dsController.animateTo(
+          keyboardOpened ? 1.0 : _maxSnapFraction,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      });
+    }
+    _lastKeyboardInset = keyboardInset;
   }
 
   @override
@@ -192,14 +247,16 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
 
   void _onSheetSizeChange() {
     if (!_dsController.isAttached) return;
+    final size = _dsController.size;
+
     if (widget.onConfirmDiscard != null) {
       // Guarded: when the user drags below 60 % of the minimum snap fraction,
       // bounce the sheet back up and surface the discard confirmation.
-      if (_dsController.size < _minSnapFraction * 0.6) {
+      if (size < _minSnapFraction * 0.6) {
         _tryClose();
       }
     } else {
-      if (_dsController.size < 0.01) {
+      if (size < 0.01) {
         _tryClose();
       }
     }
@@ -235,6 +292,14 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
     }
   }
 
+  void _closeWithResult<R>(R? result) {
+    if (_isClosing || _allowPop) return;
+    if (!mounted) return;
+    final navigator = Navigator.of(context);
+    setState(() => _allowPop = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) => navigator.pop(result));
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
@@ -243,41 +308,57 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
     // Always allow dragging to 0.0 — guarded sheets bounce back via the
     // listener instead of being locked at their minimum snap.
     const minFraction = 0.0;
-    final intermediateFractions =
-        fractions.where((f) => f > minFraction && f < maxFraction).toList();
+    // All declared fractions are snap points. maxFraction is both the ceiling
+    // for manual dragging and a snap target when keyboard closes.
+    final snapSizes = fractions
+        .where((f) => f > minFraction && f < 1.0)
+        .toList();
     final initialFraction = widget.initialSnap.fraction.clamp(
       fractions.first,
       maxFraction,
     );
 
-    return PopScope(
-      canPop: _allowPop,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _tryClose();
-      },
-      child: DraggableScrollableSheet(
-        controller: _dsController,
-        initialChildSize: initialFraction,
-        minChildSize: minFraction,
-        maxChildSize: maxFraction,
-        snap: true,
-        snapSizes: intermediateFractions,
-        expand: false,
-        // Disable Flutter's built-in auto-pop when the sheet reaches
-        // minChildSize (0.0). Without this, DraggableScrollableSheet
-        // dispatches a DraggableScrollableNotification that causes
-        // showModalBottomSheet to call Navigator.pop() automatically,
-        // while _onSheetSizeChange also queues a pop — the double-pop
-        // would dismiss an underlying screen instead of just the sheet.
-        shouldCloseOnMinExtent: false,
-        builder: (ctx, scrollController) => _SheetSurface(
-          colors: colors,
-          title: widget.title,
-          subtitle: widget.subtitle,
-          headerAction: widget.headerAction,
-          scrollController: scrollController,
-          onClose: _tryClose,
-          child: widget.child,
+    return _D3BottomSheetScope(
+      state: this,
+      child: PopScope(
+        // Allow programmatic Navigator.pop() to pass through when no guard is
+        // configured — only block it when the user needs to confirm discard.
+        canPop: _allowPop || widget.onConfirmDiscard == null,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _tryClose();
+        },
+        child: DraggableScrollableSheet(
+          controller: _dsController,
+          initialChildSize: initialFraction,
+          minChildSize: minFraction,
+          maxChildSize: maxFraction,
+          snap: true,
+          snapSizes: snapSizes,
+          expand: false,
+          // Disable Flutter's built-in auto-pop when the sheet reaches
+          // minChildSize (0.0). Without this, DraggableScrollableSheet
+          // dispatches a DraggableScrollableNotification that causes
+          // showModalBottomSheet to call Navigator.pop() automatically,
+          // while _onSheetSizeChange also queues a pop — the double-pop
+          // would dismiss an underlying screen instead of just the sheet.
+          shouldCloseOnMinExtent: false,
+          builder: (ctx, scrollController) => AnimatedBuilder(
+            animation: _dsController,
+            builder: (_, __) {
+              final atTop = _dsController.isAttached &&
+                  _dsController.size >= 0.99;
+              return _SheetSurface(
+                colors: colors,
+                title: widget.title,
+                subtitle: widget.subtitle,
+                headerAction: widget.headerAction,
+                scrollController: scrollController,
+                onClose: _tryClose,
+                statusBarHeight: atTop ? widget.statusBarHeight : 0,
+                child: widget.child,
+              );
+            },
+          ),
         ),
       ),
     );
@@ -296,6 +377,7 @@ class _SheetSurface extends StatelessWidget {
     this.headerAction,
     required this.scrollController,
     required this.onClose,
+    required this.statusBarHeight,
     required this.child,
   });
 
@@ -305,6 +387,7 @@ class _SheetSurface extends StatelessWidget {
   final Widget? headerAction;
   final ScrollController scrollController;
   final VoidCallback onClose;
+  final double statusBarHeight;
   final Widget child;
 
   @override
@@ -318,7 +401,7 @@ class _SheetSurface extends StatelessWidget {
     // remain visible at the top while the body content scrolls beneath them.
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      child: ColoredBox(
+      child: Material(
         color: colors.surface,
         child: CustomScrollView(
           controller: scrollController,
@@ -327,15 +410,18 @@ class _SheetSurface extends StatelessWidget {
               pinned: true,
               delegate: _StickySheetHeaderDelegate(
                 colors: colors,
+                topPadding: statusBarHeight,
                 title: title,
                 subtitle: subtitle,
                 headerAction: headerAction,
                 onClose: onClose,
               ),
             ),
-            SliverToBoxAdapter(child: child),
+            SliverFillRemaining(
+              child: child,
+            ),
             SliverToBoxAdapter(
-              child: SizedBox(height: MediaQuery.paddingOf(context).bottom),
+              child: SizedBox(height: MediaQuery.viewPaddingOf(context).bottom),
             ),
           ],
         ),
@@ -355,6 +441,7 @@ const double _kStickyHeaderHeight = 68.0;
 class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   const _StickySheetHeaderDelegate({
     required this.colors,
+    required this.topPadding,
     this.title,
     this.subtitle,
     this.headerAction,
@@ -362,16 +449,17 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   final D3ColorTokens colors;
+  final double topPadding;
   final String? title;
   final String? subtitle;
   final Widget? headerAction;
   final VoidCallback onClose;
 
   @override
-  double get minExtent => _kStickyHeaderHeight;
+  double get minExtent => _kStickyHeaderHeight + topPadding;
 
   @override
-  double get maxExtent => _kStickyHeaderHeight;
+  double get maxExtent => _kStickyHeaderHeight + topPadding;
 
   @override
   Widget build(
@@ -384,6 +472,7 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          SizedBox(height: topPadding),
           _DragHandle(colors: colors),
           _SheetHeader(
             title: title,
@@ -401,6 +490,7 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(_StickySheetHeaderDelegate old) =>
       old.title != title ||
       old.subtitle != subtitle ||
+      old.topPadding != topPadding ||
       old.headerAction != headerAction;
 }
 

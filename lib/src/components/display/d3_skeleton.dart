@@ -61,30 +61,18 @@ class _SkeletonShader extends StatefulWidget {
 }
 
 class _SkeletonShaderState extends State<_SkeletonShader> {
-  late Listenable _shimmer;
+  late Animation<double> _shimmer;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _shimmer =
         D3Shimmer.of(context)?.shimmerAnimation ?? kAlwaysCompleteAnimation;
-    _shimmer.addListener(_onShimmer);
-  }
-
-  void _onShimmer() {
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _shimmer.removeListener(_onShimmer);
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
-    final percent = D3Shimmer.of(context)?.shimmerAnimation.value ?? 0.0;
 
     // Base is a visible mid-gray (outline token); highlight is the surface
     // color (lighter). The wave is always a lighter band on a gray base,
@@ -92,23 +80,30 @@ class _SkeletonShaderState extends State<_SkeletonShader> {
     final baseColor = colors.outline;
     final highlightColor = colors.surface;
 
-    return ClipRRect(
-      borderRadius: widget.borderRadius,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [baseColor, highlightColor, baseColor],
-            stops: [
-              (percent - 0.3).clamp(0.0, 1.0),
-              percent.clamp(0.0, 1.0),
-              (percent + 0.3).clamp(0.0, 1.0),
-            ],
+    return AnimatedBuilder(
+      animation: _shimmer,
+      builder: (context, child) {
+        final percent = _shimmer.value;
+        return ClipRRect(
+          borderRadius: widget.borderRadius,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [baseColor, highlightColor, baseColor],
+                stops: [
+                  (percent - 0.3).clamp(0.0, 1.0),
+                  percent.clamp(0.0, 1.0),
+                  (percent + 0.3).clamp(0.0, 1.0),
+                ],
+              ),
+            ),
+            child: child,
           ),
-        ),
-        child: widget.child,
-      ),
+        );
+      },
+      child: widget.child,
     );
   }
 }

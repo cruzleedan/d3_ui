@@ -425,9 +425,17 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
     _textController.addListener(_onTextChanged);
 
     if (widget.initialQuery.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _applyQuery(widget.initialQuery),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (widget.isLocal) {
+          _debounceTimer = Timer(
+            const Duration(milliseconds: 150),
+            () => _applyQuery(widget.initialQuery),
+          );
+        } else {
+          _applyQuery(widget.initialQuery);
+        }
+      });
     }
   }
 
@@ -445,7 +453,14 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
     if (q == _query) return;
     _query = q;
     _debounceTimer?.cancel();
-    _applyQuery(q);
+    if (widget.isLocal) {
+      _debounceTimer = Timer(
+        const Duration(milliseconds: 150),
+        () => _applyQuery(q),
+      );
+    } else {
+      _applyQuery(q);
+    }
   }
 
   void _applyQuery(String query) {

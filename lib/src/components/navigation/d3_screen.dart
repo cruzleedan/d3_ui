@@ -419,10 +419,11 @@ class _SliverLayoutState extends State<_SliverLayout> {
   // Tracks how far the large title has scrolled out.
   // 0.0 = fully visible, 1.0 = fully collapsed.
   final _scrollController = ScrollController();
-  double _collapseProgress = 0.0;
 
-  // The large title section height (approx). We animate the compact title
-  // in as the large title scrolls away.
+  // ValueNotifier lets _CompactBar and the hero Opacity rebuild independently
+  // without triggering a full Column/CustomScrollView rebuild on every scroll.
+  final _collapseProgress = ValueNotifier<double>(0.0);
+
   static const double _largeTitleHeight = 72.0;
 
   @override
@@ -435,14 +436,15 @@ class _SliverLayoutState extends State<_SliverLayout> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _collapseProgress.dispose();
     super.dispose();
   }
 
   void _onScroll() {
     final offset = _scrollController.offset;
     final progress = (offset / _largeTitleHeight).clamp(0.0, 1.0);
-    if ((progress - _collapseProgress).abs() > 0.01) {
-      setState(() => _collapseProgress = progress);
+    if ((progress - _collapseProgress.value).abs() > 0.01) {
+      _collapseProgress.value = progress;
     }
   }
 
@@ -457,15 +459,17 @@ class _SliverLayoutState extends State<_SliverLayout> {
     return Column(
       children: [
         // ── Compact toolbar ───────────────────────────────────────────────
-        _CompactBar(
-          title: widget.title,
-          leading: widget.leading,
-          isCancel: widget.isCancel,
-          actions: widget.actions,
-          colors: widget.colors,
-          // Show border + compact title only when collapsed
-          showBorder: _collapseProgress >= 1.0,
-          titleOpacity: _collapseProgress,
+        ValueListenableBuilder<double>(
+          valueListenable: _collapseProgress,
+          builder: (context, progress, _) => _CompactBar(
+            title: widget.title,
+            leading: widget.leading,
+            isCancel: widget.isCancel,
+            actions: widget.actions,
+            colors: widget.colors,
+            showBorder: progress >= 1.0,
+            titleOpacity: progress,
+          ),
         ),
 
         // ── Scrollable area ───────────────────────────────────────────────
@@ -475,8 +479,12 @@ class _SliverLayoutState extends State<_SliverLayout> {
             slivers: [
               // Large title hero
               SliverToBoxAdapter(
-                child: Opacity(
-                  opacity: (1.0 - _collapseProgress * 1.5).clamp(0.0, 1.0),
+                child: ValueListenableBuilder<double>(
+                  valueListenable: _collapseProgress,
+                  builder: (context, progress, child) => Opacity(
+                    opacity: (1.0 - progress * 1.5).clamp(0.0, 1.0),
+                    child: child,
+                  ),
                   child: _LargeTitleHero(
                     title: widget.title,
                     subtitle: widget.subtitle,

@@ -73,12 +73,17 @@ class D3PosterCard extends StatelessWidget {
   /// Accessibility label. Defaults to [title].
   final String? semanticsLabel;
 
+  // Limit tags to 2 at construction time so build() never allocates a list.
+  List<String> get _visibleTags =>
+      tags.length <= 2 ? tags : tags.sublist(0, 2);
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final visibleTags = tags.take(2).toList();
+    final visibleTags = _visibleTags;
 
-    return Semantics(
+    return RepaintBoundary(
+      child: Semantics(
       label: semanticsLabel ?? title,
       button: onTap != null || onLongPress != null,
       child: GestureDetector(
@@ -181,6 +186,7 @@ class D3PosterCard extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

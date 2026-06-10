@@ -241,7 +241,7 @@ class D3ListTile extends StatelessWidget {
           ? InkWell(
               onTap: () {
                 HapticFeedback.selectionClick();
-                onTap!();
+                onTap?.call();
               },
               onLongPress: onLongPress,
               splashColor: colors.primary.withValues(alpha: 0.06),

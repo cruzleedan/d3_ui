@@ -35,12 +35,18 @@ class D3DropdownField<T, V> extends StatefulWidget {
     this.mode = D3DropdownMode.popup,
     this.searchable = false,
     this.searchHint = 'Search…',
+    this.sheetSearchAction,
+    this.sheetItemsNotifier,
     this.onChanged,
     this.semanticsLabel,
   });
 
   final String label;
   final List<T> items;
+
+  /// When provided, the open sheet listens to this notifier and rebuilds its
+  /// list whenever it emits — without closing the sheet.
+  final ValueNotifier<List<T>>? sheetItemsNotifier;
 
   /// Returns the display string for an item.
   final String Function(T item) itemLabel;
@@ -66,6 +72,9 @@ class D3DropdownField<T, V> extends StatefulWidget {
 
   /// Placeholder text for the search field.
   final String searchHint;
+
+  /// Optional widget shown to the right of the search field in sheet mode.
+  final Widget? sheetSearchAction;
 
   final ValueChanged<T?>? onChanged;
   final String? semanticsLabel;
@@ -114,18 +123,28 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>> {
     _focusNode.requestFocus();
     setState(() => _isFocused = true);
 
+    // Use the caller's notifier when provided so they can push new items into
+    // the sheet while it's open. Otherwise create a one-shot notifier.
+    final ownedNotifier = widget.sheetItemsNotifier == null
+        ? ValueNotifier<List<T>>(widget.items)
+        : null;
+    final itemsNotifier = widget.sheetItemsNotifier ?? ownedNotifier!;
+
     final result = await D3BottomSheet.show<T>(
       context,
       title: widget.label,
       snapPoints: const [D3SnapPoint(0.75)],
       child: _DropdownSheetBody<T>(  // ignore: prefer_const_constructors
-        items: widget.items,
+        itemsNotifier: itemsNotifier,
         itemLabel: widget.itemLabel,
         selected: _selected,
         searchable: widget.searchable,
         searchHint: widget.searchHint,
+        searchAction: widget.sheetSearchAction,
       ),
     );
+
+    ownedNotifier?.dispose();
 
     if (!mounted) return;
     setState(() => _isFocused = false);
@@ -317,49 +336,61 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>> {
 
 class _DropdownSheetBody<T> extends StatefulWidget {
   const _DropdownSheetBody({
-    required this.items,
+    required this.itemsNotifier,
     required this.itemLabel,
     required this.selected,
     required this.searchable,
     required this.searchHint,
+    this.searchAction,
   });
 
-  final List<T> items;
+  final ValueNotifier<List<T>> itemsNotifier;
   final String Function(T item) itemLabel;
   final T? selected;
   final bool searchable;
   final String searchHint;
+  /// Optional widget shown to the right of the search field (e.g. an add button).
+  final Widget? searchAction;
 
   @override
   State<_DropdownSheetBody<T>> createState() => _DropdownSheetBodyState<T>();
 }
 
 class _DropdownSheetBodyState<T> extends State<_DropdownSheetBody<T>> {
-  late List<T> _filtered;
+  List<T> _filtered = [];
+  String _query = '';
   final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _filtered = widget.items;
+    _filtered = widget.itemsNotifier.value;
+    widget.itemsNotifier.addListener(_onItemsChanged);
   }
 
   @override
   void dispose() {
+    widget.itemsNotifier.removeListener(_onItemsChanged);
     _searchController.dispose();
+
     super.dispose();
   }
 
-  void _onSearch(String query) {
+  void _onItemsChanged() {
+    setState(() => _filtered = _applyQuery(_query));
+  }
+
+  List<T> _applyQuery(String query) {
     final q = query.trim().toLowerCase();
-    setState(() {
-      _filtered = q.isEmpty
-          ? widget.items
-          : widget.items
-              .where((item) =>
-                  widget.itemLabel(item).toLowerCase().contains(q))
-              .toList();
-    });
+    final all = widget.itemsNotifier.value;
+    return q.isEmpty
+        ? all
+        : all.where((item) => widget.itemLabel(item).toLowerCase().contains(q)).toList();
+  }
+
+  void _onSearch(String query) {
+    _query = query;
+    setState(() => _filtered = _applyQuery(query));
   }
 
   @override
@@ -368,63 +399,69 @@ class _DropdownSheetBodyState<T> extends State<_DropdownSheetBody<T>> {
     final tokens = context.d3InputTokens;
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.searchable)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: TextField(
-              controller: _searchController,
-              autofocus: true,
-              onChanged: _onSearch,
-              style: TextStyle(fontSize: tokens.textSize, color: colors.onSurface),
-              decoration: InputDecoration(
-                hintText: widget.searchHint,
-                hintStyle: TextStyle(color: colors.onSurfaceVariant),
-                prefixIcon: Icon(Icons.search, color: colors.onSurfaceVariant),
-                filled: true,
-                fillColor: colors.surfaceVariant,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(tokens.radius),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        if (_filtered.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(32),
-            child: Text(
-              'No results',
-              style: TextStyle(color: colors.onSurfaceVariant),
-            ),
-          )
-        else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _filtered.length,
-            itemBuilder: (context, index) {
-              final item = _filtered[index];
-              final isSelected = item == widget.selected;
-              return ListTile(
-                title: Text(
-                  widget.itemLabel(item),
-                  style: TextStyle(
-                    fontSize: tokens.textSize,
-                    color: colors.onSurface,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.normal,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    onChanged: _onSearch,
+                    style: TextStyle(fontSize: tokens.textSize, color: colors.onSurface),
+                    decoration: InputDecoration(
+                      hintText: widget.searchHint,
+                      hintStyle: TextStyle(color: colors.onSurfaceVariant),
+                      prefixIcon: Icon(Icons.search, color: colors.onSurfaceVariant),
+                      filled: true,
+                      fillColor: colors.surfaceVariant,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(tokens.radius),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
                   ),
                 ),
-                trailing: isSelected
-                    ? Icon(Icons.check_rounded, color: colors.primary)
-                    : null,
-                onTap: () => Navigator.of(context).pop(item),
-              );
-            },
+                if (widget.searchAction != null) ...[
+                  const SizedBox(width: 8),
+                  widget.searchAction!,
+                ],
+              ],
+            ),
           ),
+        Expanded(
+          child: _filtered.isEmpty
+              ? Center(
+                  child: Text(
+                    'No results',
+                    style: TextStyle(color: colors.onSurfaceVariant),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _filtered.length,
+                  itemBuilder: (context, index) {
+                    final item = _filtered[index];
+                    final isSelected = item == widget.selected;
+                    return ListTile(
+                      title: Text(
+                        widget.itemLabel(item),
+                        style: TextStyle(
+                          fontSize: tokens.textSize,
+                          color: colors.onSurface,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(Icons.check_rounded, color: colors.primary)
+                          : null,
+                      onTap: () => Navigator.of(context).pop(item),
+                    );
+                  },
+                ),
+        ),
       ],
     );
   }
