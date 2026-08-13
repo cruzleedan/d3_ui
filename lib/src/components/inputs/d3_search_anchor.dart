@@ -261,7 +261,9 @@ class _D3SearchAnchorState<T, F> extends State<D3SearchAnchor<T, F>>
 
   @override
   void close() {
-    if (_isOpen) Navigator.of(context).pop();
+    // Matches the rootNavigator: true used in _push() — this context is
+    // still inside the shell, so a plain pop() would target the wrong stack.
+    if (_isOpen) Navigator.of(context, rootNavigator: true).pop();
   }
 
   @override
@@ -272,7 +274,11 @@ class _D3SearchAnchorState<T, F> extends State<D3SearchAnchor<T, F>>
     _isOpen = true;
     HapticFeedback.selectionClick();
 
-    Navigator.of(context)
+    // rootNavigator: true — this widget is typically used inside a
+    // ShellRoute branch screen (bottom nav bar). Without it, push() targets
+    // the shell's nested Navigator and the search page renders on top of
+    // the still-mounted shell Scaffold, leaving the bottom nav bar visible.
+    Navigator.of(context, rootNavigator: true)
         .push<void>(
           _SearchPageRoute(
             child: _D3SearchPage<T, F>(

@@ -566,7 +566,11 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(D3Radius.md),
       ),
-      color: colors.surface,
+      // Tonal-elevation bump (one step lighter than the base surface) rather
+      // than relying on elevation's shadow alone — against a near-black dark
+      // theme, `colors.surface` painted on `colors.surface` reads as flat,
+      // with the popup indistinguishable from the screen behind it.
+      color: colors.surfaceVariant,
       elevation: 3,
     ).then((selected) {
       if (selected != null) widget.onFiltersChanged!({selected});

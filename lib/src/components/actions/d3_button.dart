@@ -53,6 +53,7 @@ class D3Button extends StatefulWidget {
     this.buttonState = D3ButtonState.idle,
     this.loadingLabel,
     this.leadingIcon,
+    this.leadingWidget,
     this.trailingIcon,
     this.isFullWidth = false,
     this.maxLines,
@@ -74,6 +75,7 @@ class D3Button extends StatefulWidget {
   })  : label = '',
         loadingLabel = null,
         leadingIcon = null,
+        leadingWidget = null,
         trailingIcon = null,
         isFullWidth = false,
         maxLines = 1,
@@ -87,6 +89,11 @@ class D3Button extends StatefulWidget {
   final D3ButtonState buttonState;
   final String? loadingLabel;
   final IconData? leadingIcon;
+
+  /// Custom leading widget (e.g. a brand logo image), shown instead of
+  /// [leadingIcon] when set. Sized to [D3ButtonTokens.iconSize] and not
+  /// tinted with the button's foreground color.
+  final Widget? leadingWidget;
   final IconData? trailingIcon;
   final bool isFullWidth;
 
@@ -237,6 +244,12 @@ class _D3ButtonState extends State<D3Button> {
       leading = _spinner(fgColor, tokens);
     } else if (widget.leadingIcon != null) {
       leading = Icon(widget.leadingIcon, size: tokens.iconSize, color: fgColor);
+    } else if (widget.leadingWidget != null) {
+      leading = SizedBox(
+        width: tokens.iconSize,
+        height: tokens.iconSize,
+        child: widget.leadingWidget,
+      );
     }
 
     Widget? trailing;
