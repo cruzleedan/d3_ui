@@ -40,3 +40,11 @@ analyzer:
   errors:
     # Treat missing dartdoc on public APIs as a warning, not an error
     public_member_api_docs: warning
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
