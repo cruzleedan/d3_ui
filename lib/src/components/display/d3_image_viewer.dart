@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/src/tokens/d3_spacing.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────

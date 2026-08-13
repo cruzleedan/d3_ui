@@ -1,5 +1,5 @@
 import 'package:d3_ui/d3_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Date picker field styled to match [D3TextField].
 ///

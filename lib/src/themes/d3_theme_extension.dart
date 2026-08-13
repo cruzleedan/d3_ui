@@ -1,7 +1,7 @@
 import 'package:d3_ui/src/tokens/d3_colors.dart';
 import 'package:d3_ui/src/tokens/d3_radius.dart';
 import 'package:d3_ui/src/tokens/d3_spacing.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Custom ThemeExtension carrying all design system tokens.
 /// Access via: Theme.of(context).d3Tokens

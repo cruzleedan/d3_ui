@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 import '../shared/gallery_section.dart';

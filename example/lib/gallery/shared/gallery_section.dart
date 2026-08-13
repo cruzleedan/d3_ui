@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 /// White card container for gallery section content that isn't a D3ListTileGroup.
