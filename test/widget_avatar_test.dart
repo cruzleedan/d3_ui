@@ -12,9 +12,7 @@ Widget _wrap(Widget child) {
 void main() {
   group('D3Avatar', () {
     testWidgets('renders initials text when no image', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const D3Avatar(name: 'Dan Lee'),
-      ));
+      await tester.pumpWidget(_wrap(const D3Avatar(name: 'Dan Lee')));
       expect(find.text('DL'), findsOneWidget);
     });
 
@@ -26,21 +24,19 @@ void main() {
     });
 
     testWidgets('renders circle and square shapes', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const D3Avatar(name: 'Alice Brown', shape: D3AvatarShape.square),
-      ));
+      await tester.pumpWidget(
+        _wrap(const D3Avatar(name: 'Alice Brown', shape: D3AvatarShape.square)),
+      );
       expect(find.text('AB'), findsOneWidget);
 
-      await tester.pumpWidget(_wrap(
-        const D3Avatar(name: 'Alice Brown', shape: D3AvatarShape.circle),
-      ));
+      await tester.pumpWidget(
+        _wrap(const D3Avatar(name: 'Alice Brown', shape: D3AvatarShape.circle)),
+      );
       expect(find.text('AB'), findsOneWidget);
     });
 
     testWidgets('truncates initials to at most 2 characters', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const D3Avatar(name: 'ABC'),
-      ));
+      await tester.pumpWidget(_wrap(const D3Avatar(name: 'ABC')));
       // Should not crash regardless of how many chars are passed
       await tester.pump();
     });
@@ -48,16 +44,18 @@ void main() {
 
   group('D3AvatarGroup', () {
     testWidgets('renders without error with multiple avatars', (tester) async {
-      await tester.pumpWidget(_wrap(
-        D3AvatarGroup(
-          avatars: const [
-            D3Avatar(name: 'AA'),
-            D3Avatar(name: 'BB'),
-            D3Avatar(name: 'CC'),
-            D3Avatar(name: 'DD'),
-          ],
+      await tester.pumpWidget(
+        _wrap(
+          D3AvatarGroup(
+            avatars: const [
+              D3Avatar(name: 'AA'),
+              D3Avatar(name: 'BB'),
+              D3Avatar(name: 'CC'),
+              D3Avatar(name: 'DD'),
+            ],
+          ),
         ),
-      ));
+      );
       await tester.pump();
     });
   });

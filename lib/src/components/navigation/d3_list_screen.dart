@@ -18,7 +18,9 @@ class D3ListScreenAction {
 
   final IconData icon;
   final String label;
-  final void Function(Set<String> selectedIds, VoidCallback clearSelection) onPressed;
+  final void Function(Set<String> selectedIds, VoidCallback clearSelection)
+  onPressed;
+
   /// If provided, the action is only shown when this returns true.
   final bool Function(Set<String> selectedIds)? visibleWhen;
 
@@ -125,14 +127,16 @@ class D3ListScreen<T, F> extends StatefulWidget {
     bool isSelected,
     bool inSelectionMode,
     VoidCallback? onAvatarTap,
-  }) itemBuilder;
+  })
+  itemBuilder;
   final String Function(T item) getItemId;
   final bool isLoading;
   final Future<void> Function()? onRefresh;
   final Future<void> Function()? onLoadMore;
   final bool hasMore;
   final Widget? emptyState;
-  final String? Function(BuildContext context, T item, int index)? sectionBuilder;
+  final String? Function(BuildContext context, T item, int index)?
+  sectionBuilder;
   final Widget Function(BuildContext context, int index)? separatorBuilder;
 
   // ── Search ──────────────────────────────────────────────────────────────────
@@ -148,7 +152,7 @@ class D3ListScreen<T, F> extends StatefulWidget {
   /// (items are shown as-is, which is only correct if [onSearchChanged] +
   /// [onFiltersChanged] already update [items] via an external state manager).
   final List<T> Function(List<T> items, String query, Set<F> activeFilters)?
-      filterItems;
+  filterItems;
 
   // ── Filters ─────────────────────────────────────────────────────────────────
   final List<D3FilterOption<F>> filterOptions;
@@ -287,8 +291,9 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
     return D3Screen(
       title: widget.title,
       actions: widget.actions,
-      floatingActionButton:
-          _inSelectionMode ? null : widget.floatingActionButton,
+      floatingActionButton: _inSelectionMode
+          ? null
+          : widget.floatingActionButton,
       floatingActionButtonLocation: widget.floatingActionButtonLocation,
       bottomNavigationBar: widget.bottomNavigationBar,
       titleBarOverride: _inSelectionMode ? cab : null,
@@ -306,7 +311,6 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
 // ─────────────────────────────────────────────────────────────────────────────
 // _ContextualActionBar
 // ─────────────────────────────────────────────────────────────────────────────
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // _ContextualActionBar
@@ -330,50 +334,50 @@ class _ContextualActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-            children: [
-              // Close / deselect
+      children: [
+        // Close / deselect
+        _BarIconButton(
+          icon: Icons.close_rounded,
+          label: 'Deselect all',
+          onPressed: onClear,
+          color: colors.onPrimaryContainer,
+        ),
+
+        const SizedBox(width: D3Spacing.s4),
+
+        // Count label
+        Expanded(
+          child: Text(
+            '$selectedCount selected',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: colors.onPrimaryContainer,
+            ),
+          ),
+        ),
+
+        // Caller-provided actions (hidden when visibleWhen returns false)
+        for (final action in actions)
+          if (action.visibleWhen == null || action.visibleWhen!(selectedIds))
+            if (action.emphasized)
+              _BarLabeledButton(
+                icon: action.icon,
+                label: action.label,
+                onPressed: () => action.onPressed(selectedIds, onClear),
+                color: colors.onPrimaryContainer,
+              )
+            else
               _BarIconButton(
-                icon: Icons.close_rounded,
-                label: 'Deselect all',
-                onPressed: onClear,
+                icon: action.icon,
+                label: action.label,
+                onPressed: () => action.onPressed(selectedIds, onClear),
                 color: colors.onPrimaryContainer,
               ),
 
-              const SizedBox(width: D3Spacing.s4),
-
-              // Count label
-              Expanded(
-                child: Text(
-                  '$selectedCount selected',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: colors.onPrimaryContainer,
-                  ),
-                ),
-              ),
-
-              // Caller-provided actions (hidden when visibleWhen returns false)
-              for (final action in actions)
-                if (action.visibleWhen == null || action.visibleWhen!(selectedIds))
-                  if (action.emphasized)
-                    _BarLabeledButton(
-                      icon: action.icon,
-                      label: action.label,
-                      onPressed: () => action.onPressed(selectedIds, onClear),
-                      color: colors.onPrimaryContainer,
-                    )
-                  else
-                    _BarIconButton(
-                      icon: action.icon,
-                      label: action.label,
-                      onPressed: () => action.onPressed(selectedIds, onClear),
-                      color: colors.onPrimaryContainer,
-                    ),
-
-              const SizedBox(width: D3Spacing.s4),
-            ],
-          );
+        const SizedBox(width: D3Spacing.s4),
+      ],
+    );
   }
 }
 
@@ -522,8 +526,9 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
         widget.activeFilters.every(def.contains)) {
       return null;
     }
-    final match = widget.filterOptions
-        .where((o) => widget.activeFilters.contains(o.value));
+    final match = widget.filterOptions.where(
+      (o) => widget.activeFilters.contains(o.value),
+    );
     if (match.isEmpty) return null;
     return match.first.label;
   }
@@ -534,34 +539,39 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
     if (box == null) return;
     final offset = box.localToGlobal(Offset.zero);
     final anchor = offset & box.size;
-    final current =
-        widget.activeFilters.isEmpty ? null : widget.activeFilters.first;
+    final current = widget.activeFilters.isEmpty
+        ? null
+        : widget.activeFilters.first;
     final colors = widget.colors;
     showMenu<F>(
       context: context,
       useRootNavigator: false,
       position: RelativeRect.fromLTRB(
-        anchor.left, anchor.bottom,
-        MediaQuery.sizeOf(context).width - anchor.right, 0,
+        anchor.left,
+        anchor.bottom,
+        MediaQuery.sizeOf(context).width - anchor.right,
+        0,
       ),
       items: widget.filterOptions
-          .map((o) => PopupMenuItem<F>(
-                value: o.value,
-                child: Row(
-                  children: [
-                    if (o.value == current)
-                      Icon(Icons.check_rounded, size: 16, color: colors.primary)
-                    else
-                      const SizedBox(width: 16),
+          .map(
+            (o) => PopupMenuItem<F>(
+              value: o.value,
+              child: Row(
+                children: [
+                  if (o.value == current)
+                    Icon(Icons.check_rounded, size: 16, color: colors.primary)
+                  else
+                    const SizedBox(width: 16),
+                  const SizedBox(width: D3Spacing.s8),
+                  if (o.icon != null) ...[
+                    Icon(o.icon, size: 16, color: colors.onSurfaceVariant),
                     const SizedBox(width: D3Spacing.s8),
-                    if (o.icon != null) ...[
-                      Icon(o.icon, size: 16, color: colors.onSurfaceVariant),
-                      const SizedBox(width: D3Spacing.s8),
-                    ],
-                    Text(o.label),
                   ],
-                ),
-              ))
+                  Text(o.label),
+                ],
+              ),
+            ),
+          )
           .toList(),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(D3Radius.md),
@@ -602,149 +612,155 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
         ),
       ),
       child: SizedBox(
-      height: 48,
-      child: Row(
-        children: [
-          // ── Select-all (full-height tap target) ───────────────────────
-          GestureDetector(
-            onTap: widget.inSelectionMode
-                ? (_allSelected ? widget.onClearAll : widget.onSelectAll)
-                : null,
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: checkboxLeft,
-                right: D3Spacing.s16,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedSwitcher(
-                    duration: D3Motion.fast,
-                    transitionBuilder: (child, anim) =>
-                        ScaleTransition(scale: anim, child: child),
-                    child: _allSelected
-                        ? Icon(
-                            key: const ValueKey('checked'),
-                            Icons.check_box_rounded,
-                            size: 20,
-                            color: colors.primary,
-                          )
-                        : Icon(
-                            key: const ValueKey('unchecked'),
-                            Icons.check_box_outline_blank_rounded,
-                            size: 20,
-                            color: widget.inSelectionMode
-                                ? colors.onSurfaceVariant
-                                : colors.onSurfaceVariant.withValues(alpha: 0.25),
-                          ),
-                  ),
-                  // Label only shown in selection mode
-                  if (widget.inSelectionMode) ...[
-                    SizedBox(width: textGap),
+        height: 48,
+        child: Row(
+          children: [
+            // ── Select-all (full-height tap target) ───────────────────────
+            GestureDetector(
+              onTap: widget.inSelectionMode
+                  ? (_allSelected ? widget.onClearAll : widget.onSelectAll)
+                  : null,
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: checkboxLeft,
+                  right: D3Spacing.s16,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     AnimatedSwitcher(
                       duration: D3Motion.fast,
                       transitionBuilder: (child, anim) =>
-                          FadeTransition(opacity: anim, child: child),
-                      child: Text(
-                        key: ValueKey(_allSelected ? 'deselect' : 'select'),
-                        _allSelected ? 'Deselect all' : 'Select all',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: colors.onSurfaceVariant,
+                          ScaleTransition(scale: anim, child: child),
+                      child: _allSelected
+                          ? Icon(
+                              key: const ValueKey('checked'),
+                              Icons.check_box_rounded,
+                              size: 20,
+                              color: colors.primary,
+                            )
+                          : Icon(
+                              key: const ValueKey('unchecked'),
+                              Icons.check_box_outline_blank_rounded,
+                              size: 20,
+                              color: widget.inSelectionMode
+                                  ? colors.onSurfaceVariant
+                                  : colors.onSurfaceVariant.withValues(
+                                      alpha: 0.25,
+                                    ),
+                            ),
+                    ),
+                    // Label only shown in selection mode
+                    if (widget.inSelectionMode) ...[
+                      SizedBox(width: textGap),
+                      AnimatedSwitcher(
+                        duration: D3Motion.fast,
+                        transitionBuilder: (child, anim) =>
+                            FadeTransition(opacity: anim, child: child),
+                        child: Text(
+                          key: ValueKey(_allSelected ? 'deselect' : 'select'),
+                          _allSelected ? 'Deselect all' : 'Select all',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: colors.onSurfaceVariant,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
 
-          const Spacer(),
+            const Spacer(),
 
-          // ── Right side: fades out in selection mode ────────────────────
-          AnimatedOpacity(
-            opacity: widget.inSelectionMode ? 0.0 : 1.0,
-            duration: D3Motion.moderate,
-            child: IgnorePointer(
-              ignoring: widget.inSelectionMode,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Filter pill — taps open popup menu
-                  if (widget.filterOptions.isNotEmpty)
-                    GestureDetector(
-                      key: _pillKey,
-                      onTap: _openFilterMenu,
-                      behavior: HitTestBehavior.opaque,
-                      child: SizedBox(
-                        height: 48,
-                        child: Center(
-                          child: AnimatedContainer(
-                            duration: D3Motion.fast,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: D3Spacing.s12,
-                              vertical: D3Spacing.s6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isFiltered
-                                  ? colors.primary.withValues(alpha: 0.12)
-                                  : colors.onSurface.withValues(alpha: 0.06),
-                              borderRadius: BorderRadius.circular(D3Radius.full),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  activeLabel ?? widget.filterOptions.first.label,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+            // ── Right side: fades out in selection mode ────────────────────
+            AnimatedOpacity(
+              opacity: widget.inSelectionMode ? 0.0 : 1.0,
+              duration: D3Motion.moderate,
+              child: IgnorePointer(
+                ignoring: widget.inSelectionMode,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Filter pill — taps open popup menu
+                    if (widget.filterOptions.isNotEmpty)
+                      GestureDetector(
+                        key: _pillKey,
+                        onTap: _openFilterMenu,
+                        behavior: HitTestBehavior.opaque,
+                        child: SizedBox(
+                          height: 48,
+                          child: Center(
+                            child: AnimatedContainer(
+                              duration: D3Motion.fast,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: D3Spacing.s12,
+                                vertical: D3Spacing.s6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isFiltered
+                                    ? colors.primary.withValues(alpha: 0.12)
+                                    : colors.onSurface.withValues(alpha: 0.06),
+                                borderRadius: BorderRadius.circular(
+                                  D3Radius.full,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    activeLabel ??
+                                        widget.filterOptions.first.label,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: isFiltered
+                                          ? colors.primary
+                                          : colors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(width: D3Spacing.s2),
+                                  Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 14,
                                     color: isFiltered
                                         ? colors.primary
                                         : colors.onSurfaceVariant,
                                   ),
-                                ),
-                                const SizedBox(width: D3Spacing.s2),
-                                Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  size: 14,
-                                  color: isFiltered
-                                      ? colors.primary
-                                      : colors.onSurfaceVariant,
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
 
-                  // Search icon — 48×48 tap target
-                  if (widget.onOpenSearch != null)
-                    const SizedBox(width: D3Spacing.s4),
-                  if (widget.onOpenSearch != null)
-                    GestureDetector(
-                      onTap: widget.onOpenSearch,
-                      behavior: HitTestBehavior.opaque,
-                      child: SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: Icon(
-                          Icons.search_rounded,
-                          size: 22,
-                          color: colors.onSurfaceVariant,
+                    // Search icon — 48×48 tap target
+                    if (widget.onOpenSearch != null)
+                      const SizedBox(width: D3Spacing.s4),
+                    if (widget.onOpenSearch != null)
+                      GestureDetector(
+                        onTap: widget.onOpenSearch,
+                        behavior: HitTestBehavior.opaque,
+                        child: SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: Icon(
+                            Icons.search_rounded,
+                            size: 22,
+                            color: colors.onSurfaceVariant,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    )); // SizedBox + DecoratedBox
+    ); // SizedBox + DecoratedBox
   }
 }

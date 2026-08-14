@@ -14,10 +14,7 @@ enum D3ToastVariant { success, error, warning, info, neutral }
 
 /// An optional action button rendered in the trailing slot of a [D3Toast].
 class D3ToastAction {
-  const D3ToastAction({
-    required this.label,
-    required this.onPressed,
-  });
+  const D3ToastAction({required this.label, required this.onPressed});
 
   final String label;
   final VoidCallback onPressed;
@@ -65,8 +62,8 @@ class D3Toast {
 
   static Duration _durationFor(D3ToastVariant variant) =>
       (variant == D3ToastVariant.error || variant == D3ToastVariant.warning)
-          ? _longDuration
-          : _shortDuration;
+      ? _longDuration
+      : _shortDuration;
 
   // ── show ──────────────────────────────────────────────────────────────────
 
@@ -127,13 +124,14 @@ class D3Toast {
     String? message,
     D3ToastAction? action,
     Duration? duration,
-  }) =>
-      show(context,
-          title: title,
-          message: message,
-          variant: D3ToastVariant.success,
-          action: action,
-          duration: duration);
+  }) => show(
+    context,
+    title: title,
+    message: message,
+    variant: D3ToastVariant.success,
+    action: action,
+    duration: duration,
+  );
 
   static void error(
     BuildContext context, {
@@ -141,13 +139,14 @@ class D3Toast {
     String? message,
     D3ToastAction? action,
     Duration? duration,
-  }) =>
-      show(context,
-          title: title,
-          message: message,
-          variant: D3ToastVariant.error,
-          action: action,
-          duration: duration);
+  }) => show(
+    context,
+    title: title,
+    message: message,
+    variant: D3ToastVariant.error,
+    action: action,
+    duration: duration,
+  );
 
   static void warning(
     BuildContext context, {
@@ -155,13 +154,14 @@ class D3Toast {
     String? message,
     D3ToastAction? action,
     Duration? duration,
-  }) =>
-      show(context,
-          title: title,
-          message: message,
-          variant: D3ToastVariant.warning,
-          action: action,
-          duration: duration);
+  }) => show(
+    context,
+    title: title,
+    message: message,
+    variant: D3ToastVariant.warning,
+    action: action,
+    duration: duration,
+  );
 
   static void info(
     BuildContext context, {
@@ -169,13 +169,14 @@ class D3Toast {
     String? message,
     D3ToastAction? action,
     Duration? duration,
-  }) =>
-      show(context,
-          title: title,
-          message: message,
-          variant: D3ToastVariant.info,
-          action: action,
-          duration: duration);
+  }) => show(
+    context,
+    title: title,
+    message: message,
+    variant: D3ToastVariant.info,
+    action: action,
+    duration: duration,
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

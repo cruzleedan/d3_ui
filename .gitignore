@@ -26,3 +26,5 @@ lcov.info
 
 # Dart analysis
 .analyzer_cache/
+# Widget Preview related
+.widget_preview/

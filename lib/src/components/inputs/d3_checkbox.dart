@@ -69,7 +69,7 @@ class _D3CheckboxState extends State<D3Checkbox>
   // Curved animations derived from the same controller.
   late final Animation<double> _fillAnim; // box background + border
   late final Animation<double>
-      _iconAnim; // icon draw progress (leads fill slightly)
+  _iconAnim; // icon draw progress (leads fill slightly)
 
   @override
   void initState() {
@@ -81,10 +81,7 @@ class _D3CheckboxState extends State<D3Checkbox>
       value: widget.value != false ? 1.0 : 0.0,
     );
 
-    _fillAnim = CurvedAnimation(
-      parent: _controller,
-      curve: D3Motion.standard,
-    );
+    _fillAnim = CurvedAnimation(parent: _controller, curve: D3Motion.standard);
 
     // Icon draws in on a slightly delayed interval so the fill leads.
     _iconAnim = CurvedAnimation(
@@ -213,8 +210,11 @@ class _CheckboxPainter extends CustomPainter {
     final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(_radius));
 
     // ── Box fill ───────────────────────────────────────────────────────────
-    final fillColor =
-        Color.lerp(Colors.transparent, primaryColor, fillProgress)!;
+    final fillColor = Color.lerp(
+      Colors.transparent,
+      primaryColor,
+      fillProgress,
+    )!;
     canvas.drawRRect(rrect, Paint()..color = fillColor);
 
     // ── Border ────────────────────────────────────────────────────────────

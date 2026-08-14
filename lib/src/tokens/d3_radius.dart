@@ -14,8 +14,9 @@ abstract final class D3Radius {
   static const BorderRadius circularMd = BorderRadius.all(Radius.circular(md));
   static const BorderRadius circularLg = BorderRadius.all(Radius.circular(lg));
   static const BorderRadius circularXl = BorderRadius.all(Radius.circular(xl));
-  static const BorderRadius circularFull =
-      BorderRadius.all(Radius.circular(full));
+  static const BorderRadius circularFull = BorderRadius.all(
+    Radius.circular(full),
+  );
 
   D3Radius._();
 }

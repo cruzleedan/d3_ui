@@ -7,13 +7,7 @@ import 'package:d3_ui/d3_ui.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Watchlist status for an anime or manga entry.
-enum D3WatchStatus {
-  watching,
-  completed,
-  planToWatch,
-  paused,
-  dropped,
-}
+enum D3WatchStatus { watching, completed, planToWatch, paused, dropped }
 
 /// Convenience extensions on [D3WatchStatus].
 extension D3WatchStatusExtension on D3WatchStatus {

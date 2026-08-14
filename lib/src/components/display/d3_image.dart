@@ -52,9 +52,9 @@ class D3Image extends StatelessWidget {
     this.errorIcon = Icons.image_not_supported_outlined,
     this.semanticsLabel,
   }) : assert(
-          height == null || aspectRatio == null,
-          'Provide height or aspectRatio, not both.',
-        );
+         height == null || aspectRatio == null,
+         'Provide height or aspectRatio, not both.',
+       );
 
   final String? url;
   final double? width;

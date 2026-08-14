@@ -16,9 +16,9 @@ class D3NavItem {
     this.badgeLabel,
     this.semanticsLabel,
   }) : assert(
-          badgeCount == null || badgeLabel == null,
-          'Provide badgeCount or badgeLabel, not both.',
-        );
+         badgeCount == null || badgeLabel == null,
+         'Provide badgeCount or badgeLabel, not both.',
+       );
 
   /// Icon shown when this item is not selected.
   final IconData icon;
@@ -63,8 +63,10 @@ class D3NavBar extends StatelessWidget {
     required this.items,
     required this.selectedIndex,
     required this.onTabSelected,
-  }) : assert(items.length >= 2 && items.length <= 5,
-            'D3NavBar requires 2–5 items.');
+  }) : assert(
+         items.length >= 2 && items.length <= 5,
+         'D3NavBar requires 2–5 items.',
+       );
 
   final List<D3NavItem> items;
   final int selectedIndex;
@@ -190,8 +192,11 @@ class _NavBarItem extends StatelessWidget {
                 color: labelColor,
                 letterSpacing: 0.1,
               ),
-              child: Text(item.label,
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              child: Text(
+                item.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),

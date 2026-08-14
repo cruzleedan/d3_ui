@@ -16,36 +16,36 @@ enum D3AvatarSize {
   final double dimension;
 
   double get fontSize => switch (this) {
-        D3AvatarSize.xs => 9,
-        D3AvatarSize.sm => 11,
-        D3AvatarSize.md => 14,
-        D3AvatarSize.lg => 17,
-        D3AvatarSize.xl => 21,
-      };
+    D3AvatarSize.xs => 9,
+    D3AvatarSize.sm => 11,
+    D3AvatarSize.md => 14,
+    D3AvatarSize.lg => 17,
+    D3AvatarSize.xl => 21,
+  };
 
   double get indicatorSize => switch (this) {
-        D3AvatarSize.xs => 0, // no indicator at xs — too small
-        D3AvatarSize.sm => 8,
-        D3AvatarSize.md => 10,
-        D3AvatarSize.lg => 12,
-        D3AvatarSize.xl => 14,
-      };
+    D3AvatarSize.xs => 0, // no indicator at xs — too small
+    D3AvatarSize.sm => 8,
+    D3AvatarSize.md => 10,
+    D3AvatarSize.lg => 12,
+    D3AvatarSize.xl => 14,
+  };
 
   double get indicatorBorder => switch (this) {
-        D3AvatarSize.xs => 0,
-        D3AvatarSize.sm => 1.5,
-        D3AvatarSize.md => 2,
-        D3AvatarSize.lg => 2,
-        D3AvatarSize.xl => 2.5,
-      };
+    D3AvatarSize.xs => 0,
+    D3AvatarSize.sm => 1.5,
+    D3AvatarSize.md => 2,
+    D3AvatarSize.lg => 2,
+    D3AvatarSize.xl => 2.5,
+  };
 
   double get borderRadius => switch (this) {
-        D3AvatarSize.xs => D3Radius.xs,
-        D3AvatarSize.sm => D3Radius.sm,
-        D3AvatarSize.md => D3Radius.md,
-        D3AvatarSize.lg => D3Radius.lg,
-        D3AvatarSize.xl => D3Radius.xl,
-      };
+    D3AvatarSize.xs => D3Radius.xs,
+    D3AvatarSize.sm => D3Radius.sm,
+    D3AvatarSize.md => D3Radius.md,
+    D3AvatarSize.lg => D3Radius.lg,
+    D3AvatarSize.xl => D3Radius.xl,
+  };
 }
 
 enum D3AvatarShape { circle, square }
@@ -294,11 +294,11 @@ class _IndicatorDot extends StatelessWidget {
   final Color borderColor;
 
   Color get _dotColor => switch (indicator) {
-        D3AvatarIndicator.online => const Color(0xFF1D9E75),
-        D3AvatarIndicator.busy => const Color(0xFFE24B4A),
-        D3AvatarIndicator.offline => const Color(0xFF888780),
-        D3AvatarIndicator.none => Colors.transparent,
-      };
+    D3AvatarIndicator.online => const Color(0xFF1D9E75),
+    D3AvatarIndicator.busy => const Color(0xFFE24B4A),
+    D3AvatarIndicator.offline => const Color(0xFF888780),
+    D3AvatarIndicator.none => Colors.transparent,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -341,9 +341,11 @@ class D3AvatarGroup extends StatelessWidget {
     this.max = 4,
     this.overlap = 8.0,
     this.size = D3AvatarSize.md,
-  })  : assert(
-            avatars.length > 0, 'D3AvatarGroup requires at least one avatar.'),
-        assert(max >= 1, 'max must be at least 1.');
+  }) : assert(
+         avatars.length > 0,
+         'D3AvatarGroup requires at least one avatar.',
+       ),
+       assert(max >= 1, 'max must be at least 1.');
 
   final List<D3Avatar> avatars;
 

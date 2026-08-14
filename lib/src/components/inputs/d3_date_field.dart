@@ -74,8 +74,8 @@ class _D3DateFieldState extends State<D3DateField> {
       initialDate: initial.isBefore(first)
           ? first
           : initial.isAfter(last)
-              ? last
-              : initial,
+          ? last
+          : initial,
       firstDate: first,
       lastDate: last,
     );
@@ -95,16 +95,16 @@ class _D3DateFieldState extends State<D3DateField> {
     final borderColor = !widget.isEnabled
         ? colors.outline.withValues(alpha: 0.4)
         : hasError
-            ? colors.error
-            : _isFocused
-                ? colors.primary
-                : colors.outline;
+        ? colors.error
+        : _isFocused
+        ? colors.primary
+        : colors.outline;
 
     final bgColor = !widget.isEnabled
         ? colors.surfaceVariant
         : _isFocused
-            ? colors.surface
-            : colors.surfaceVariant;
+        ? colors.surface
+        : colors.surfaceVariant;
 
     final displayText = _selected != null ? _format(_selected!) : null;
 
@@ -198,10 +198,7 @@ class _D3DateFieldState extends State<D3DateField> {
         // Helper / error
         if (widget.errorText != null || widget.helperText != null)
           Padding(
-            padding: EdgeInsets.only(
-              top: D3Spacing.s4,
-              left: tokens.paddingH,
-            ),
+            padding: EdgeInsets.only(top: D3Spacing.s4, left: tokens.paddingH),
             child: Text(
               widget.errorText ?? widget.helperText!,
               style: TextStyle(

@@ -134,7 +134,8 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>> {
       context,
       title: widget.label,
       snapPoints: const [D3SnapPoint(0.75)],
-      child: _DropdownSheetBody<T>(  // ignore: prefer_const_constructors
+      child: _DropdownSheetBody<T>(
+        // ignore: prefer_const_constructors
         itemsNotifier: itemsNotifier,
         itemLabel: widget.itemLabel,
         selected: _selected,
@@ -164,19 +165,20 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>> {
     final borderColor = !widget.isEnabled
         ? colors.outline.withValues(alpha: 0.4)
         : hasError
-            ? colors.error
-            : _isFocused
-                ? colors.primary
-                : colors.outline;
+        ? colors.error
+        : _isFocused
+        ? colors.primary
+        : colors.outline;
 
     final bgColor = !widget.isEnabled
         ? colors.surfaceVariant
         : _isFocused
-            ? colors.surface
-            : colors.surfaceVariant;
+        ? colors.surface
+        : colors.surfaceVariant;
 
-    final displayText =
-        _selected != null ? widget.itemLabel(_selected as T) : null;
+    final displayText = _selected != null
+        ? widget.itemLabel(_selected as T)
+        : null;
 
     final fieldContent = ConstrainedBox(
       constraints: BoxConstraints(minHeight: tokens.minHeight),
@@ -306,10 +308,7 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>> {
         inputContainer,
         if (widget.errorText != null || widget.helperText != null)
           Padding(
-            padding: EdgeInsets.only(
-              top: D3Spacing.s4,
-              left: tokens.paddingH,
-            ),
+            padding: EdgeInsets.only(top: D3Spacing.s4, left: tokens.paddingH),
             child: Text(
               widget.errorText ?? widget.helperText!,
               style: TextStyle(
@@ -349,6 +348,7 @@ class _DropdownSheetBody<T> extends StatefulWidget {
   final T? selected;
   final bool searchable;
   final String searchHint;
+
   /// Optional widget shown to the right of the search field (e.g. an add button).
   final Widget? searchAction;
 
@@ -385,7 +385,9 @@ class _DropdownSheetBodyState<T> extends State<_DropdownSheetBody<T>> {
     final all = widget.itemsNotifier.value;
     return q.isEmpty
         ? all
-        : all.where((item) => widget.itemLabel(item).toLowerCase().contains(q)).toList();
+        : all
+              .where((item) => widget.itemLabel(item).toLowerCase().contains(q))
+              .toList();
   }
 
   void _onSearch(String query) {
@@ -410,11 +412,17 @@ class _DropdownSheetBodyState<T> extends State<_DropdownSheetBody<T>> {
                     controller: _searchController,
                     autofocus: true,
                     onChanged: _onSearch,
-                    style: TextStyle(fontSize: tokens.textSize, color: colors.onSurface),
+                    style: TextStyle(
+                      fontSize: tokens.textSize,
+                      color: colors.onSurface,
+                    ),
                     decoration: InputDecoration(
                       hintText: widget.searchHint,
                       hintStyle: TextStyle(color: colors.onSurfaceVariant),
-                      prefixIcon: Icon(Icons.search, color: colors.onSurfaceVariant),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: colors.onSurfaceVariant,
+                      ),
                       filled: true,
                       fillColor: colors.surfaceVariant,
                       contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -451,7 +459,9 @@ class _DropdownSheetBodyState<T> extends State<_DropdownSheetBody<T>> {
                         style: TextStyle(
                           fontSize: tokens.textSize,
                           color: colors.onSurface,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
                         ),
                       ),
                       trailing: isSelected

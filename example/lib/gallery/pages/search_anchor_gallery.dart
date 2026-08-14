@@ -133,7 +133,11 @@ class _LocalModeDemoState extends State<_LocalModeDemo> {
           ),
           resultBuilder: (context, results, query) => D3List<_Contact>(
             items: results,
-            itemBuilder: (context, contact, _, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
+            itemBuilder: (context, contact, _,
+                    {isSelected = false,
+                    inSelectionMode = false,
+                    onAvatarTap}) =>
+                D3ListTile(
               leading: D3Avatar(name: contact.name, size: D3AvatarSize.sm),
               titleWidget: RichText(
                 text: D3SearchAnchor.highlight(
@@ -159,7 +163,11 @@ class _LocalModeDemoState extends State<_LocalModeDemo> {
         Expanded(
           child: D3List<_Contact>(
             items: _contacts,
-            itemBuilder: (context, contact, _, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
+            itemBuilder: (context, contact, _,
+                    {isSelected = false,
+                    inSelectionMode = false,
+                    onAvatarTap}) =>
+                D3ListTile(
               leading: D3Avatar(name: contact.name, size: D3AvatarSize.sm),
               title: contact.name,
               subtitle: contact.role ?? contact.email,
@@ -256,7 +264,11 @@ class _RemoteModeDemoState extends State<_RemoteModeDemo> {
           ),
           resultBuilder: (context, results, query) => D3List<_Contact>(
             items: results,
-            itemBuilder: (context, contact, _, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
+            itemBuilder: (context, contact, _,
+                    {isSelected = false,
+                    inSelectionMode = false,
+                    onAvatarTap}) =>
+                D3ListTile(
               leading: D3Avatar(name: contact.name, size: D3AvatarSize.sm),
               titleWidget: RichText(
                 text: D3SearchAnchor.highlight(
@@ -285,7 +297,11 @@ class _RemoteModeDemoState extends State<_RemoteModeDemo> {
             hasMore: _hasMore,
             onRefresh: _onRefresh,
             onLoadMore: _onLoadMore,
-            itemBuilder: (context, contact, _, {isSelected = false, inSelectionMode = false, onAvatarTap}) => D3ListTile(
+            itemBuilder: (context, contact, _,
+                    {isSelected = false,
+                    inSelectionMode = false,
+                    onAvatarTap}) =>
+                D3ListTile(
               leading: D3Avatar(name: contact.name, size: D3AvatarSize.sm),
               title: contact.name,
               subtitle: contact.role ?? contact.email,

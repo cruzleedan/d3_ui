@@ -36,9 +36,9 @@ class D3DialogAction {
     this.isDestructive = false,
     this.isDefault = false,
   }) : assert(
-          !(isDestructive && isDefault),
-          'A dialog action cannot be both destructive and default.',
-        );
+         !(isDestructive && isDefault),
+         'A dialog action cannot be both destructive and default.',
+       );
 
   final String label;
   final VoidCallback onPressed;
@@ -113,10 +113,7 @@ class D3Dialog extends StatelessWidget {
     this.message,
     this.content,
     required this.actions,
-  }) : assert(
-          actions.length > 0,
-          'D3Dialog requires at least one action.',
-        );
+  }) : assert(actions.length > 0, 'D3Dialog requires at least one action.');
 
   /// Optional icon displayed above or beside the title.
   final IconData? icon;
@@ -242,15 +239,9 @@ class D3Dialog extends StatelessWidget {
 
           // ── Actions ────────────────────────────────────────────────────────
           if (_useStackedActions)
-            _StackedActions(
-              actions: actions,
-              colors: colors,
-            )
+            _StackedActions(actions: actions, colors: colors)
           else
-            _InlineActions(
-              actions: actions,
-              colors: colors,
-            ),
+            _InlineActions(actions: actions, colors: colors),
         ],
       ),
     );
@@ -401,10 +392,7 @@ class _LeadingIconHeader extends StatelessWidget {
 /// Full-width stacked buttons separated by a hairline divider.
 /// Used when a centered icon is present.
 class _StackedActions extends StatelessWidget {
-  const _StackedActions({
-    required this.actions,
-    required this.colors,
-  });
+  const _StackedActions({required this.actions, required this.colors});
 
   final List<D3DialogAction> actions;
   final D3ColorTokens colors;
@@ -412,7 +400,8 @@ class _StackedActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Render primary/destructive action first (visually on top), then cancel.
-    final sorted = [...actions]..sort((a, b) {
+    final sorted = [...actions]
+      ..sort((a, b) {
         if (a.isDefault || a.isDestructive) return -1;
         if (b.isDefault || b.isDestructive) return 1;
         return 0;
@@ -501,10 +490,7 @@ class _StackedButton extends StatelessWidget {
 /// Compact right-aligned text buttons.
 /// Used when there is no icon, or when iconPlacement is leading.
 class _InlineActions extends StatelessWidget {
-  const _InlineActions({
-    required this.actions,
-    required this.colors,
-  });
+  const _InlineActions({required this.actions, required this.colors});
 
   final List<D3DialogAction> actions;
   final D3ColorTokens colors;

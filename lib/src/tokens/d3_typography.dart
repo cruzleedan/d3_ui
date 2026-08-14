@@ -52,10 +52,7 @@ abstract final class D3TypeFace {
 }
 
 /// Helper to build consistent TextStyle for buttons.
-TextStyle d3ButtonTextStyle({
-  required double fontSize,
-  required Color color,
-}) {
+TextStyle d3ButtonTextStyle({required double fontSize, required Color color}) {
   return TextStyle(
     fontSize: fontSize,
     fontWeight: FontWeight.w600,

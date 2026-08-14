@@ -9,10 +9,7 @@ import 'package:d3_ui/d3_ui.dart';
 /// the whole subtree. Wrap a skeleton section in [D3Shimmer] once and nest
 /// any number of [D3SkeletonBox] / [D3SkeletonText] inside.
 class D3Shimmer extends StatefulWidget {
-  const D3Shimmer({
-    super.key,
-    required this.child,
-  });
+  const D3Shimmer({super.key, required this.child});
 
   final Widget child;
 
@@ -28,8 +25,8 @@ class D3Shimmer extends StatefulWidget {
 class _D3ShimmerState extends State<D3Shimmer>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController.unbounded(
-      vsync: this)
-    ..repeat(min: -0.5, max: 1.5, period: const Duration(milliseconds: 1200));
+    vsync: this,
+  )..repeat(min: -0.5, max: 1.5, period: const Duration(milliseconds: 1200));
 
   Animation<double> get shimmerAnimation => _controller;
 
@@ -48,10 +45,7 @@ class _D3ShimmerState extends State<D3Shimmer>
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SkeletonShader extends StatefulWidget {
-  const _SkeletonShader({
-    required this.child,
-    required this.borderRadius,
-  });
+  const _SkeletonShader({required this.child, required this.borderRadius});
 
   final Widget child;
   final BorderRadius borderRadius;
@@ -194,10 +188,7 @@ class D3SkeletonText extends StatelessWidget {
               final width = isLast && lines > 1
                   ? constraints.maxWidth * lastLineWidthFraction
                   : constraints.maxWidth;
-              return D3SkeletonBox(
-                width: width,
-                height: lineHeight,
-              );
+              return D3SkeletonBox(width: width, height: lineHeight);
             },
           ),
         ],

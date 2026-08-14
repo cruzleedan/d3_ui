@@ -25,7 +25,10 @@ class D3ListController {
   _D3ListActions? _actions;
 
   void _attach(_D3ListActions actions) {
-    assert(_actions == null, 'D3ListController is already attached to a D3List.');
+    assert(
+      _actions == null,
+      'D3ListController is already attached to a D3List.',
+    );
     _actions = actions;
   }
 
@@ -38,20 +41,17 @@ class D3ListController {
     int index, {
     Duration duration = D3Motion.moderate,
     Curve curve = D3Motion.standard,
-  }) =>
-      _actions?.scrollToIndex(index, duration: duration, curve: curve);
+  }) => _actions?.scrollToIndex(index, duration: duration, curve: curve);
 
   void scrollToTop({
     Duration duration = D3Motion.moderate,
     Curve curve = D3Motion.decelerate,
-  }) =>
-      _actions?.scrollToTop(duration: duration, curve: curve);
+  }) => _actions?.scrollToTop(duration: duration, curve: curve);
 
   void scrollToBottom({
     Duration duration = D3Motion.moderate,
     Curve curve = D3Motion.decelerate,
-  }) =>
-      _actions?.scrollToBottom(duration: duration, curve: curve);
+  }) => _actions?.scrollToBottom(duration: duration, curve: curve);
 
   /// Programmatically clear all selections.
   void clearSelection() => _actions?.clearSelection();
@@ -62,7 +62,11 @@ class D3ListController {
 abstract interface class _D3ListActions {
   void refresh();
   void loadMore();
-  void scrollToIndex(int index, {required Duration duration, required Curve curve});
+  void scrollToIndex(
+    int index, {
+    required Duration duration,
+    required Curve curve,
+  });
   void scrollToTop({required Duration duration, required Curve curve});
   void scrollToBottom({required Duration duration, required Curve curve});
   void clearSelection();
@@ -128,9 +132,9 @@ class D3List<T> extends StatefulWidget {
     this.selectedIds = const {},
     this.onSelectionChanged,
   }) : assert(
-          !selectable || getItemId != null,
-          'D3List: getItemId is required when selectable is true.',
-        );
+         !selectable || getItemId != null,
+         'D3List: getItemId is required when selectable is true.',
+       );
 
   final List<T> items;
   final Widget Function(
@@ -140,14 +144,16 @@ class D3List<T> extends StatefulWidget {
     bool isSelected,
     bool inSelectionMode,
     VoidCallback? onAvatarTap,
-  }) itemBuilder;
+  })
+  itemBuilder;
   final D3ListController? controller;
   final Future<void> Function()? onRefresh;
   final Future<void> Function()? onLoadMore;
   final bool hasMore;
   final bool isLoading;
   final Widget? emptyState;
-  final String? Function(BuildContext context, T item, int index)? sectionBuilder;
+  final String? Function(BuildContext context, T item, int index)?
+  sectionBuilder;
   final Widget Function(BuildContext context, int index)? separatorBuilder;
   final double loadMoreThreshold;
   final EdgeInsetsGeometry? padding;
@@ -247,7 +253,11 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
   }
 
   @override
-  void scrollToIndex(int index, {required Duration duration, required Curve curve}) {
+  void scrollToIndex(
+    int index, {
+    required Duration duration,
+    required Curve curve,
+  }) {
     if (!_scrollController.hasClients) return;
     final pos = _scrollController.position;
     final count = widget.items.length;
@@ -311,12 +321,16 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
 
     if (widget.isLoading && widget.items.isEmpty) {
       return Center(
-        child: CircularProgressIndicator(strokeWidth: 2.5, color: colors.primary),
+        child: CircularProgressIndicator(
+          strokeWidth: 2.5,
+          color: colors.primary,
+        ),
       );
     }
 
     if (widget.items.isEmpty) {
-      final empty = widget.emptyState ??
+      final empty =
+          widget.emptyState ??
           const D3EmptyState(
             icon: Icons.inbox_outlined,
             title: 'Nothing here yet',
@@ -390,7 +404,9 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
         final id = widget.getItemId!(item);
         final isSelected = widget.selectedIds.contains(id);
         final built = widget.itemBuilder(
-          context, item, i,
+          context,
+          item,
+          i,
           isSelected: isSelected,
           inSelectionMode: widget._inSelectionMode,
           onAvatarTap: widget._inSelectionMode ? () => _onTap(item) : null,
@@ -407,7 +423,9 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
         );
       } else {
         final built = widget.itemBuilder(
-          context, item, i,
+          context,
+          item,
+          i,
           isSelected: false,
           inSelectionMode: false,
           onAvatarTap: null,
@@ -458,14 +476,14 @@ class _SelectableWrapperState extends State<_SelectableWrapper>
       duration: D3ButtonMotion.pressDown,
       reverseDuration: D3ButtonMotion.pressUp,
     );
-    _pressScale = Tween<double>(
-      begin: 1.0,
-      end: D3ButtonMotion.pressScale,
-    ).animate(CurvedAnimation(
-      parent: _pressCtrl,
-      curve: D3ButtonMotion.pressDownCurve,
-      reverseCurve: D3ButtonMotion.pressUpCurve,
-    ));
+    _pressScale = Tween<double>(begin: 1.0, end: D3ButtonMotion.pressScale)
+        .animate(
+          CurvedAnimation(
+            parent: _pressCtrl,
+            curve: D3ButtonMotion.pressDownCurve,
+            reverseCurve: D3ButtonMotion.pressUpCurve,
+          ),
+        );
   }
 
   @override
@@ -487,10 +505,7 @@ class _SelectableWrapperState extends State<_SelectableWrapper>
       },
       onLongPressCancel: () => _pressCtrl.reverse(),
       behavior: HitTestBehavior.opaque,
-      child: ScaleTransition(
-        scale: _pressScale,
-        child: widget.child,
-      ),
+      child: ScaleTransition(scale: _pressScale, child: widget.child),
     );
   }
 
@@ -541,7 +556,10 @@ class _SectionHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
-        D3Spacing.s16, D3Spacing.s10, D3Spacing.s16, D3Spacing.s4,
+        D3Spacing.s16,
+        D3Spacing.s10,
+        D3Spacing.s16,
+        D3Spacing.s4,
       ),
       color: colors.onSurface.withValues(alpha: 0.03),
       child: Text(

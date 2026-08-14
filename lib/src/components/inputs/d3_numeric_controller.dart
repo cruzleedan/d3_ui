@@ -77,10 +77,10 @@ class D3NumericController extends TextEditingController {
   ///
   /// Pass this to `D3TextField.inputFormatters`.
   D3NumericInputFormatter get formatter => D3NumericInputFormatter(
-        decimalPlaces: decimalPlaces,
-        groupSeparator: groupSeparator,
-        decimalSeparator: decimalSeparator,
-      );
+    decimalPlaces: decimalPlaces,
+    groupSeparator: groupSeparator,
+    decimalSeparator: decimalSeparator,
+  );
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -166,8 +166,8 @@ class D3NumericInputFormatter extends TextInputFormatter {
     final result = decRaw != null
         ? '$intFormatted$decimalSeparator$decRaw'
         : (sepIndex != -1 && decimalPlaces > 0)
-            ? '$intFormatted$decimalSeparator'
-            : intFormatted;
+        ? '$intFormatted$decimalSeparator'
+        : intFormatted;
 
     // Keep cursor at the end.
     return TextEditingValue(

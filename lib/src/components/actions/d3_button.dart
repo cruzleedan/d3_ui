@@ -59,8 +59,8 @@ class D3Button extends StatefulWidget {
     this.maxLines,
     this.semanticsLabel,
     this.autofocus = false,
-  })  : _iconOnly = false,
-        _iconOnlyIcon = null;
+  }) : _iconOnly = false,
+       _iconOnlyIcon = null;
 
   /// Icon-only variant. Uses square dimensions from the size token.
   const D3Button.icon({
@@ -72,15 +72,15 @@ class D3Button extends StatefulWidget {
     this.buttonState = D3ButtonState.idle,
     this.semanticsLabel,
     this.autofocus = false,
-  })  : label = '',
-        loadingLabel = null,
-        leadingIcon = null,
-        leadingWidget = null,
-        trailingIcon = null,
-        isFullWidth = false,
-        maxLines = 1,
-        _iconOnly = true,
-        _iconOnlyIcon = icon;
+  }) : label = '',
+       loadingLabel = null,
+       leadingIcon = null,
+       leadingWidget = null,
+       trailingIcon = null,
+       isFullWidth = false,
+       maxLines = 1,
+       _iconOnly = true,
+       _iconOnlyIcon = icon;
 
   final String label;
   final VoidCallback? onPressed;
@@ -140,12 +140,7 @@ class _D3ButtonState extends State<D3Button> {
     // ── Content ─────────────────────────────────────────────────────────────
     Widget content = widget._iconOnly
         ? _buildIconOnly(fgColor, tokens, effectiveState)
-        : _buildLabelRow(
-            fgColor,
-            tokens,
-            fontSize,
-            effectiveState,
-          );
+        : _buildLabelRow(fgColor, tokens, fontSize, effectiveState);
 
     // ── Shell: constrained box + padding ────────────────────────────────────
     // ConstrainedBox (minHeight) + symmetric Padding drives the height.
@@ -220,7 +215,8 @@ class _D3ButtonState extends State<D3Button> {
     return Semantics(
       button: true,
       enabled: widget._isInteractive,
-      label: widget.semanticsLabel ??
+      label:
+          widget.semanticsLabel ??
           (effectiveState == D3ButtonState.loading
               ? '${widget.loadingLabel ?? widget.label}, loading'
               : widget.label),
@@ -254,8 +250,11 @@ class _D3ButtonState extends State<D3Button> {
 
     Widget? trailing;
     if (widget.trailingIcon != null && state == D3ButtonState.idle) {
-      trailing =
-          Icon(widget.trailingIcon, size: tokens.iconSize - 2, color: fgColor);
+      trailing = Icon(
+        widget.trailingIcon,
+        size: tokens.iconSize - 2,
+        color: fgColor,
+      );
     }
 
     // State icon override (success/error)
@@ -272,10 +271,7 @@ class _D3ButtonState extends State<D3Button> {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (leading != null) ...[
-          leading,
-          SizedBox(width: tokens.iconGap),
-        ],
+        if (leading != null) ...[leading, SizedBox(width: tokens.iconGap)],
         Flexible(
           child: Text(
             state == D3ButtonState.loading
@@ -286,10 +282,7 @@ class _D3ButtonState extends State<D3Button> {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (trailing != null) ...[
-          SizedBox(width: tokens.iconGap),
-          trailing,
-        ],
+        if (trailing != null) ...[SizedBox(width: tokens.iconGap), trailing],
       ],
     );
   }
@@ -300,8 +293,11 @@ class _D3ButtonState extends State<D3Button> {
     D3ButtonState state,
   ) {
     if (state == D3ButtonState.loading) return _spinner(fgColor, tokens);
-    return Icon(widget._iconOnlyIcon,
-        size: tokens.iconSize + 2, color: fgColor);
+    return Icon(
+      widget._iconOnlyIcon,
+      size: tokens.iconSize + 2,
+      color: fgColor,
+    );
   }
 
   Widget _spinner(Color color, D3ButtonTokens tokens) {
@@ -319,49 +315,46 @@ class _D3ButtonState extends State<D3Button> {
   (double, double, double, double, double) _sizeValues(D3ButtonTokens t) {
     return switch (widget.size) {
       D3ButtonSize.xs => (
-          t.hPaddingXs,
-          t.vPaddingXs,
-          t.minHeightXs,
-          t.radiusXs,
-          D3TypeScale.btnXsSize
-        ),
+        t.hPaddingXs,
+        t.vPaddingXs,
+        t.minHeightXs,
+        t.radiusXs,
+        D3TypeScale.btnXsSize,
+      ),
       D3ButtonSize.sm => (
-          t.hPaddingXs + 4,
-          t.vPaddingXs + 2,
-          t.minHeightSm,
-          t.radiusSm,
-          D3TypeScale.btnSmSize
-        ),
+        t.hPaddingXs + 4,
+        t.vPaddingXs + 2,
+        t.minHeightSm,
+        t.radiusSm,
+        D3TypeScale.btnSmSize,
+      ),
       D3ButtonSize.md => (
-          t.hPaddingMd,
-          t.vPaddingMd,
-          t.minHeightMd,
-          t.radiusMd,
-          D3TypeScale.btnMdSize
-        ),
+        t.hPaddingMd,
+        t.vPaddingMd,
+        t.minHeightMd,
+        t.radiusMd,
+        D3TypeScale.btnMdSize,
+      ),
       D3ButtonSize.lg => (
-          t.hPaddingLg,
-          t.vPaddingLg,
-          t.minHeightLg,
-          t.radiusLg,
-          D3TypeScale.btnLgSize
-        ),
+        t.hPaddingLg,
+        t.vPaddingLg,
+        t.minHeightLg,
+        t.radiusLg,
+        D3TypeScale.btnLgSize,
+      ),
       D3ButtonSize.xl => (
-          t.hPaddingLg + 8,
-          t.vPaddingLg + 2,
-          t.minHeightXl,
-          t.radiusLg,
-          D3TypeScale.btnXlSize
-        ),
+        t.hPaddingLg + 8,
+        t.vPaddingLg + 2,
+        t.minHeightXl,
+        t.radiusLg,
+        D3TypeScale.btnXlSize,
+      ),
     };
   }
 
   /// Returns (backgroundColor, foregroundColor, borderColor?) for the
   /// current variant × state combination.
-  (Color, Color, Color?) _variantColors(
-    D3ColorTokens c,
-    D3ButtonState state,
-  ) {
+  (Color, Color, Color?) _variantColors(D3ColorTokens c, D3ButtonState state) {
     // Success / error states override variant colors
     if (state == D3ButtonState.success) {
       return (c.success.withValues(alpha: 0.15), c.success, null);

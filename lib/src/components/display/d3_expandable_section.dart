@@ -191,7 +191,8 @@ class _D3ExpandableSectionState extends State<D3ExpandableSection>
           sizeFactor: _sizeFactor,
           alignment: Alignment.topCenter,
           child: Padding(
-            padding: widget.padding ??
+            padding:
+                widget.padding ??
                 const EdgeInsets.fromLTRB(
                   D3Spacing.s16,
                   0,

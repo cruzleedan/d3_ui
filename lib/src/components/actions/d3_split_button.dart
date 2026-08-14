@@ -24,11 +24,7 @@ class D3SplitButtonItem {
 // D3SplitButtonVariant
 // ─────────────────────────────────────────────────────────────────────────────
 
-enum D3SplitButtonVariant {
-  filled,
-  tonal,
-  outlined,
-}
+enum D3SplitButtonVariant { filled, tonal, outlined }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // D3SplitButton
@@ -108,10 +104,7 @@ class _D3SplitButtonState extends State<D3SplitButton>
   @override
   void initState() {
     super.initState();
-    _shapeCtrl = AnimationController(
-      vsync: this,
-      duration: D3Motion.base,
-    );
+    _shapeCtrl = AnimationController(vsync: this, duration: D3Motion.base);
     _shapeCurved = CurvedAnimation(
       parent: _shapeCtrl,
       curve: D3Motion.standard,
@@ -281,10 +274,10 @@ class _D3SplitButtonState extends State<D3SplitButton>
   (Color, Color, Color?) _resolveColors(D3ColorTokens c) =>
       switch (widget.variant) {
         D3SplitButtonVariant.filled => (
-            c.primaryContainer,
-            c.onPrimaryContainer,
-            null,
-          ),
+          c.primaryContainer,
+          c.onPrimaryContainer,
+          null,
+        ),
         D3SplitButtonVariant.tonal => (c.secondary, c.onSecondary, null),
         D3SplitButtonVariant.outlined => (c.surface, c.primary, c.outline),
       };
@@ -346,10 +339,7 @@ class _TrailingButtonState extends State<_TrailingButton>
   @override
   void initState() {
     super.initState();
-    _menuCtrl = AnimationController(
-      vsync: this,
-      duration: D3Motion.base,
-    );
+    _menuCtrl = AnimationController(vsync: this, duration: D3Motion.base);
     // Scale from 0→1 along the Y axis, anchored to the bottom.
     _menuScale = CurvedAnimation(parent: _menuCtrl, curve: D3Motion.decelerate);
     _menuFade = CurvedAnimation(parent: _menuCtrl, curve: D3Motion.decelerate);
@@ -363,8 +353,7 @@ class _TrailingButtonState extends State<_TrailingButton>
   }
 
   void _showMenu() {
-    final renderBox =
-        _key.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox = _key.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     final buttonPos = renderBox.localToGlobal(Offset.zero);
@@ -421,7 +410,10 @@ class _TrailingButtonState extends State<_TrailingButton>
             padding: EdgeInsets.only(left: widget.padL, right: widget.padR),
             child: Center(
               child: TweenAnimationBuilder<double>(
-                tween: Tween(begin: widget.chevronTurns, end: widget.chevronTurns),
+                tween: Tween(
+                  begin: widget.chevronTurns,
+                  end: widget.chevronTurns,
+                ),
                 duration: Duration.zero,
                 builder: (_, turns, __) => RotationTransition(
                   turns: AlwaysStoppedAnimation(turns),
@@ -541,13 +533,11 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelColor =
-        item.isDestructive ? colors.error : colors.onSurface;
+    final labelColor = item.isDestructive ? colors.error : colors.onSurface;
 
     return InkWell(
       onTap: onSelected,
-      overlayColor:
-          WidgetStatePropertyAll(labelColor.withValues(alpha: 0.08)),
+      overlayColor: WidgetStatePropertyAll(labelColor.withValues(alpha: 0.08)),
       child: SizedBox(
         height: 48,
         child: Padding(

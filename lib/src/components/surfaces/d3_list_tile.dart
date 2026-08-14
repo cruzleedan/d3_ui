@@ -29,12 +29,11 @@ import 'package:d3_ui/d3_ui.dart';
 /// )
 /// ```
 class D3ListTileGroup extends StatelessWidget {
-  const D3ListTileGroup({
-    super.key,
-    required this.children,
-    this.border,
-  }) : assert(children.length > 0,
-            'D3ListTileGroup requires at least one child.');
+  const D3ListTileGroup({super.key, required this.children, this.border})
+    : assert(
+        children.length > 0,
+        'D3ListTileGroup requires at least one child.',
+      );
 
   final List<D3ListTile> children;
 
@@ -108,9 +107,9 @@ class D3ListTile extends StatelessWidget {
     this.minHeight = 52,
     this.semanticsLabel,
   }) : assert(
-          title != null || titleWidget != null,
-          'D3ListTile requires either title or titleWidget.',
-        );
+         title != null || titleWidget != null,
+         'D3ListTile requires either title or titleWidget.',
+       );
 
   /// Optional widget in the leading slot. Use [D3ListTileIcon] for the
   /// standard colored icon container.
@@ -158,8 +157,8 @@ class D3ListTile extends StatelessWidget {
     final titleColor = isDestructive
         ? colors.error
         : enabled
-            ? colors.onSurface
-            : colors.onSurface.withValues(alpha: 0.38);
+        ? colors.onSurface
+        : colors.onSurface.withValues(alpha: 0.38);
 
     final subtitleColor = enabled
         ? colors.onSurfaceVariant
@@ -168,16 +167,14 @@ class D3ListTile extends StatelessWidget {
     Widget content = ConstrainedBox(
       constraints: BoxConstraints(minHeight: minHeight),
       child: Padding(
-        padding: contentPadding ??
+        padding:
+            contentPadding ??
             const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Leading
-            if (leading != null) ...[
-              leading!,
-              const SizedBox(width: 12),
-            ],
+            if (leading != null) ...[leading!, const SizedBox(width: 12)],
 
             // Title + subtitle
             Expanded(
@@ -216,15 +213,9 @@ class D3ListTile extends StatelessWidget {
             if (trailing != null) ...[
               const SizedBox(width: 8),
               DefaultTextStyle(
-                style: TextStyle(
-                  fontSize: 13,
-                  color: colors.onSurfaceVariant,
-                ),
+                style: TextStyle(fontSize: 13, color: colors.onSurfaceVariant),
                 child: IconTheme(
-                  data: IconThemeData(
-                    color: colors.onSurfaceVariant,
-                    size: 18,
-                  ),
+                  data: IconThemeData(color: colors.onSurfaceVariant, size: 18),
                   child: trailing!,
                 ),
               ),

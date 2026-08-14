@@ -98,7 +98,9 @@ void main() {
   group('D3TypeScale', () {
     test('display sizes are larger than headline sizes', () {
       expect(
-          D3TypeScale.displaySmSize, greaterThan(D3TypeScale.headlineLgSize));
+        D3TypeScale.displaySmSize,
+        greaterThan(D3TypeScale.headlineLgSize),
+      );
     });
 
     test('headline sizes are larger than body sizes', () {

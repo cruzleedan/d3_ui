@@ -51,15 +51,22 @@ Widget d3ButtonVariantsPreview() {
   return Column(
     mainAxisSize: MainAxisSize.min,
     children: [
-      D3Button(label: 'Filled', variant: D3ButtonVariant.filled, onPressed: () {}),
+      D3Button(
+          label: 'Filled', variant: D3ButtonVariant.filled, onPressed: () {}),
       const SizedBox(height: 8),
-      D3Button(label: 'Tonal', variant: D3ButtonVariant.tonal, onPressed: () {}),
+      D3Button(
+          label: 'Tonal', variant: D3ButtonVariant.tonal, onPressed: () {}),
       const SizedBox(height: 8),
-      D3Button(label: 'Outlined', variant: D3ButtonVariant.outlined, onPressed: () {}),
+      D3Button(
+          label: 'Outlined',
+          variant: D3ButtonVariant.outlined,
+          onPressed: () {}),
       const SizedBox(height: 8),
-      D3Button(label: 'Ghost', variant: D3ButtonVariant.ghost, onPressed: () {}),
+      D3Button(
+          label: 'Ghost', variant: D3ButtonVariant.ghost, onPressed: () {}),
       const SizedBox(height: 8),
-      D3Button(label: 'Danger', variant: D3ButtonVariant.danger, onPressed: () {}),
+      D3Button(
+          label: 'Danger', variant: D3ButtonVariant.danger, onPressed: () {}),
     ],
   );
 }

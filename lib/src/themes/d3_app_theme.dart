@@ -27,7 +27,8 @@ abstract final class D3AppTheme {
     List<ThemeExtension<dynamic>> extraExtensions = const [],
   }) {
     final effectiveColors = colors ?? D3ColorTokens.light;
-    final effectiveExtension = overrides ??
+    final effectiveExtension =
+        overrides ??
         D3TokensExtension.light.copyWith(
           colors: effectiveColors,
           inputTokens: inputTokens,
@@ -56,7 +57,8 @@ abstract final class D3AppTheme {
     List<ThemeExtension<dynamic>> extraExtensions = const [],
   }) {
     final effectiveColors = colors ?? D3ColorTokens.dark;
-    final effectiveExtension = overrides ??
+    final effectiveExtension =
+        overrides ??
         D3TokensExtension.dark.copyWith(
           colors: effectiveColors,
           inputTokens: inputTokens,
@@ -85,20 +87,21 @@ abstract final class D3AppTheme {
       // Seed the Material ColorScheme from our primary token.
       // This ensures M3 components that we haven't overridden yet
       // still look coherent.
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: colors.primary,
-        brightness: brightness,
-        surface: colors.surface,
-        error: colors.error,
-      ).copyWith(
-        primary: colors.primary,
-        onPrimary: colors.onPrimary,
-        surface: colors.surface,
-        onSurface: colors.onSurface,
-        outline: colors.outline,
-        error: colors.error,
-        onError: colors.onError,
-      ),
+      colorScheme:
+          ColorScheme.fromSeed(
+            seedColor: colors.primary,
+            brightness: brightness,
+            surface: colors.surface,
+            error: colors.error,
+          ).copyWith(
+            primary: colors.primary,
+            onPrimary: colors.onPrimary,
+            surface: colors.surface,
+            onSurface: colors.onSurface,
+            outline: colors.outline,
+            error: colors.error,
+            onError: colors.onError,
+          ),
 
       scaffoldBackgroundColor: colors.surface,
 
@@ -114,8 +117,9 @@ abstract final class D3AppTheme {
         style: ButtonStyle(elevation: WidgetStatePropertyAll(0)),
       ),
 
-      splashFactory:
-          isDark ? InkSparkle.splashFactory : InkRipple.splashFactory,
+      splashFactory: isDark
+          ? InkSparkle.splashFactory
+          : InkRipple.splashFactory,
 
       // Register our custom tokens plus any app-specific extensions.
       extensions: [extension, ...extraExtensions],

@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
 
@@ -74,8 +75,7 @@ class D3PosterCard extends StatelessWidget {
   final String? semanticsLabel;
 
   // Limit tags to 2 at construction time so build() never allocates a list.
-  List<String> get _visibleTags =>
-      tags.length <= 2 ? tags : tags.sublist(0, 2);
+  List<String> get _visibleTags => tags.length <= 2 ? tags : tags.sublist(0, 2);
 
   @override
   Widget build(BuildContext context) {
@@ -84,109 +84,106 @@ class D3PosterCard extends StatelessWidget {
 
     return RepaintBoundary(
       child: Semantics(
-      label: semanticsLabel ?? title,
-      button: onTap != null || onLongPress != null,
-      child: GestureDetector(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(D3Radius.lg),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // ── Full-bleed cover image ──────────────────────────────────
-              D3Image(
-                url: imageUrl,
-                semanticsLabel: semanticsLabel ?? title,
-              ),
+        label: semanticsLabel ?? title,
+        button: onTap != null || onLongPress != null,
+        child: GestureDetector(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(D3Radius.lg),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // ── Full-bleed cover image ──────────────────────────────────
+                D3Image(url: imageUrl, semanticsLabel: semanticsLabel ?? title),
 
-              // ── Gradient vignette ───────────────────────────────────────
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.transparent,
-                      Color(0xCC000000),
-                    ],
-                    stops: [0.0, 0.45, 1.0],
+                // ── Gradient vignette ───────────────────────────────────────
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.transparent,
+                        Color(0xCC000000),
+                      ],
+                      stops: [0.0, 0.45, 1.0],
+                    ),
                   ),
                 ),
-              ),
 
-              // ── Frosted-glass info panel ────────────────────────────────
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.white],
-                    stops: [0.0, 0.18],
-                  ).createShader(bounds),
-                  blendMode: BlendMode.dstIn,
-                  child: ClipRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.45),
-                        padding: const EdgeInsets.fromLTRB(
-                          D3Spacing.s10,
-                          D3Spacing.s16,
-                          D3Spacing.s10,
-                          D3Spacing.s12,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              title,
-                              style: textTheme.labelMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                height: 1.25,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (subtitle != null) ...[
-                              const SizedBox(height: D3Spacing.s2),
+                // ── Frosted-glass info panel ────────────────────────────────
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Colors.white],
+                      stops: [0.0, 0.18],
+                    ).createShader(bounds),
+                    blendMode: BlendMode.dstIn,
+                    child: ClipRect(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          padding: const EdgeInsets.fromLTRB(
+                            D3Spacing.s10,
+                            D3Spacing.s16,
+                            D3Spacing.s10,
+                            D3Spacing.s12,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                               Text(
-                                subtitle!,
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: Colors.white70,
+                                title,
+                                style: textTheme.labelMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.25,
                                 ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
+                              if (subtitle != null) ...[
+                                const SizedBox(height: D3Spacing.s2),
+                                Text(
+                                  subtitle!,
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                              if (visibleTags.isNotEmpty) ...[
+                                const SizedBox(height: D3Spacing.s6),
+                                _PosterTagChips(tags: visibleTags),
+                              ],
                             ],
-                            if (visibleTags.isNotEmpty) ...[
-                              const SizedBox(height: D3Spacing.s6),
-                              _PosterTagChips(tags: visibleTags),
-                            ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              // ── Badge slot (top-right) ──────────────────────────────────
-              if (badge != null)
-                Positioned(
-                  top: D3Spacing.s6,
-                  right: D3Spacing.s6,
-                  child: badge!,
-                ),
-            ],
+                // ── Badge slot (top-right) ──────────────────────────────────
+                if (badge != null)
+                  Positioned(
+                    top: D3Spacing.s6,
+                    right: D3Spacing.s6,
+                    child: badge!,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }

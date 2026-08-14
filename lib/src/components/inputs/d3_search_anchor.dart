@@ -103,10 +103,13 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
     super.key,
     required List<T> items,
     required List<T> Function(List<T> items, String query, Set<F> activeFilters)
-        filterItems,
+    filterItems,
     required Widget Function(
-            BuildContext context, List<T> results, String query)
-        resultBuilder,
+      BuildContext context,
+      List<T> results,
+      String query,
+    )
+    resultBuilder,
     this.hint = 'Search…',
     this.emptyState,
     this.controller,
@@ -116,11 +119,11 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
     this.defaultFilters,
     this.onFiltersChanged,
     this.multiSelectFilters = false,
-  })  : _initialItems = items,
-        _filterItems = filterItems,
-        _onSearch = null,
-        _debounce = Duration.zero,
-        _resultBuilder = resultBuilder;
+  }) : _initialItems = items,
+       _filterItems = filterItems,
+       _onSearch = null,
+       _debounce = Duration.zero,
+       _resultBuilder = resultBuilder;
 
   // ── .remote ────────────────────────────────────────────────────────────────
 
@@ -130,8 +133,11 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
     required List<T> initialItems,
     required Future<List<T>?> Function(String query) onSearch,
     required Widget Function(
-            BuildContext context, List<T> results, String query)
-        resultBuilder,
+      BuildContext context,
+      List<T> results,
+      String query,
+    )
+    resultBuilder,
     this.hint = 'Search…',
     this.emptyState,
     this.controller,
@@ -142,11 +148,11 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
     this.defaultFilters,
     this.onFiltersChanged,
     this.multiSelectFilters = false,
-  })  : _initialItems = initialItems,
-        _filterItems = null,
-        _onSearch = onSearch,
-        _debounce = debounce,
-        _resultBuilder = resultBuilder;
+  }) : _initialItems = initialItems,
+       _filterItems = null,
+       _onSearch = onSearch,
+       _debounce = debounce,
+       _resultBuilder = resultBuilder;
 
   // ── Shared fields ──────────────────────────────────────────────────────────
 
@@ -209,14 +215,17 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
       if (idx > start) {
         spans.add(TextSpan(text: text.substring(start, idx), style: style));
       }
-      spans.add(TextSpan(
-        text: text.substring(idx, idx + query.length),
-        style: highlightStyle ??
-            (style ?? const TextStyle()).copyWith(
-              fontWeight: FontWeight.w600,
-              color: highlightColor,
-            ),
-      ));
+      spans.add(
+        TextSpan(
+          text: text.substring(idx, idx + query.length),
+          style:
+              highlightStyle ??
+              (style ?? const TextStyle()).copyWith(
+                fontWeight: FontWeight.w600,
+                color: highlightColor,
+              ),
+        ),
+      );
       start = idx + query.length;
     }
 
@@ -346,25 +355,27 @@ class _D3SearchAnchorState<T, F> extends State<D3SearchAnchor<T, F>>
 
 class _SearchPageRoute extends PageRouteBuilder<void> {
   _SearchPageRoute({required Widget child})
-      : super(
-          pageBuilder: (_, __, ___) => child,
-          transitionDuration: D3Motion.base,
-          reverseTransitionDuration: D3Motion.fast,
-          transitionsBuilder: (_, animation, __, child) {
-            final curve =
-                CurvedAnimation(parent: animation, curve: D3Motion.enter);
-            return FadeTransition(
-              opacity: curve,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.04),
-                  end: Offset.zero,
-                ).animate(curve),
-                child: child,
-              ),
-            );
-          },
-        );
+    : super(
+        pageBuilder: (_, __, ___) => child,
+        transitionDuration: D3Motion.base,
+        reverseTransitionDuration: D3Motion.fast,
+        transitionsBuilder: (_, animation, __, child) {
+          final curve = CurvedAnimation(
+            parent: animation,
+            curve: D3Motion.enter,
+          );
+          return FadeTransition(
+            opacity: curve,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.04),
+                end: Offset.zero,
+              ).animate(curve),
+              child: child,
+            ),
+          );
+        },
+      );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -562,7 +573,10 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
                 },
                 multiSelect: widget.multiSelectFilters,
                 padding: const EdgeInsets.fromLTRB(
-                  D3Spacing.s16, 0, D3Spacing.s16, D3Spacing.s10,
+                  D3Spacing.s16,
+                  0,
+                  D3Spacing.s16,
+                  D3Spacing.s10,
                 ),
               ),
             ],
@@ -589,7 +603,8 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
 
     if (_results.isEmpty) {
       return Center(
-        child: widget.emptyState ??
+        child:
+            widget.emptyState ??
             D3EmptyState(
               icon: Icons.search_off_rounded,
               title: _query.isEmpty

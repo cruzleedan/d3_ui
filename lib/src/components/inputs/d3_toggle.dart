@@ -186,8 +186,9 @@ class _D3ToggleState extends State<D3Toggle> with TickerProviderStateMixin {
                   _thumbOffLeft + (_thumbOnLeft - _thumbOffLeft) * travel;
               // When pressing while ON, shift left by the extra width so the
               // right edge of the thumb stays pinned.
-              final thumbLeft =
-                  widget.value ? baseLeft - (thumbW - _thumbNormal) : baseLeft;
+              final thumbLeft = widget.value
+                  ? baseLeft - (thumbW - _thumbNormal)
+                  : baseLeft;
 
               return SizedBox(
                 width: _trackW,
@@ -214,8 +215,9 @@ class _D3ToggleState extends State<D3Toggle> with TickerProviderStateMixin {
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius:
-                                BorderRadius.circular(_thumbNormal / 2),
+                            borderRadius: BorderRadius.circular(
+                              _thumbNormal / 2,
+                            ),
                           ),
                         ),
                       ),

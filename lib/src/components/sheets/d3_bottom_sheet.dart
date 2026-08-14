@@ -14,10 +14,10 @@ import 'package:d3_ui/d3_ui.dart';
 /// ```
 class D3SnapPoint {
   const D3SnapPoint(this.fraction)
-      : assert(
-          fraction > 0 && fraction <= 1,
-          'fraction must be between 0 (exclusive) and 1 (inclusive)',
-        );
+    : assert(
+        fraction > 0 && fraction <= 1,
+        'fraction must be between 0 (exclusive) and 1 (inclusive)',
+      );
 
   final double fraction;
 
@@ -151,10 +151,7 @@ class D3BottomSheet {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _D3BottomSheetScope extends InheritedWidget {
-  const _D3BottomSheetScope({
-    required this.state,
-    required super.child,
-  });
+  const _D3BottomSheetScope({required this.state, required super.child});
 
   final _D3BottomSheetContentState state;
 
@@ -345,8 +342,8 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
           builder: (ctx, scrollController) => AnimatedBuilder(
             animation: _dsController,
             builder: (_, __) {
-              final atTop = _dsController.isAttached &&
-                  _dsController.size >= 0.99;
+              final atTop =
+                  _dsController.isAttached && _dsController.size >= 0.99;
               return _SheetSurface(
                 colors: colors,
                 title: widget.title,
@@ -417,9 +414,7 @@ class _SheetSurface extends StatelessWidget {
                 onClose: onClose,
               ),
             ),
-            SliverFillRemaining(
-              child: child,
-            ),
+            SliverFillRemaining(child: child),
             SliverToBoxAdapter(
               child: SizedBox(height: MediaQuery.viewPaddingOf(context).bottom),
             ),
@@ -610,8 +605,10 @@ class _SheetHeader extends StatelessWidget {
                 behavior: HitTestBehavior.opaque,
                 onTap: onClose,
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Text(
                     'Cancel',
                     style: TextStyle(

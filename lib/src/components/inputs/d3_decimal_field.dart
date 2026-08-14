@@ -52,9 +52,7 @@ class _D3DecimalFieldState extends State<D3DecimalField> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(
-      text: _format(widget.initialValue),
-    );
+    _controller = TextEditingController(text: _format(widget.initialValue));
     _focusNode = FocusNode()..addListener(_onFocusChange);
   }
 
@@ -75,8 +73,7 @@ class _D3DecimalFieldState extends State<D3DecimalField> {
       final newText = _format(widget.initialValue);
       if (_controller.text != newText) {
         _controller.text = newText;
-        _controller.selection =
-            TextSelection.collapsed(offset: newText.length);
+        _controller.selection = TextSelection.collapsed(offset: newText.length);
       }
     }
   }
@@ -102,16 +99,16 @@ class _D3DecimalFieldState extends State<D3DecimalField> {
     final borderColor = !widget.isEnabled
         ? colors.outline.withValues(alpha: 0.4)
         : hasError
-            ? colors.error
-            : _isFocused
-                ? colors.primary
-                : colors.outline;
+        ? colors.error
+        : _isFocused
+        ? colors.primary
+        : colors.outline;
 
     final bgColor = !widget.isEnabled
         ? colors.surfaceVariant
         : _isFocused
-            ? colors.surface
-            : colors.surfaceVariant;
+        ? colors.surface
+        : colors.surfaceVariant;
 
     Widget field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +191,11 @@ class _D3DecimalFieldState extends State<D3DecimalField> {
                       ),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d*\.?\d{0,' '${widget.decimalPlaces}' r'}'),
+                          RegExp(
+                            r'^\d*\.?\d{0,'
+                            '${widget.decimalPlaces}'
+                            r'}',
+                          ),
                         ),
                         if (widget.maxValue != null)
                           _MaxValueFormatter(widget.maxValue!),
@@ -245,10 +246,7 @@ class _D3DecimalFieldState extends State<D3DecimalField> {
         // Helper / error
         if (widget.errorText != null || widget.helperText != null)
           Padding(
-            padding: EdgeInsets.only(
-              top: D3Spacing.s4,
-              left: tokens.paddingH,
-            ),
+            padding: EdgeInsets.only(top: D3Spacing.s4, left: tokens.paddingH),
             child: Text(
               widget.errorText ?? widget.helperText!,
               style: TextStyle(

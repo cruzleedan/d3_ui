@@ -69,16 +69,17 @@ sealed class D3ScreenAction {
     IconData icon, {
     required VoidCallback onPressed,
     String? semanticsLabel,
-  }) =>
-      _IconAction(
-          icon: icon, onPressed: onPressed, semanticsLabel: semanticsLabel);
+  }) => _IconAction(
+    icon: icon,
+    onPressed: onPressed,
+    semanticsLabel: semanticsLabel,
+  );
 
   /// A text button (e.g. "Save", "Done").
   factory D3ScreenAction.text(
     String label, {
     required VoidCallback onPressed,
-  }) =>
-      _TextAction(label: label, onPressed: onPressed);
+  }) => _TextAction(label: label, onPressed: onPressed);
 
   /// An arbitrary widget in the trailing slot (e.g. a status indicator).
   factory D3ScreenAction.widget(Widget child) => _WidgetAction(child);
@@ -164,10 +165,10 @@ class D3Screen extends StatelessWidget {
     this.backgroundColor,
     this.resizeToAvoidBottomInset = true,
   }) : assert(
-          !(leading == D3ScreenLeading.cancel && actions.isNotEmpty),
-          'D3Screen: actions must be empty when using D3ScreenLeading.cancel — '
-          'cancel occupies the trailing slot.',
-        );
+         !(leading == D3ScreenLeading.cancel && actions.isNotEmpty),
+         'D3Screen: actions must be empty when using D3ScreenLeading.cancel — '
+         'cancel occupies the trailing slot.',
+       );
 
   final String title;
 
@@ -247,26 +248,26 @@ class D3Screen extends StatelessWidget {
           behavior: HitTestBehavior.translucent,
           child: switch (layout) {
             D3ScreenLayout.box => _BoxLayout(
-                title: title,
-                leading: resolvedLeading,
-                isCancel: isCancel,
-                actions: actions,
-                tabBar: tabBar,
-                headerSlot: headerSlot,
-                body: body,
-                colors: colors,
-                titleBarOverride: titleBarOverride,
-              ),
+              title: title,
+              leading: resolvedLeading,
+              isCancel: isCancel,
+              actions: actions,
+              tabBar: tabBar,
+              headerSlot: headerSlot,
+              body: body,
+              colors: colors,
+              titleBarOverride: titleBarOverride,
+            ),
             D3ScreenLayout.sliver => _SliverLayout(
-                title: title,
-                subtitle: subtitle,
-                leading: resolvedLeading,
-                isCancel: isCancel,
-                actions: actions,
-                sliverHeader: sliverHeader,
-                body: body,
-                colors: colors,
-              ),
+              title: title,
+              subtitle: subtitle,
+              leading: resolvedLeading,
+              isCancel: isCancel,
+              actions: actions,
+              sliverHeader: sliverHeader,
+              body: body,
+              colors: colors,
+            ),
           },
         ),
       ),
@@ -328,10 +329,8 @@ class _BoxLayout extends StatelessWidget {
       children: [
         AnimatedSwitcher(
           duration: D3Motion.moderate,
-          transitionBuilder: (child, anim) => FadeTransition(
-            opacity: anim,
-            child: child,
-          ),
+          transitionBuilder: (child, anim) =>
+              FadeTransition(opacity: anim, child: child),
           child: titleBarOverride != null
               ? _TitleBarShell(
                   key: const ValueKey('override'),
@@ -339,10 +338,7 @@ class _BoxLayout extends StatelessWidget {
                   colors: colors,
                   child: titleBarOverride!,
                 )
-              : KeyedSubtree(
-                  key: const ValueKey('normal'),
-                  child: normalBar,
-                ),
+              : KeyedSubtree(key: const ValueKey('normal'), child: normalBar),
         ),
         if (tabBar != null) tabBar!,
         if (headerSlot != null) headerSlot!,
@@ -627,11 +623,11 @@ class _LeadingWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (leading) {
       _Back() => _BarIconButton(
-          icon: Icons.arrow_back_ios_new_rounded,
-          onPressed: () => Navigator.of(context).pop(),
-          colors: colors,
-          semanticsLabel: 'Back',
-        ),
+        icon: Icons.arrow_back_ios_new_rounded,
+        onPressed: () => Navigator.of(context).pop(),
+        colors: colors,
+        semanticsLabel: 'Back',
+      ),
       _None() => const SizedBox.shrink(),
       _Custom(:final widget) => widget,
       // cancel is handled at the trailing slot — leading is empty
@@ -682,8 +678,9 @@ class _ActionsRow extends StatelessWidget {
     if (actions.isEmpty) return const SizedBox.shrink();
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children:
-          actions.map((a) => _ActionWidget(action: a, colors: colors)).toList(),
+      children: actions
+          .map((a) => _ActionWidget(action: a, colors: colors))
+          .toList(),
     );
   }
 }
@@ -705,22 +702,22 @@ class _ActionWidget extends StatelessWidget {
           semanticsLabel: semanticsLabel,
         ),
       _TextAction(:final label, :final onPressed) => Semantics(
-          button: true,
-          child: GestureDetector(
-            onTap: onPressed,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: D3TypeScale.titleMdSize,
-                  fontWeight: FontWeight.w500,
-                  color: colors.primary,
-                ),
+        button: true,
+        child: GestureDetector(
+          onTap: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: D3TypeScale.titleMdSize,
+                fontWeight: FontWeight.w500,
+                color: colors.primary,
               ),
             ),
           ),
         ),
+      ),
       _WidgetAction(:final child) => child,
     };
   }
@@ -756,11 +753,7 @@ class _BarIconButton extends StatelessWidget {
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-          child: Icon(
-            icon,
-            size: 22,
-            color: colors.onSurface,
-          ),
+          child: Icon(icon, size: 22, color: colors.onSurface),
         ),
       ),
     );

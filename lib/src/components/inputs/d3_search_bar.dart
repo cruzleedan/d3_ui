@@ -168,8 +168,9 @@ class _D3SearchBarState extends State<D3SearchBar> {
               Icons.search_rounded,
               key: ValueKey(effectivelyFocused),
               size: 18,
-              color:
-                  effectivelyFocused ? colors.primary : colors.onSurfaceVariant,
+              color: effectivelyFocused
+                  ? colors.primary
+                  : colors.onSurfaceVariant,
             ),
           ),
           const SizedBox(width: 8),
@@ -221,8 +222,9 @@ class _D3SearchBarState extends State<D3SearchBar> {
                         height: 17,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color:
-                              colors.onSurfaceVariant.withValues(alpha: 0.35),
+                          color: colors.onSurfaceVariant.withValues(
+                            alpha: 0.35,
+                          ),
                         ),
                         alignment: Alignment.center,
                         child: Icon(

@@ -237,10 +237,7 @@ class D3Card extends StatelessWidget {
     // on the colored surface.
     Widget card = Material(
       color: bgColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: radius,
-        side: borderSide,
-      ),
+      shape: RoundedRectangleBorder(borderRadius: radius, side: borderSide),
       clipBehavior: Clip.antiAlias,
       child: _isInteractive
           ? InkWell(
@@ -328,11 +325,7 @@ class _CardHeader extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             subtitle!,
-            style: TextStyle(
-              fontSize: 12,
-              color: subtitleColor,
-              height: 1.4,
-            ),
+            style: TextStyle(fontSize: 12, color: subtitleColor, height: 1.4),
           ),
         ],
       ],

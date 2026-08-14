@@ -8,11 +8,7 @@ import 'package:d3_ui/d3_ui.dart';
 
 /// A single option in a [D3FilterChipRow].
 class D3FilterOption<T> {
-  const D3FilterOption({
-    required this.value,
-    required this.label,
-    this.icon,
-  });
+  const D3FilterOption({required this.value, required this.label, this.icon});
 
   final T value;
   final String label;
@@ -61,7 +57,10 @@ class D3FilterChipRow<T> extends StatelessWidget {
     required this.onChanged,
     this.multiSelect = false,
     this.padding,
-  }) : assert(options.length > 0, 'D3FilterChipRow requires at least one option.');
+  }) : assert(
+         options.length > 0,
+         'D3FilterChipRow requires at least one option.',
+       );
 
   final List<D3FilterOption<T>> options;
 

@@ -376,7 +376,8 @@ class D3TextFieldState extends State<D3TextField> {
             borderRadius: BorderRadius.circular(tokens.radius),
             border: Border.all(
               color: borderColor,
-              width: (status == _FieldStatus.focused ||
+              width:
+                  (status == _FieldStatus.focused ||
                       status == _FieldStatus.error ||
                       status == _FieldStatus.success)
                   ? tokens.focusedBorderWidth
@@ -435,8 +436,9 @@ class D3TextFieldState extends State<D3TextField> {
                       obscureText: _obscured,
                       maxLines: widget.obscureText ? 1 : widget.maxLines,
                       minLines: widget.minLines,
-                      maxLength:
-                          widget.maxLengthEnforced ? widget.maxLength : null,
+                      maxLength: widget.maxLengthEnforced
+                          ? widget.maxLength
+                          : null,
                       keyboardType: widget.keyboardType,
                       textInputAction: widget.textInputAction,
                       autofocus: widget.autofocus,
@@ -530,7 +532,8 @@ class D3TextFieldState extends State<D3TextField> {
     // ── Clear button ────────────────────────────────────────────────────────
     // Shown when: showClearButton is true, field has text, is focused,
     // and is not disabled or read-only. Visible on password fields too.
-    final showClear = widget.showClearButton &&
+    final showClear =
+        widget.showClearButton &&
         _isFocused &&
         _controller.text.isNotEmpty &&
         widget.isEnabled &&
@@ -635,10 +638,11 @@ class D3TextFieldState extends State<D3TextField> {
       padding: EdgeInsets.only(right: tokens.paddingH),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: parts
-            .expand((w) => [w, const SizedBox(width: D3Spacing.s8)])
-            .toList()
-          ..removeLast(),
+        children:
+            parts
+                .expand((w) => [w, const SizedBox(width: D3Spacing.s8)])
+                .toList()
+              ..removeLast(),
       ),
     );
   }
@@ -646,21 +650,21 @@ class D3TextFieldState extends State<D3TextField> {
   // ── Color helpers ──────────────────────────────────────────────────────────
 
   Color _borderColor(_FieldStatus status, D3ColorTokens c) => switch (status) {
-        _FieldStatus.focused => c.primary,
-        _FieldStatus.error => c.error,
-        _FieldStatus.success => c.success,
-        _FieldStatus.disabled => c.outline,
-        _ => c.outline,
-      };
+    _FieldStatus.focused => c.primary,
+    _FieldStatus.error => c.error,
+    _FieldStatus.success => c.success,
+    _FieldStatus.disabled => c.outline,
+    _ => c.outline,
+  };
 
   Color _bgColor(_FieldStatus status, D3ColorTokens c) => switch (status) {
-        _FieldStatus.disabled => c.surfaceVariant,
-        _FieldStatus.focused => c.surface,
-        _FieldStatus.filled => c.surface,
-        _FieldStatus.error => c.surface,
-        _FieldStatus.success => c.surface,
-        _ => c.surfaceVariant,
-      };
+    _FieldStatus.disabled => c.surfaceVariant,
+    _FieldStatus.focused => c.surface,
+    _FieldStatus.filled => c.surface,
+    _FieldStatus.error => c.surface,
+    _FieldStatus.success => c.surface,
+    _ => c.surfaceVariant,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -940,8 +944,8 @@ class _BottomRow extends StatelessWidget {
     final helperColor = isError
         ? colors.error
         : isSuccess
-            ? colors.success
-            : colors.onSurfaceVariant;
+        ? colors.success
+        : colors.onSurfaceVariant;
 
     Color counterColor = colors.onSurfaceVariant;
     if (maxLength != null) {

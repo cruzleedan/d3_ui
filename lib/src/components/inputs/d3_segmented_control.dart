@@ -16,9 +16,9 @@ class D3Segment<T> {
     this.icon,
     this.semanticsLabel,
   }) : assert(
-          label != null || icon != null,
-          'A D3Segment must have at least a label or an icon.',
-        );
+         label != null || icon != null,
+         'A D3Segment must have at least a label or an icon.',
+       );
 
   /// The value emitted by [D3SegmentedControl.onChanged] when this segment
   /// is selected.
@@ -86,9 +86,9 @@ class D3SegmentedControl<T> extends StatefulWidget {
     required this.onChanged,
     this.expand = false,
   }) : assert(
-          segments.length >= 2 && segments.length <= 4,
-          'D3SegmentedControl requires between 2 and 4 segments.',
-        );
+         segments.length >= 2 && segments.length <= 4,
+         'D3SegmentedControl requires between 2 and 4 segments.',
+       );
 
   final List<D3Segment<T>> segments;
 
@@ -120,10 +120,7 @@ class _D3SegmentedControlState<T> extends State<D3SegmentedControl<T>>
   void initState() {
     super.initState();
     _previousIndex = _selectedIndex;
-    _controller = AnimationController(
-      vsync: this,
-      duration: D3Motion.fast,
-    );
+    _controller = AnimationController(vsync: this, duration: D3Motion.fast);
     _position = Tween<double>(
       begin: _selectedIndex.toDouble(),
       end: _selectedIndex.toDouble(),
@@ -134,15 +131,14 @@ class _D3SegmentedControlState<T> extends State<D3SegmentedControl<T>>
   void didUpdateWidget(D3SegmentedControl<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     final newIndex = _selectedIndex;
-    final oldIndex =
-        oldWidget.segments.indexWhere((s) => s.value == oldWidget.selected);
+    final oldIndex = oldWidget.segments.indexWhere(
+      (s) => s.value == oldWidget.selected,
+    );
     if (oldIndex != newIndex) {
       _position = Tween<double>(
         begin: _previousIndex.toDouble(),
         end: newIndex.toDouble(),
-      ).animate(
-        CurvedAnimation(parent: _controller, curve: D3Motion.standard),
-      );
+      ).animate(CurvedAnimation(parent: _controller, curve: D3Motion.standard));
       _previousIndex = newIndex;
       _controller
         ..reset()
@@ -223,7 +219,8 @@ class _SegmentTrack extends StatelessWidget {
         builder: (context, constraints) {
           final totalWidth = constraints.maxWidth;
           // Each segment gets equal space minus the shared padding.
-          final segWidth = (totalWidth - _trackPadding * 2) / count -
+          final segWidth =
+              (totalWidth - _trackPadding * 2) / count -
               _trackPadding * (count - 1) / count;
           // Pill x offset interpolated from animated position.
           final pillLeft = animatedPosition * (segWidth + _trackPadding);
@@ -304,11 +301,7 @@ class _SegmentItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (segment.icon != null)
-          Icon(
-            segment.icon,
-            size: 15,
-            color: labelColor,
-          ),
+          Icon(segment.icon, size: 15, color: labelColor),
         if (segment.icon != null && segment.label != null)
           const SizedBox(width: 5),
         if (segment.label != null)
