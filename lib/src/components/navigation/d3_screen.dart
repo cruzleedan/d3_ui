@@ -624,7 +624,13 @@ class _LeadingWidget extends StatelessWidget {
     return switch (leading) {
       _Back() => _BarIconButton(
         icon: Icons.arrow_back_ios_new_rounded,
-        onPressed: () => Navigator.of(context).pop(),
+        // Re-check at tap time, not just at the build that decided to show
+        // this arrow — the route stack can shrink out from under a stale
+        // build (e.g. a redirect firing between builds) and popping an
+        // empty stack crashes GoRouter's assertion.
+        onPressed: () {
+          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+        },
         colors: colors,
         semanticsLabel: 'Back',
       ),
