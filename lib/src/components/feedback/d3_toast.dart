@@ -339,58 +339,64 @@ class _ToastStyle {
   final Color messageColor;
   final Color actionColor;
 
+  /// Builds a tinted style from an accent color, blended onto `colors.surface`
+  /// so the chip is always opaque (never see-through to whatever's behind the
+  /// floating SnackBar) and readable in both themes. Title/message text uses
+  /// `colors.onSurface`/`colors.onSurfaceVariant` rather than a fixed accent
+  /// shade — those are guaranteed to contrast against `colors.surface` by
+  /// construction, whereas a hardcoded pastel only reads correctly against
+  /// whichever single background brightness it was picked for.
+  static _ToastStyle _tinted({
+    required Color accent,
+    required IconData icon,
+    required D3ColorTokens colors,
+  }) {
+    return _ToastStyle(
+      background: Color.alphaBlend(
+        accent.withValues(alpha: 0.16),
+        colors.surface,
+      ),
+      border: Color.alphaBlend(accent.withValues(alpha: 0.40), colors.surface),
+      icon: icon,
+      iconForeground: accent,
+      iconBackground: Color.alphaBlend(
+        accent.withValues(alpha: 0.28),
+        colors.surface,
+      ),
+      titleColor: colors.onSurface,
+      messageColor: colors.onSurfaceVariant,
+      actionColor: accent,
+    );
+  }
+
   factory _ToastStyle.of(D3ToastVariant variant, D3ColorTokens colors) {
     switch (variant) {
       case D3ToastVariant.success:
-        const accent = Color(0xFF1D9E75);
-        return _ToastStyle(
-          background: accent.withValues(alpha: 0.13),
-          border: accent.withValues(alpha: 0.30),
+        return _tinted(
+          accent: colors.success,
           icon: Icons.check_circle_outline_rounded,
-          iconForeground: const Color(0xFF5DCAA5),
-          iconBackground: accent.withValues(alpha: 0.22),
-          titleColor: const Color(0xFF9FE1CB),
-          messageColor: const Color(0xFF9FE1CB).withValues(alpha: 0.65),
-          actionColor: const Color(0xFF5DCAA5),
+          colors: colors,
         );
 
       case D3ToastVariant.error:
-        const accent = Color(0xFFE24B4A);
-        return _ToastStyle(
-          background: accent.withValues(alpha: 0.13),
-          border: accent.withValues(alpha: 0.30),
+        return _tinted(
+          accent: colors.error,
           icon: Icons.error_outline_rounded,
-          iconForeground: const Color(0xFFF09595),
-          iconBackground: accent.withValues(alpha: 0.22),
-          titleColor: const Color(0xFFF7C1C1),
-          messageColor: const Color(0xFFF7C1C1).withValues(alpha: 0.65),
-          actionColor: const Color(0xFFF09595),
+          colors: colors,
         );
 
       case D3ToastVariant.warning:
-        const accent = Color(0xFFEF9F27);
-        return _ToastStyle(
-          background: accent.withValues(alpha: 0.13),
-          border: accent.withValues(alpha: 0.30),
+        return _tinted(
+          accent: colors.warning,
           icon: Icons.warning_amber_rounded,
-          iconForeground: const Color(0xFFFAC775),
-          iconBackground: accent.withValues(alpha: 0.22),
-          titleColor: const Color(0xFFFAC775),
-          messageColor: const Color(0xFFFAC775).withValues(alpha: 0.65),
-          actionColor: const Color(0xFFFAC775),
+          colors: colors,
         );
 
       case D3ToastVariant.info:
-        const accent = Color(0xFF378ADD);
-        return _ToastStyle(
-          background: accent.withValues(alpha: 0.13),
-          border: accent.withValues(alpha: 0.30),
+        return _tinted(
+          accent: colors.primary,
           icon: Icons.info_outline_rounded,
-          iconForeground: const Color(0xFF85B7EB),
-          iconBackground: accent.withValues(alpha: 0.22),
-          titleColor: const Color(0xFFB5D4F4),
-          messageColor: const Color(0xFFB5D4F4).withValues(alpha: 0.65),
-          actionColor: const Color(0xFF85B7EB),
+          colors: colors,
         );
 
       case D3ToastVariant.neutral:
