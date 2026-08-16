@@ -216,6 +216,7 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final pos = _scrollController.position;
+    if (!pos.hasContentDimensions) return;
     if (pos.pixels >= pos.maxScrollExtent - widget.loadMoreThreshold &&
         widget.hasMore &&
         !_isLoadingMore) {
@@ -226,6 +227,10 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
   void _checkFillViewport() {
     if (!mounted || !_scrollController.hasClients) return;
     final pos = _scrollController.position;
+    // hasClients only means a ScrollPosition is attached — it may not have
+    // completed its first layout pass yet, in which case maxScrollExtent
+    // isn't available and reading it throws.
+    if (!pos.hasContentDimensions) return;
     if (pos.maxScrollExtent == 0 && widget.hasMore && !_isLoadingMore) {
       _triggerLoadMore();
     }
