@@ -39,6 +39,36 @@ class D3NavItem {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// D3NavBarCenterAction
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// An optional, visually distinct action rendered in the middle of a
+/// [D3NavBar], alongside (not counted among) its [D3NavBar.items].
+///
+/// Use this for a frequent one-tap action that doesn't navigate to a
+/// persistent destination (e.g. opening a "new entry" sheet) — a common
+/// bottom-nav pattern for mixing navigation tabs with an action. Rendered
+/// as a raised, filled circle rather than the plain pill-select style
+/// [D3NavItem]s use, so it reads as "does something" rather than "goes
+/// somewhere." Tapping it calls [onPressed] only — it never affects
+/// [D3NavBar.selectedIndex] or [D3NavBar.onTabSelected].
+class D3NavBarCenterAction {
+  const D3NavBarCenterAction({
+    required this.icon,
+    required this.onPressed,
+    this.semanticsLabel,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  /// Screen-reader label. Required in practice (no visible label is shown
+  /// next to the icon), but kept optional with a generic fallback so a
+  /// caller who forgets isn't left with no label at all.
+  final String? semanticsLabel;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // D3NavBar
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -56,6 +86,22 @@ class D3NavItem {
 ///     D3NavItem(icon: Icons.person_outlined, label: 'Profile'),
 ///   ],
 /// )
+///
+/// // With a center action (e.g. "add new"), rendered distinctly and
+/// // inserted between the two halves of items — see D3NavBarCenterAction.
+/// D3NavBar(
+///   selectedIndex: _tab,
+///   onTabSelected: (i) => setState(() => _tab = i),
+///   items: const [
+///     D3NavItem(icon: Icons.home_outlined, label: 'Home'),
+///     D3NavItem(icon: Icons.settings_outlined, label: 'Settings'),
+///   ],
+///   centerAction: D3NavBarCenterAction(
+///     icon: Icons.add,
+///     onPressed: () => showNewEntrySheet(context),
+///     semanticsLabel: 'New entry',
+///   ),
+/// )
 /// ```
 class D3NavBar extends StatelessWidget {
   const D3NavBar({
@@ -63,6 +109,7 @@ class D3NavBar extends StatelessWidget {
     required this.items,
     required this.selectedIndex,
     required this.onTabSelected,
+    this.centerAction,
   }) : assert(
          items.length >= 2 && items.length <= 5,
          'D3NavBar requires 2–5 items.',
@@ -72,10 +119,23 @@ class D3NavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTabSelected;
 
+  /// Optional visually-distinct action rendered between the two halves of
+  /// [items] (e.g. items = [A, B, C, D] renders as A, B, •center•, C, D).
+  /// Does not count toward the 2–5 [items] limit and never affects
+  /// [selectedIndex]/[onTabSelected] — see [D3NavBarCenterAction].
+  final D3NavBarCenterAction? centerAction;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    final action = centerAction;
+    // Split point for inserting the center action: after the first half
+    // of items, so e.g. 4 items become 2 + action + 2, and an odd count
+    // (e.g. 3) becomes 2 + action + 1 (matches this being an even count
+    // in the app that actually needed this — site_inspector's Projects/
+    // Visit History/+/Settings — without breaking for other counts).
+    final splitIndex = (items.length / 2).ceil();
 
     return Container(
       decoration: BoxDecoration(
@@ -94,19 +154,73 @@ class D3NavBar extends StatelessWidget {
             bottom: bottomPadding > 0 ? bottomPadding : 12,
           ),
           child: Row(
-            children: List.generate(items.length, (i) {
-              return Expanded(
-                child: _NavBarItem(
-                  item: items[i],
-                  isSelected: i == selectedIndex,
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    onTabSelected(i);
-                  },
-                  colors: colors,
+            children: [
+              for (var i = 0; i < items.length; i++) ...[
+                if (action != null && i == splitIndex)
+                  _NavBarCenterActionButton(
+                    action: action,
+                    colors: colors,
+                  ),
+                Expanded(
+                  child: _NavBarItem(
+                    item: items[i],
+                    isSelected: i == selectedIndex,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onTabSelected(i);
+                    },
+                    colors: colors,
+                  ),
                 ),
-              );
-            }),
+              ],
+              if (action != null && splitIndex == items.length)
+                _NavBarCenterActionButton(action: action, colors: colors),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Center action button
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _NavBarCenterActionButton extends StatelessWidget {
+  const _NavBarCenterActionButton({required this.action, required this.colors});
+
+  final D3NavBarCenterAction action;
+  final D3ColorTokens colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: action.semanticsLabel ?? 'Action',
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.lightImpact();
+          action.onPressed();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: D3Spacing.s8),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: colors.primary,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: colors.primary.withValues(alpha: 0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(action.icon, size: 24, color: colors.onPrimary),
           ),
         ),
       ),

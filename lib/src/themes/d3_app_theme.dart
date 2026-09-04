@@ -23,6 +23,7 @@ abstract final class D3AppTheme {
     D3ColorTokens? colors,
     D3InputTokens? inputTokens,
     D3ButtonTokens? buttonTokens,
+    D3PhotoStripTokens? photoStripTokens,
     D3TokensExtension? overrides,
     List<ThemeExtension<dynamic>> extraExtensions = const [],
   }) {
@@ -33,6 +34,7 @@ abstract final class D3AppTheme {
           colors: effectiveColors,
           inputTokens: inputTokens,
           buttonTokens: buttonTokens,
+          photoStripTokens: photoStripTokens,
         );
     return _build(
       brightness: Brightness.light,
@@ -53,6 +55,7 @@ abstract final class D3AppTheme {
     D3ColorTokens? colors,
     D3InputTokens? inputTokens,
     D3ButtonTokens? buttonTokens,
+    D3PhotoStripTokens? photoStripTokens,
     D3TokensExtension? overrides,
     List<ThemeExtension<dynamic>> extraExtensions = const [],
   }) {
@@ -63,6 +66,7 @@ abstract final class D3AppTheme {
           colors: effectiveColors,
           inputTokens: inputTokens,
           buttonTokens: buttonTokens,
+          photoStripTokens: photoStripTokens,
         );
     return _build(
       brightness: Brightness.dark,
@@ -120,6 +124,14 @@ abstract final class D3AppTheme {
       splashFactory: isDark
           ? InkSparkle.splashFactory
           : InkRipple.splashFactory,
+
+      // Page transitions: deliberately not overridden — see
+      // d3_ui/UX_GUIDELINES.md ("Navigation"). ThemeData's own default
+      // PageTransitionsTheme already gives each platform its native feel
+      // (PredictiveBackPageTransitionsBuilder on Android,
+      // CupertinoPageTransitionsBuilder on iOS/macOS, Zoom on
+      // Windows/Linux) — setting this explicitly would mean re-declaring
+      // (and keeping in sync with) Flutter's own defaults for no benefit.
 
       // Register our custom tokens plus any app-specific extensions.
       extensions: [extension, ...extraExtensions],

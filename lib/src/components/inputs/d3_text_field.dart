@@ -2,6 +2,11 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
+import 'helpers/d3_clear_button_mixin.dart';
+import 'helpers/d3_field_lifecycle_mixin.dart';
+import 'helpers/d3_field_status.dart';
+import 'helpers/d3_field_styling_mixin.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Enums
 // ─────────────────────────────────────────────────────────────────────────────
@@ -164,11 +169,10 @@ class D3TextField extends StatefulWidget {
 
 /// Public state class — access via a [GlobalKey<D3TextFieldState>] to call
 /// [validate] imperatively (e.g. from a submit button outside a [Form]).
-class D3TextFieldState extends State<D3TextField> {
-  late final TextEditingController _controller;
-  late final FocusNode _focusNode;
-  bool _ownsController = false;
-  bool _ownsFocusNode = false;
+class D3TextFieldState extends State<D3TextField>
+    with D3FieldLifecycleMixin<D3TextField>, D3FieldStylingMixin, D3ClearButtonMixin {
+  TextEditingController get _controller => controller;
+  FocusNode get _focusNode => focusNode;
 
   bool _isFocused = false;
   String? _validationError;
@@ -187,19 +191,11 @@ class D3TextFieldState extends State<D3TextField> {
   void initState() {
     super.initState();
 
-    if (widget.controller == null) {
-      _controller = TextEditingController(text: widget.initialValue);
-      _ownsController = true;
-    } else {
-      _controller = widget.controller!;
-    }
-
-    if (widget.focusNode == null) {
-      _focusNode = FocusNode();
-      _ownsFocusNode = true;
-    } else {
-      _focusNode = widget.focusNode!;
-    }
+    initializeFieldControllers(
+      externalController: widget.controller,
+      externalFocusNode: widget.focusNode,
+      initialText: widget.initialValue,
+    );
 
     _obscured = widget.obscureText;
 
@@ -212,8 +208,7 @@ class D3TextFieldState extends State<D3TextField> {
     _removeTooltip();
     _focusNode.removeListener(_onFocusChange);
     _controller.removeListener(_onTextChange);
-    if (_ownsController) _controller.dispose();
-    if (_ownsFocusNode) _focusNode.dispose();
+    disposeFieldControllers();
     super.dispose();
   }
 
@@ -324,15 +319,15 @@ class D3TextFieldState extends State<D3TextField> {
 
   // ── State resolution ───────────────────────────────────────────────────────
 
-  _FieldStatus get _status {
-    if (!widget.isEnabled) return _FieldStatus.disabled;
+  D3FieldStatus get _status {
+    if (!widget.isEnabled) return D3FieldStatus.disabled;
     if (widget.errorText != null || _validationError != null) {
-      return _FieldStatus.error;
+      return D3FieldStatus.error;
     }
-    if (widget.successText != null) return _FieldStatus.success;
-    if (_isFocused) return _FieldStatus.focused;
-    if (_controller.text.isNotEmpty) return _FieldStatus.filled;
-    return _FieldStatus.idle;
+    if (widget.successText != null) return D3FieldStatus.success;
+    if (_isFocused) return D3FieldStatus.focused;
+    if (_controller.text.isNotEmpty) return D3FieldStatus.filled;
+    return D3FieldStatus.idle;
   }
 
   String? get _effectiveError => widget.errorText ?? _validationError;
@@ -347,8 +342,8 @@ class D3TextFieldState extends State<D3TextField> {
     final status = _status;
     final isMultiline = (widget.maxLines == null || (widget.maxLines ?? 1) > 1);
 
-    final borderColor = _borderColor(status, colors);
-    final bgColor = _bgColor(status, colors);
+    final borderColor = resolveBorderColor(status, colors);
+    final bgColor = resolveBackgroundColor(status, colors);
 
     Widget field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,10 +371,7 @@ class D3TextFieldState extends State<D3TextField> {
             borderRadius: BorderRadius.circular(tokens.radius),
             border: Border.all(
               color: borderColor,
-              width:
-                  (status == _FieldStatus.focused ||
-                      status == _FieldStatus.error ||
-                      status == _FieldStatus.success)
+              width: isEmphasizedBorder(status)
                   ? tokens.focusedBorderWidth
                   : tokens.borderWidth,
               strokeAlign: BorderSide.strokeAlignInside,
@@ -525,19 +517,19 @@ class D3TextFieldState extends State<D3TextField> {
   Widget _buildSuffix(
     D3InputTokens tokens,
     D3ColorTokens colors,
-    _FieldStatus status,
+    D3FieldStatus status,
   ) {
     final parts = <Widget>[];
 
     // ── Clear button ────────────────────────────────────────────────────────
-    // Shown when: showClearButton is true, field has text, is focused,
-    // and is not disabled or read-only. Visible on password fields too.
-    final showClear =
-        widget.showClearButton &&
-        _isFocused &&
-        _controller.text.isNotEmpty &&
-        widget.isEnabled &&
-        !widget.isReadOnly;
+    // Visible on password fields too.
+    final showClear = shouldShowClearButton(
+      requested: widget.showClearButton,
+      isFocused: _isFocused,
+      hasText: _controller.text.isNotEmpty,
+      isEnabled: widget.isEnabled,
+      isReadOnly: widget.isReadOnly,
+    );
 
     if (showClear) {
       parts.add(
@@ -574,7 +566,7 @@ class D3TextFieldState extends State<D3TextField> {
     }
 
     // ── State icon (validation feedback) ───────────────────────────────────
-    if (status == _FieldStatus.error) {
+    if (status == D3FieldStatus.error) {
       parts.add(
         Icon(
           Icons.warning_amber_rounded,
@@ -582,7 +574,7 @@ class D3TextFieldState extends State<D3TextField> {
           color: colors.error,
         ),
       );
-    } else if (status == _FieldStatus.success) {
+    } else if (status == D3FieldStatus.success) {
       parts.add(
         Icon(
           Icons.check_circle_outline_rounded,
@@ -647,31 +639,7 @@ class D3TextFieldState extends State<D3TextField> {
     );
   }
 
-  // ── Color helpers ──────────────────────────────────────────────────────────
-
-  Color _borderColor(_FieldStatus status, D3ColorTokens c) => switch (status) {
-    _FieldStatus.focused => c.primary,
-    _FieldStatus.error => c.error,
-    _FieldStatus.success => c.success,
-    _FieldStatus.disabled => c.outline,
-    _ => c.outline,
-  };
-
-  Color _bgColor(_FieldStatus status, D3ColorTokens c) => switch (status) {
-    _FieldStatus.disabled => c.surfaceVariant,
-    _FieldStatus.focused => c.surface,
-    _FieldStatus.filled => c.surface,
-    _FieldStatus.error => c.surface,
-    _FieldStatus.success => c.surface,
-    _ => c.surfaceVariant,
-  };
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal status enum
-// ─────────────────────────────────────────────────────────────────────────────
-
-enum _FieldStatus { idle, focused, filled, error, success, disabled }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Label row

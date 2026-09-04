@@ -19,6 +19,8 @@ class D3DateField extends StatefulWidget {
     this.lastDate,
     this.onChanged,
     this.semanticsLabel,
+    this.useD3CalendarPicker = false,
+    this.markedDates,
   });
 
   final String label;
@@ -32,6 +34,15 @@ class D3DateField extends StatefulWidget {
   final DateTime? lastDate;
   final ValueChanged<DateTime>? onChanged;
   final String? semanticsLabel;
+
+  /// Opt into [showD3CalendarPicker] (themed to match d3_ui) instead of the
+  /// stock [showDatePicker]. Defaults to false to keep existing consumers'
+  /// visual behavior unchanged.
+  final bool useD3CalendarPicker;
+
+  /// Days to mark with a dot indicator. Only used when
+  /// [useD3CalendarPicker] is true.
+  final Set<DateTime>? markedDates;
 
   @override
   State<D3DateField> createState() => _D3DateFieldState();
@@ -69,16 +80,25 @@ class _D3DateFieldState extends State<D3DateField> {
     final first = widget.firstDate ?? DateTime(now.year - 5);
     final last = widget.lastDate ?? DateTime(now.year + 5);
 
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial.isBefore(first)
-          ? first
-          : initial.isAfter(last)
-          ? last
-          : initial,
-      firstDate: first,
-      lastDate: last,
-    );
+    final picked = widget.useD3CalendarPicker
+        ? await showD3CalendarPicker(
+            context: context,
+            initialDate: initial,
+            firstDate: first,
+            lastDate: last,
+            markedDates: widget.markedDates,
+            semanticsLabel: widget.semanticsLabel ?? widget.label,
+          )
+        : await showDatePicker(
+            context: context,
+            initialDate: initial.isBefore(first)
+                ? first
+                : initial.isAfter(last)
+                ? last
+                : initial,
+            firstDate: first,
+            lastDate: last,
+          );
 
     if (picked != null) {
       setState(() => _selected = picked);

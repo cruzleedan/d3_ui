@@ -92,8 +92,11 @@ class D3SegmentedControl<T> extends StatefulWidget {
 
   final List<D3Segment<T>> segments;
 
-  /// The value of the currently selected segment.
-  final T selected;
+  /// The value of the currently selected segment, or `null` to show no
+  /// segment as selected (e.g. a question that hasn't been answered yet).
+  /// The pill indicator hides entirely when null; tapping any segment still
+  /// calls [onChanged] as usual.
+  final T? selected;
 
   /// Called with the value of the tapped segment.
   final ValueChanged<T> onChanged;
@@ -113,8 +116,9 @@ class _D3SegmentedControlState<T> extends State<D3SegmentedControl<T>>
 
   int _previousIndex = 0;
 
-  int get _selectedIndex =>
-      widget.segments.indexWhere((s) => s.value == widget.selected);
+  int get _selectedIndex => widget.selected == null
+      ? -1
+      : widget.segments.indexWhere((s) => s.value == widget.selected);
 
   @override
   void initState() {
@@ -131,9 +135,9 @@ class _D3SegmentedControlState<T> extends State<D3SegmentedControl<T>>
   void didUpdateWidget(D3SegmentedControl<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     final newIndex = _selectedIndex;
-    final oldIndex = oldWidget.segments.indexWhere(
-      (s) => s.value == oldWidget.selected,
-    );
+    final oldIndex = oldWidget.selected == null
+        ? -1
+        : oldWidget.segments.indexWhere((s) => s.value == oldWidget.selected);
     if (oldIndex != newIndex) {
       _position = Tween<double>(
         begin: _previousIndex.toDouble(),
@@ -229,26 +233,27 @@ class _SegmentTrack extends StatelessWidget {
             height: 34,
             child: Stack(
               children: [
-                // ── Animated pill ─────────────────────────────────────────────
-                Positioned(
-                  left: pillLeft,
-                  top: 0,
-                  bottom: 0,
-                  width: segWidth,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: colors.surface,
-                      borderRadius: BorderRadius.circular(_pillRadius),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.10),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
+                // ── Animated pill (hidden when nothing is selected) ───────────
+                if (selectedIndex >= 0 && animatedPosition >= 0)
+                  Positioned(
+                    left: pillLeft,
+                    top: 0,
+                    bottom: 0,
+                    width: segWidth,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(_pillRadius),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.10),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
                 // ── Segment tap targets ────────────────────────────────────────
                 Row(

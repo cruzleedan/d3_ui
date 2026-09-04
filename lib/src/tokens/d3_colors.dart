@@ -22,7 +22,7 @@ abstract final class D3ColorPrimitives {
   static const amber400 = Color(0xFFFBBF24);
   static const amber500 = Color(0xFFF59E0B);
 
-  // Neutrals — dark
+  // Neutrals — dark (ascending luminance — 950 is darkest)
   static const neutral950 = Color(0xFF080A12);
   static const neutral900 = Color(0xFF0F1117);
   static const neutral850 = Color(0xFF13151F);
@@ -34,7 +34,9 @@ abstract final class D3ColorPrimitives {
   static const neutral400 = Color(0xFF64748B);
   static const neutral300 = Color(0xFF94A3B8);
   static const neutral200 = Color(0xFFCBD5E1);
+  static const neutral150 = Color(0xFFD6DEE8);
   static const neutral100 = Color(0xFFE2E8F0);
+  static const neutral75 = Color(0xFFEAEEF4);
   static const neutral50 = Color(0xFFF1F5F9);
   static const white = Color(0xFFFFFFFF);
 
@@ -52,6 +54,10 @@ class D3ColorTokens {
     required this.onSecondary,
     required this.surface,
     required this.surfaceVariant,
+    required this.surfaceContainerLow,
+    required this.surfaceContainer,
+    required this.surfaceContainerHigh,
+    required this.surfaceContainerHighest,
     required this.onSurface,
     required this.onSurfaceVariant,
     required this.outline,
@@ -76,6 +82,18 @@ class D3ColorTokens {
 
   final Color surface;
   final Color surfaceVariant;
+
+  /// Tonal elevation ladder — ascending "elevation" via a progressively
+  /// lighter/more-tinted surface instead of a shadow. Deliberately
+  /// shadow-free (this design system is flat by design); reach for these
+  /// on any raised/floating surface (sheets, dialogs, popups, elevated
+  /// cards) instead of falling back to [surface], which reads as flat
+  /// against the scaffold (same color) especially in dark mode.
+  final Color surfaceContainerLow;
+  final Color surfaceContainer;
+  final Color surfaceContainerHigh;
+  final Color surfaceContainerHighest;
+
   final Color onSurface;
   final Color onSurfaceVariant;
   final Color outline;
@@ -102,6 +120,10 @@ class D3ColorTokens {
     onSecondary: D3ColorPrimitives.white,
     surface: D3ColorPrimitives.white,
     surfaceVariant: D3ColorPrimitives.neutral50,
+    surfaceContainerLow: D3ColorPrimitives.neutral50,
+    surfaceContainer: D3ColorPrimitives.neutral75,
+    surfaceContainerHigh: D3ColorPrimitives.neutral100,
+    surfaceContainerHighest: D3ColorPrimitives.neutral150,
     onSurface: D3ColorPrimitives.neutral900,
     onSurfaceVariant: D3ColorPrimitives.neutral400,
     outline: D3ColorPrimitives.neutral200,
@@ -127,6 +149,16 @@ class D3ColorTokens {
     onSecondary: D3ColorPrimitives.neutral900,
     surface: D3ColorPrimitives.neutral900,
     surfaceVariant: D3ColorPrimitives.neutral800,
+    // A deliberately larger first step (900 -> 800, skipping 850) than the
+    // later steps — this is the tone D3BottomSheet/D3Card/D3ListTile use,
+    // so it needs to read clearly against the scaffold on a physical
+    // OLED-class dark-mode screen, not just show a non-zero delta on
+    // paper. See root context/work/0007-d3-ui-tonal-elevation-surface-
+    // ladder.md.
+    surfaceContainerLow: D3ColorPrimitives.neutral800,
+    surfaceContainer: D3ColorPrimitives.neutral750,
+    surfaceContainerHigh: D3ColorPrimitives.neutral700,
+    surfaceContainerHighest: D3ColorPrimitives.neutral600,
     onSurface: D3ColorPrimitives.neutral100,
     onSurfaceVariant: D3ColorPrimitives.neutral300,
     outline: D3ColorPrimitives.neutral500,

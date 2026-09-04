@@ -232,9 +232,46 @@ class _ButtonGalleryState extends State<ButtonGallery> {
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+            GallerySection(
+              title: 'D3HyperlinkButton',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Already have an account? ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                      D3HyperlinkButton(label: 'Sign in', onPressed: () {}),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const D3HyperlinkButton(label: 'Disabled link'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 100),
           ],
         ),
+      ),
+      floatingActionButton: D3ExpandingFab(
+        actions: [
+          D3FabAction(
+            icon: Icons.photo_camera_outlined,
+            label: 'Photo',
+            onPressed: () {},
+          ),
+          D3FabAction(
+            icon: Icons.note_add_outlined,
+            label: 'Note',
+            onPressed: () {},
+          ),
+        ],
       ),
     );
   }

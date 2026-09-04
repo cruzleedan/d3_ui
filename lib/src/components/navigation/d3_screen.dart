@@ -17,8 +17,10 @@ sealed class D3ScreenLeading {
   /// Left-pointing arrow icon. Calls `Navigator.pop()` on tap.
   static const D3ScreenLeading back = _Back();
 
-  /// "Cancel" text button placed on the *right* side (iOS modal convention).
-  /// When used, [D3Screen.actions] must be empty — a debug assertion enforces this.
+  /// "Cancel" text button placed on the *left* side, leaving the trailing
+  /// slot free for a primary action (e.g. `D3ScreenAction.text('Save',
+  /// ...)`) — matches the standard iOS/Android modal-sheet layout of
+  /// Cancel top-left, Save top-right.
   static const D3ScreenLeading cancel = _Cancel();
 
   /// No leading widget. Suppresses auto-detection.
@@ -164,11 +166,7 @@ class D3Screen extends StatelessWidget {
     this.bottomNavigationBar,
     this.backgroundColor,
     this.resizeToAvoidBottomInset = true,
-  }) : assert(
-         !(leading == D3ScreenLeading.cancel && actions.isNotEmpty),
-         'D3Screen: actions must be empty when using D3ScreenLeading.cancel — '
-         'cancel occupies the trailing slot.',
-       );
+  });
 
   final String title;
 
@@ -180,7 +178,8 @@ class D3Screen extends StatelessWidget {
   final D3ScreenLeading? leading;
 
   /// Trailing actions. Rendered right-to-left (first item is outermost right).
-  /// Must be empty when [leading] is [D3ScreenLeading.cancel].
+  /// Can be combined with [D3ScreenLeading.cancel] — cancel occupies the
+  /// leading slot, leaving this free for a primary action like Save.
   final List<D3ScreenAction> actions;
 
   /// [D3ScreenLayout.box] (default) or [D3ScreenLayout.sliver].
@@ -582,23 +581,22 @@ class _CompactBar extends StatelessWidget {
               ),
 
               // ── Leading ───────────────────────────────────────────────────
-              if (!isCancel)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: _LeadingWidget(leading: leading, colors: colors),
-                  ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: isCancel
+                      ? _CancelButton(colors: colors)
+                      : _LeadingWidget(leading: leading, colors: colors),
                 ),
+              ),
 
-              // ── Trailing (actions or cancel) ──────────────────────────────
+              // ── Trailing actions ─────────────────────────────────────────
               Align(
                 alignment: Alignment.centerRight,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 4),
-                  child: isCancel
-                      ? _CancelButton(colors: colors)
-                      : _ActionsRow(actions: actions, colors: colors),
+                  child: _ActionsRow(actions: actions, colors: colors),
                 ),
               ),
             ],

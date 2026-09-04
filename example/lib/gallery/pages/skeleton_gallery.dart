@@ -120,6 +120,32 @@ class _SkeletonGalleryState extends State<SkeletonGallery> {
             ),
           ),
 
+          // ── Composed: list tile skeleton ─────────────────────────────────
+          const GallerySection(
+            title: 'D3ListTileSkeleton',
+            child: GallerySectionCard(
+              child: D3Shimmer(
+                child: Column(
+                  children: [
+                    D3ListTileSkeleton(),
+                    D3ListTileSkeleton(),
+                    D3ListTileSkeleton(showSubtitle: false),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Composed: form skeleton ──────────────────────────────────────
+          const GallerySection(
+            title: 'D3FormSkeleton',
+            child: GallerySectionCard(
+              child: D3Shimmer(
+                child: D3FormSkeleton(fieldCount: 3),
+              ),
+            ),
+          ),
+
           // ── Toggle loaded/skeleton ─────────────────────────────────────────
           GallerySection(
             title: 'Loaded vs loading toggle',

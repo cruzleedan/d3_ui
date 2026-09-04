@@ -69,6 +69,7 @@ class D3Card extends StatelessWidget {
     super.key,
     this.variant = D3CardVariant.elevated,
     this.border,
+    this.accentColor,
     // Media slot
     this.media,
     this.mediaHeight = 180,
@@ -90,6 +91,15 @@ class D3Card extends StatelessWidget {
   });
 
   final D3CardVariant variant;
+
+  /// Optional full-height colored bar flush against the card's left edge,
+  /// for status-driven lists (e.g. a visit's Complete/In-progress state, a
+  /// timesheet period's Approved/Rejected/In-progress state). Pass the
+  /// same color token used for the status label elsewhere on the card
+  /// (e.g. `colors.success`) so the bar and label agree — the pattern
+  /// reads status from the card's silhouette alone, before any text is
+  /// read. See root context/work/0010-d3-card-status-accent-bar.md.
+  final Color? accentColor;
 
   /// Border drawn around the card.
   ///
@@ -154,8 +164,10 @@ class D3Card extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
 
+    // Tonal elevation, not colors.surface — see root context/work/0007-
+    // d3-ui-tonal-elevation-surface-ladder.md.
     final bgColor = switch (variant) {
-      D3CardVariant.elevated => colors.surface,
+      D3CardVariant.elevated => colors.surfaceContainerLow,
       D3CardVariant.tonal => colors.primaryContainer,
     };
 
@@ -233,6 +245,17 @@ class D3Card extends StatelessWidget {
       ],
     );
 
+    // Reserve room for the accent bar so it sits beside the card's
+    // content rather than overlapping it — applied inside the tappable
+    // area (InkWell/Material), not by shrinking the card itself, so the
+    // ripple and tap target still cover the accent bar's own width too.
+    if (accentColor != null) {
+      cardContent = Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: cardContent,
+      );
+    }
+
     // Wrap in Material + InkWell when interactive so ripple paints correctly
     // on the colored surface.
     Widget card = Material(
@@ -249,6 +272,35 @@ class D3Card extends StatelessWidget {
             )
           : cardContent,
     );
+
+    // Status-accent bar — a full-height colored rectangle flush against
+    // the left edge, on top of (not clipped by) the card's own rounded
+    // corners, matching the reference pattern's flat-bar-on-rounded-card
+    // look (see accentColor's doc comment). Stack sizes to the Material
+    // child since it's the only non-Positioned entry; the Positioned bar
+    // stretches to match via top/bottom: 0.
+    if (accentColor != null) {
+      card = Stack(
+        children: [
+          card,
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 8,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: radius.topLeft,
+                  bottomLeft: radius.bottomLeft,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
     if (semanticsLabel != null || title != null) {
       card = Semantics(

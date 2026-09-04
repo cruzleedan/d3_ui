@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
@@ -426,7 +424,11 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
   late List<T> _results;
   bool _isSearching = false;
   String _query = '';
-  Timer? _debounceTimer;
+
+  // Local filtering still debounces briefly (150ms) so fast typing doesn't
+  // re-filter on every keystroke; remote search uses widget.debounce instead.
+  final _localDebouncer = D3Debouncer(delay: const Duration(milliseconds: 150));
+  late final _remoteDebouncer = D3Debouncer(delay: widget.debounce);
 
   // Local copy of active filters so chip taps are immediately reactive
   // without waiting for the parent to rebuild through the route stack.
@@ -445,10 +447,7 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (widget.isLocal) {
-          _debounceTimer = Timer(
-            const Duration(milliseconds: 150),
-            () => _applyQuery(widget.initialQuery),
-          );
+          _localDebouncer.run(() => _applyQuery(widget.initialQuery));
         } else {
           _applyQuery(widget.initialQuery);
         }
@@ -458,7 +457,8 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
+    _localDebouncer.cancel();
+    _remoteDebouncer.cancel();
     _textController.removeListener(_onTextChanged);
     _textController.dispose();
     _focusNode.dispose();
@@ -469,12 +469,8 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
     final q = _textController.text.trim();
     if (q == _query) return;
     _query = q;
-    _debounceTimer?.cancel();
     if (widget.isLocal) {
-      _debounceTimer = Timer(
-        const Duration(milliseconds: 150),
-        () => _applyQuery(q),
-      );
+      _localDebouncer.run(() => _applyQuery(q));
     } else {
       _applyQuery(q);
     }
@@ -499,7 +495,7 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
         return;
       }
       setState(() => _isSearching = true);
-      _debounceTimer = Timer(widget.debounce, () => _remoteSearch(query));
+      _remoteDebouncer.run(() => _remoteSearch(query));
     }
   }
 
@@ -518,7 +514,11 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
     final colors = context.d3Colors;
 
     return Scaffold(
-      backgroundColor: colors.surface,
+      // Tonal elevation, not colors.surface — a full-screen overlay
+      // painted the same color as the scaffold behind it reads as flat.
+      // See root context/work/0007-d3-ui-tonal-elevation-surface-
+      // ladder.md.
+      backgroundColor: colors.surfaceContainer,
       body: SafeArea(
         child: Column(
           children: [

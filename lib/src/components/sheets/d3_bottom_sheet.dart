@@ -399,26 +399,42 @@ class _SheetSurface extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       child: Material(
-        color: colors.surface,
-        child: CustomScrollView(
-          controller: scrollController,
-          slivers: [
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _StickySheetHeaderDelegate(
-                colors: colors,
-                topPadding: statusBarHeight,
-                title: title,
-                subtitle: subtitle,
-                headerAction: headerAction,
-                onClose: onClose,
+        // Tonal elevation, not colors.surface — a sheet painted the same
+        // color as the scaffold behind it reads as flat, especially in
+        // dark mode. See root context/work/0007-d3-ui-tonal-elevation-
+        // surface-ladder.md.
+        color: colors.surfaceContainerLow,
+        // Tap-to-dismiss-keyboard: a real drag/scroll gesture never
+        // triggers onTap (Flutter's gesture arena only resolves it as a
+        // tap once the pointer stays within the tap slop), so this
+        // coexists safely with the whole-sheet drag detection the
+        // CustomScrollView below relies on — translucent behavior lets
+        // both the tap recognizer and any interactive descendant (fields,
+        // buttons) see the same pointer event rather than one stealing it
+        // from the other.
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _StickySheetHeaderDelegate(
+                  colors: colors,
+                  topPadding: statusBarHeight,
+                  title: title,
+                  subtitle: subtitle,
+                  headerAction: headerAction,
+                  onClose: onClose,
+                ),
               ),
-            ),
-            SliverFillRemaining(child: child),
-            SliverToBoxAdapter(
-              child: SizedBox(height: MediaQuery.viewPaddingOf(context).bottom),
-            ),
-          ],
+              SliverFillRemaining(child: child),
+              SliverToBoxAdapter(
+                child: SizedBox(height: MediaQuery.viewPaddingOf(context).bottom),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -463,7 +479,10 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     return ColoredBox(
-      color: colors.surface,
+      // Matches the sheet body's tonal elevation (see above) so the
+      // pinned header doesn't visually seam against the scrollable
+      // content beneath it.
+      color: colors.surfaceContainerLow,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

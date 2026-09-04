@@ -10,22 +10,26 @@ class D3TokensExtension extends ThemeExtension<D3TokensExtension> {
     required this.colors,
     required this.buttonTokens,
     required this.inputTokens,
+    required this.photoStripTokens,
   });
 
   final D3ColorTokens colors;
   final D3ButtonTokens buttonTokens;
   final D3InputTokens inputTokens;
+  final D3PhotoStripTokens photoStripTokens;
 
   @override
   D3TokensExtension copyWith({
     D3ColorTokens? colors,
     D3ButtonTokens? buttonTokens,
     D3InputTokens? inputTokens,
+    D3PhotoStripTokens? photoStripTokens,
   }) {
     return D3TokensExtension(
       colors: colors ?? this.colors,
       buttonTokens: buttonTokens ?? this.buttonTokens,
       inputTokens: inputTokens ?? this.inputTokens,
+      photoStripTokens: photoStripTokens ?? this.photoStripTokens,
     );
   }
 
@@ -39,12 +43,14 @@ class D3TokensExtension extends ThemeExtension<D3TokensExtension> {
     colors: D3ColorTokens.light,
     buttonTokens: D3ButtonTokens.defaults,
     inputTokens: D3InputTokens.defaults,
+    photoStripTokens: D3PhotoStripTokens.defaults,
   );
 
   static const dark = D3TokensExtension(
     colors: D3ColorTokens.dark,
     buttonTokens: D3ButtonTokens.defaults,
     inputTokens: D3InputTokens.defaults,
+    photoStripTokens: D3PhotoStripTokens.defaults,
   );
 }
 
@@ -290,6 +296,69 @@ class D3InputTokens {
   }
 }
 
+/// Tokens for [D3PhotoStrip] — thumbnail sizing and the remove-button hit
+/// target. [removeButtonHitSize] is kept independent of [removeButtonGlyphSize]
+/// so the tappable area can meet the Material touch-target minimum (48dp)
+/// without inflating the visible glyph.
+class D3PhotoStripTokens {
+  const D3PhotoStripTokens({
+    required this.thumbnailSize,
+    required this.thumbnailGap,
+    required this.thumbnailRadius,
+    required this.removeButtonHitSize,
+    required this.removeButtonGlyphSize,
+    required this.removeButtonOffset,
+  });
+
+  /// Side length of each square thumbnail.
+  final double thumbnailSize;
+
+  /// Gap between adjacent thumbnails in the row.
+  final double thumbnailGap;
+
+  final double thumbnailRadius;
+
+  /// Tappable hit area for the remove button — kept at or above the 48dp
+  /// Material minimum regardless of [removeButtonGlyphSize].
+  final double removeButtonHitSize;
+
+  /// Visible size of the remove button's icon/circle.
+  final double removeButtonGlyphSize;
+
+  /// How far the remove button's hit area is inset from the thumbnail's
+  /// top-right corner (negative values let it overhang, matching a
+  /// standard "badge" placement).
+  final double removeButtonOffset;
+
+  static const defaults = D3PhotoStripTokens(
+    thumbnailSize: D3Spacing.s64,
+    thumbnailGap: D3Spacing.s8,
+    thumbnailRadius: D3Radius.sm,
+    removeButtonHitSize: 48,
+    removeButtonGlyphSize: D3Spacing.s20,
+    removeButtonOffset: -D3Spacing.s12,
+  );
+
+  D3PhotoStripTokens copyWith({
+    double? thumbnailSize,
+    double? thumbnailGap,
+    double? thumbnailRadius,
+    double? removeButtonHitSize,
+    double? removeButtonGlyphSize,
+    double? removeButtonOffset,
+  }) {
+    return D3PhotoStripTokens(
+      thumbnailSize: thumbnailSize ?? this.thumbnailSize,
+      thumbnailGap: thumbnailGap ?? this.thumbnailGap,
+      thumbnailRadius: thumbnailRadius ?? this.thumbnailRadius,
+      removeButtonHitSize: removeButtonHitSize ?? this.removeButtonHitSize,
+      removeButtonGlyphSize:
+          removeButtonGlyphSize ?? this.removeButtonGlyphSize,
+      removeButtonOffset: removeButtonOffset ?? this.removeButtonOffset,
+    );
+  }
+}
+
 /// Convenience extension on BuildContext for clean token access.
 extension D3ThemeExtensions on BuildContext {
   D3TokensExtension get d3Tokens =>
@@ -298,4 +367,5 @@ extension D3ThemeExtensions on BuildContext {
   D3ColorTokens get d3Colors => d3Tokens.colors;
   D3ButtonTokens get d3ButtonTokens => d3Tokens.buttonTokens;
   D3InputTokens get d3InputTokens => d3Tokens.inputTokens;
+  D3PhotoStripTokens get d3PhotoStripTokens => d3Tokens.photoStripTokens;
 }

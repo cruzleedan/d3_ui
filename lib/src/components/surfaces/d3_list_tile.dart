@@ -225,9 +225,10 @@ class D3ListTile extends StatelessWidget {
       ),
     );
 
-    // Ripple when interactive.
+    // Ripple when interactive. Tonal elevation, not colors.surface — see
+    // root context/work/0007-d3-ui-tonal-elevation-surface-ladder.md.
     Widget tile = Material(
-      color: colors.surface,
+      color: colors.surfaceContainerLow,
       child: _isInteractive
           ? InkWell(
               onTap: () {

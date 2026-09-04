@@ -4,6 +4,9 @@ library d3_ui;
 // Layout
 export 'src/layout/d3_adaptive_layout.dart';
 
+// Utils
+export 'src/utils/d3_debouncer.dart';
+
 // Tokens
 export 'src/tokens/d3_colors.dart';
 export 'src/tokens/d3_spacing.dart';
@@ -18,6 +21,8 @@ export 'src/themes/d3_app_theme.dart';
 // Components
 export 'src/components/actions/d3_button.dart';
 export 'src/components/actions/d3_split_button.dart';
+export 'src/components/actions/d3_hyperlink_button.dart';
+export 'src/components/actions/d3_expanding_fab.dart';
 export 'src/components/inputs/d3_text_field.dart';
 export 'src/components/inputs/d3_date_field.dart';
 export 'src/components/inputs/d3_dropdown_field.dart';
@@ -31,19 +36,23 @@ export 'src/components/inputs/d3_radio.dart';
 export 'src/components/inputs/d3_filter_chip_row.dart';
 export 'src/components/inputs/d3_search_anchor.dart';
 export 'src/components/sheets/d3_bottom_sheet.dart';
+export 'src/components/sheets/d3_form_sheet.dart';
 export 'src/components/navigation/d3_nav_bar.dart';
 export 'src/components/navigation/d3_screen.dart';
 export 'src/components/navigation/d3_list_screen.dart';
 export 'src/components/surfaces/d3_card.dart';
 export 'src/components/surfaces/d3_list_tile.dart';
 export 'src/components/dialogs/d3_dialog.dart';
+export 'src/components/dialogs/d3_calendar_picker.dart';
 export 'src/components/display/d3_avatar.dart';
 export 'src/components/display/d3_empty_state.dart';
 export 'src/components/display/d3_expandable_section.dart';
 export 'src/components/display/d3_list.dart';
 export 'src/components/display/d3_skeleton.dart';
+export 'src/components/display/d3_skeleton_placeholders.dart';
 export 'src/components/display/d3_image.dart';
 export 'src/components/display/d3_image_viewer.dart';
+export 'src/components/display/d3_photo_strip.dart';
 export 'src/components/display/d3_poster_card.dart';
 export 'src/components/inputs/d3_chip.dart';
 export 'src/components/feedback/d3_toast.dart';
