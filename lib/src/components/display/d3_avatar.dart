@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
 
@@ -82,6 +84,7 @@ class D3Avatar extends StatelessWidget {
     super.key,
     required this.name,
     this.imageUrl,
+    this.imageFile,
     this.size = D3AvatarSize.md,
     this.shape = D3AvatarShape.circle,
     this.indicator = D3AvatarIndicator.none,
@@ -93,6 +96,7 @@ class D3Avatar extends StatelessWidget {
 
   /// URL of the avatar image. Displayed via [Image.network] when provided;
   /// falls back to initials if the request fails or the URL is null.
+  /// Ignored when [imageFile] is also set — [imageFile] takes priority.
   ///
   /// To swap to cached_network_image for disk caching, replace the
   /// [Image.network] call inside [_AvatarImage._buildImage] with:
@@ -110,6 +114,12 @@ class D3Avatar extends StatelessWidget {
   /// this file. No public API changes needed.
   final String? imageUrl;
 
+  /// Local image file on device storage, displayed via [Image.file] —
+  /// for an app-local avatar (e.g. a picked/captured profile image) that
+  /// isn't hosted at a URL. Takes priority over [imageUrl] when both are
+  /// set. Falls back to initials on any read error, same as [imageUrl].
+  final File? imageFile;
+
   final D3AvatarSize size;
   final D3AvatarShape shape;
   final D3AvatarIndicator indicator;
@@ -126,6 +136,7 @@ class D3Avatar extends StatelessWidget {
     Widget avatar = _AvatarImage(
       name: name,
       imageUrl: imageUrl,
+      imageFile: imageFile,
       size: size,
       shape: shape,
     );
@@ -151,7 +162,7 @@ class D3Avatar extends StatelessWidget {
 
     return Semantics(
       label: semanticsLabel ?? name,
-      image: imageUrl != null,
+      image: imageUrl != null || imageFile != null,
       child: avatar,
     );
   }
@@ -165,12 +176,14 @@ class _AvatarImage extends StatelessWidget {
   const _AvatarImage({
     required this.name,
     required this.imageUrl,
+    required this.imageFile,
     required this.size,
     required this.shape,
   });
 
   final String name;
   final String? imageUrl;
+  final File? imageFile;
   final D3AvatarSize size;
   final D3AvatarShape shape;
 
@@ -184,12 +197,27 @@ class _AvatarImage extends StatelessWidget {
       dimension: size.dimension,
       child: ClipRRect(
         borderRadius: _borderRadius,
-        child: imageUrl != null ? _buildImage() : _buildInitials(),
+        child: imageFile != null
+            ? _buildFileImage()
+            : imageUrl != null
+            ? _buildNetworkImage()
+            : _buildInitials(),
       ),
     );
   }
 
-  Widget _buildImage() {
+  Widget _buildFileImage() {
+    return Image.file(
+      imageFile!,
+      width: size.dimension,
+      height: size.dimension,
+      fit: BoxFit.cover,
+      // On any read error (file missing/corrupt), fall back to initials.
+      errorBuilder: (_, __, ___) => _buildInitials(),
+    );
+  }
+
+  Widget _buildNetworkImage() {
     // ─── Swap point for cached_network_image ───────────────────────────────
     // Replace this Image.network with CachedNetworkImage (see D3Avatar.imageUrl
     // doc comment for the exact snippet).

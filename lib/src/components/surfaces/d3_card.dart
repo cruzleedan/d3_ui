@@ -195,12 +195,7 @@ class D3Card extends StatelessWidget {
         // ── Header + Body ────────────────────────────────────────────────────
         if (_hasBody)
           Padding(
-            padding: EdgeInsets.fromLTRB(
-              D3Spacing.s16,
-              media != null ? D3Spacing.s12 : D3Spacing.s16,
-              D3Spacing.s16,
-              _hasFooter ? D3Spacing.s12 : D3Spacing.s16,
-            ),
+            padding: const EdgeInsets.all(D3Spacing.s10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -216,7 +211,7 @@ class D3Card extends StatelessWidget {
                   ),
                   if (content != null) const SizedBox(height: 8),
                 ],
-                if (content != null) content!,
+                ?content,
               ],
             ),
           ),
@@ -229,16 +224,14 @@ class D3Card extends StatelessWidget {
             color: colors.outline.withValues(alpha: 0.15),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: D3Spacing.s16,
-              vertical: D3Spacing.s10,
+            padding: const EdgeInsets.fromLTRB(
+              D3Spacing.s16,
+              0,
+              D3Spacing.s16,
+              D3Spacing.s10,
             ),
             child: Row(
-              children: [
-                if (footerAction != null) footerAction!,
-                const Spacer(),
-                if (footerTrailing != null) footerTrailing!,
-              ],
+              children: [?footerAction, const Spacer(), ?footerTrailing],
             ),
           ),
         ],

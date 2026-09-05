@@ -87,13 +87,17 @@ class D3NavBarCenterAction {
 ///   ],
 /// )
 ///
-/// // With a center action (e.g. "add new"), rendered distinctly and
-/// // inserted between the two halves of items — see D3NavBarCenterAction.
+/// // With a center action (e.g. "add new"), rendered at the bar's true
+/// // horizontal center regardless of item count — items split into a
+/// // left/right group around it, so 3 items (as here) place 2 on the
+/// // left and 1 on the right without shifting the button off-center.
+/// // See D3NavBarCenterAction.
 /// D3NavBar(
 ///   selectedIndex: _tab,
 ///   onTabSelected: (i) => setState(() => _tab = i),
 ///   items: const [
 ///     D3NavItem(icon: Icons.home_outlined, label: 'Home'),
+///     D3NavItem(icon: Icons.list_outlined, label: 'Activity'),
 ///     D3NavItem(icon: Icons.settings_outlined, label: 'Settings'),
 ///   ],
 ///   centerAction: D3NavBarCenterAction(
@@ -119,10 +123,15 @@ class D3NavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTabSelected;
 
-  /// Optional visually-distinct action rendered between the two halves of
-  /// [items] (e.g. items = [A, B, C, D] renders as A, B, •center•, C, D).
-  /// Does not count toward the 2–5 [items] limit and never affects
-  /// [selectedIndex]/[onTabSelected] — see [D3NavBarCenterAction].
+  /// Optional visually-distinct action rendered at the bar's true
+  /// horizontal center — not at the midpoint of [items]. [items] split into
+  /// a left group and a right group around it (e.g. items = [A, B, C]
+  /// renders as A, B | •center• | C — two items sharing the left half's
+  /// width, one item filling the right half's), so the button's pixel
+  /// position is independent of whether the item count is even or odd. Does
+  /// not count toward the 2–5 [items] limit and never affects
+  /// [selectedIndex]/[onTabSelected] — see [D3NavBarCenterAction] and root
+  /// `context/work/0017-d3-nav-bar-center-action-true-centering.md`.
   final D3NavBarCenterAction? centerAction;
 
   @override
@@ -130,12 +139,26 @@ class D3NavBar extends StatelessWidget {
     final colors = context.d3Colors;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
     final action = centerAction;
-    // Split point for inserting the center action: after the first half
-    // of items, so e.g. 4 items become 2 + action + 2, and an odd count
-    // (e.g. 3) becomes 2 + action + 1 (matches this being an even count
-    // in the app that actually needed this — site_inspector's Projects/
-    // Visit History/+/Settings — without breaking for other counts).
+    // Left/right item groups split around the action's true center —
+    // ceil() puts any odd item out on the left, matching how the item list
+    // reads left-to-right (earlier destinations stay visually first).
     final splitIndex = (items.length / 2).ceil();
+    final leftItems = items.take(splitIndex).toList();
+    final rightItems = items.skip(splitIndex).toList();
+
+    Widget buildItem(D3NavItem item, int index) {
+      return Expanded(
+        child: _NavBarItem(
+          item: item,
+          isSelected: index == selectedIndex,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTabSelected(index);
+          },
+          colors: colors,
+        ),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -153,30 +176,34 @@ class D3NavBar extends StatelessWidget {
             top: 8,
             bottom: bottomPadding > 0 ? bottomPadding : 12,
           ),
-          child: Row(
-            children: [
-              for (var i = 0; i < items.length; i++) ...[
-                if (action != null && i == splitIndex)
-                  _NavBarCenterActionButton(
-                    action: action,
-                    colors: colors,
-                  ),
-                Expanded(
-                  child: _NavBarItem(
-                    item: items[i],
-                    isSelected: i == selectedIndex,
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      onTabSelected(i);
-                    },
-                    colors: colors,
-                  ),
+          child: action == null
+              ? Row(
+                  children: [
+                    for (var i = 0; i < items.length; i++)
+                      buildItem(items[i], i),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < leftItems.length; i++)
+                            buildItem(leftItems[i], i),
+                        ],
+                      ),
+                    ),
+                    _NavBarCenterActionButton(action: action, colors: colors),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < rightItems.length; i++)
+                            buildItem(rightItems[i], splitIndex + i),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-              if (action != null && splitIndex == items.length)
-                _NavBarCenterActionButton(action: action, colors: colors),
-            ],
-          ),
         ),
       ),
     );

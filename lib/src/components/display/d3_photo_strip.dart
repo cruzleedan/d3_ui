@@ -38,6 +38,7 @@ class D3PhotoStrip extends StatelessWidget {
     required this.itemLabel,
     this.onRemove,
     this.viewerTitle,
+    this.onAdd,
   });
 
   /// Local file paths, in display order.
@@ -56,6 +57,18 @@ class D3PhotoStrip extends StatelessWidget {
   /// the viewer's own "N / M" counter.
   final Widget? viewerTitle;
 
+  /// When provided, an image-thumbnail-shaped `+` tile (sized to match
+  /// the photo thumbnails) is appended after the last photo, and the
+  /// strip renders even when [photoPaths] is empty (just the tile
+  /// alone) instead of collapsing to nothing. Use this instead of a
+  /// separate "Add photo" button below the strip so adding a photo
+  /// reads as "an empty photo slot," not a generic action — and so
+  /// callers don't need to reimplement this strip's own thumbnail
+  /// rendering just to add a trailing tile (its own internal
+  /// [ListView] can't be nested inside another scrollable, so
+  /// composing around it from outside isn't an option).
+  final VoidCallback? onAdd;
+
   void _openViewer(BuildContext context, int index) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -70,17 +83,21 @@ class D3PhotoStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (photoPaths.isEmpty) return const SizedBox.shrink();
+    if (photoPaths.isEmpty && onAdd == null) return const SizedBox.shrink();
 
     final tokens = context.d3PhotoStripTokens;
+    final itemCount = photoPaths.length + (onAdd != null ? 1 : 0);
 
     return SizedBox(
       height: tokens.thumbnailSize,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: photoPaths.length,
+        itemCount: itemCount,
         separatorBuilder: (_, _) => SizedBox(width: tokens.thumbnailGap),
         itemBuilder: (context, index) {
+          if (index == photoPaths.length) {
+            return _D3AddPhotoTile(onTap: onAdd!, tokens: tokens);
+          }
           return _D3PhotoThumbnail(
             path: photoPaths[index],
             index: index,
@@ -91,6 +108,42 @@ class D3PhotoStrip extends StatelessWidget {
             onRemove: onRemove == null ? null : () => onRemove!(index),
           );
         },
+      ),
+    );
+  }
+}
+
+class _D3AddPhotoTile extends StatelessWidget {
+  const _D3AddPhotoTile({required this.onTap, required this.tokens});
+
+  final VoidCallback onTap;
+  final D3PhotoStripTokens tokens;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.d3Colors;
+    final radius = BorderRadius.circular(tokens.thumbnailRadius);
+
+    return Semantics(
+      label: 'Add photo',
+      button: true,
+      child: SizedBox(
+        width: tokens.thumbnailSize,
+        height: tokens.thumbnailSize,
+        child: Material(
+          color: colors.surfaceContainerHigh,
+          shape: RoundedRectangleBorder(
+            borderRadius: radius,
+            side: BorderSide(color: colors.outline.withValues(alpha: 0.4)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Center(
+              child: Icon(Icons.add, color: colors.onSurfaceVariant),
+            ),
+          ),
+        ),
       ),
     );
   }

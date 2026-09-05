@@ -272,15 +272,17 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
     );
 
     // Sub-header: single fixed-height row, content morphs between modes.
-    // Left: select-all checkbox. Right: search icon + active filter pill.
-    // Nothing changes size — zero layout shift.
+    // Left: select-all checkbox. Right: active filter pill. The search
+    // icon lives in the title bar itself (below), not here — Material
+    // convention puts a screen's primary search action inline with the
+    // title, trailing end, not in a secondary row underneath it.
+    // Nothing here changes size — zero layout shift.
     final subHeader = _SubHeaderRow<T, F>(
       inSelectionMode: _inSelectionMode,
       selectedCount: _selectedIds.length,
       totalCount: widget.items.length,
       onSelectAll: _selectAll,
       onClearAll: _clearSelection,
-      onOpenSearch: widget.onSearchChanged != null ? _searchCtrl.open : null,
       filterOptions: widget.filterOptions,
       activeFilters: widget.activeFilters,
       defaultFilters: widget.defaultFilters,
@@ -288,9 +290,22 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
       colors: colors,
     );
 
+    // Search action goes first so it renders outermost-right in the title
+    // bar (D3Screen.actions: "first item is outermost right"), ahead of
+    // any caller-provided actions.
+    final titleBarActions = [
+      if (widget.onSearchChanged != null)
+        D3ScreenAction.icon(
+          Icons.search_rounded,
+          semanticsLabel: 'Search',
+          onPressed: _searchCtrl.open,
+        ),
+      ...widget.actions,
+    ];
+
     return D3Screen(
       title: widget.title,
-      actions: widget.actions,
+      actions: titleBarActions,
       floatingActionButton: _inSelectionMode
           ? null
           : widget.floatingActionButton,
@@ -474,9 +489,11 @@ class _BarLabeledButton extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // _SubHeaderRow
 // Fixed-height row below the title bar. Content morphs between modes:
-//   Normal:    [select-all checkbox]  ───────────  [search icon] [filter pill]
+//   Normal:    [select-all checkbox]  ────────────────────  [filter pill]
 //   Selection: [select-all checkbox (active)]  ───────────────────────────────
-// Height never changes → zero layout shift.
+// Height never changes → zero layout shift. The search icon lives in the
+// title bar itself (D3Screen's own `actions`, trailing/outermost-right per
+// Material convention), not here — see D3ListScreen.build().
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SubHeaderRow<T, F> extends StatefulWidget {
@@ -487,7 +504,6 @@ class _SubHeaderRow<T, F> extends StatefulWidget {
     required this.onSelectAll,
     required this.onClearAll,
     required this.colors,
-    this.onOpenSearch,
     this.filterOptions = const [],
     this.activeFilters = const {},
     this.defaultFilters,
@@ -500,7 +516,6 @@ class _SubHeaderRow<T, F> extends StatefulWidget {
   final VoidCallback onSelectAll;
   final VoidCallback onClearAll;
   final D3ColorTokens colors;
-  final VoidCallback? onOpenSearch;
   final List<D3FilterOption<F>> filterOptions;
   final Set<F> activeFilters;
   final Set<F>? defaultFilters;
@@ -739,23 +754,6 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
                         ),
                       ),
 
-                    // Search icon — 48×48 tap target
-                    if (widget.onOpenSearch != null)
-                      const SizedBox(width: D3Spacing.s4),
-                    if (widget.onOpenSearch != null)
-                      GestureDetector(
-                        onTap: widget.onOpenSearch,
-                        behavior: HitTestBehavior.opaque,
-                        child: SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: Icon(
-                            Icons.search_rounded,
-                            size: 22,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
                   ],
                 ),
               ),
