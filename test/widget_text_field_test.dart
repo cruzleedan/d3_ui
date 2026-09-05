@@ -49,6 +49,30 @@ void main() {
       expect(textField.controller!.text, isEmpty);
     });
 
+    testWidgets('does not call onChanged when the field merely gains focus', (
+      tester,
+    ) async {
+      // TextEditingController notifies listeners on any TextEditingValue
+      // change, including a selection-only update — and focusing a field
+      // with existing text moves its cursor/selection without the user
+      // typing anything. onChanged must only fire for an actual text edit.
+      var callCount = 0;
+      await tester.pumpWidget(
+        _wrap(
+          D3TextField(
+            label: 'Name',
+            controller: TextEditingController(text: 'Dan'),
+            onChanged: (_) => callCount++,
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+
+      expect(callCount, 0);
+    });
+
     testWidgets('does not show clear button when read-only', (tester) async {
       await tester.pumpWidget(
         _wrap(

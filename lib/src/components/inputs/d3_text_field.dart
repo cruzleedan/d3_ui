@@ -170,12 +170,25 @@ class D3TextField extends StatefulWidget {
 /// Public state class — access via a [GlobalKey<D3TextFieldState>] to call
 /// [validate] imperatively (e.g. from a submit button outside a [Form]).
 class D3TextFieldState extends State<D3TextField>
-    with D3FieldLifecycleMixin<D3TextField>, D3FieldStylingMixin, D3ClearButtonMixin {
+    with
+        D3FieldLifecycleMixin<D3TextField>,
+        D3FieldStylingMixin,
+        D3ClearButtonMixin {
   TextEditingController get _controller => controller;
   FocusNode get _focusNode => focusNode;
 
   bool _isFocused = false;
   String? _validationError;
+
+  /// Last text seen by [_onTextChange] — [TextEditingController] notifies
+  /// on any [TextEditingValue] change, including a selection/composing-only
+  /// update (e.g. the cursor moving when the field gains focus), not just
+  /// a text edit. Comparing against this instead of reacting to every
+  /// notification stops [D3TextField.onChanged] from firing when nothing
+  /// the user typed actually changed. Set once [initState] has set up
+  /// [_controller] (see [D3FieldLifecycleMixin] — it's a `late` field, not
+  /// valid until `initializeFieldControllers` runs).
+  late String _lastSeenText;
 
   /// True once the field has been blurred at least once — gates live validation
   /// for [D3ValidationMode.onBlurThenChange].
@@ -196,6 +209,7 @@ class D3TextFieldState extends State<D3TextField>
       externalFocusNode: widget.focusNode,
       initialText: widget.initialValue,
     );
+    _lastSeenText = _controller.text;
 
     _obscured = widget.obscureText;
 
@@ -239,6 +253,14 @@ class D3TextFieldState extends State<D3TextField>
   // ── Text change ────────────────────────────────────────────────────────────
 
   void _onTextChange() {
+    // TextEditingController notifies on any TextEditingValue change —
+    // selection/composing-only updates included (e.g. the cursor moving
+    // when the field gains focus) — not just an actual text edit. Bail
+    // out here so onChanged/validation only react to real edits.
+    if (_controller.text == _lastSeenText) return;
+    _lastSeenText = _controller.text;
+
+    if (widget.isReadOnly) return;
     widget.onChanged?.call(_controller.text);
 
     final shouldValidateLive = switch (widget.validationMode) {
@@ -320,7 +342,7 @@ class D3TextFieldState extends State<D3TextField>
   // ── State resolution ───────────────────────────────────────────────────────
 
   D3FieldStatus get _status {
-    if (!widget.isEnabled) return D3FieldStatus.disabled;
+    if (!widget.isEnabled || widget.isReadOnly) return D3FieldStatus.disabled;
     if (widget.errorText != null || _validationError != null) {
       return D3FieldStatus.error;
     }
@@ -638,7 +660,6 @@ class D3TextFieldState extends State<D3TextField>
       ),
     );
   }
-
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
