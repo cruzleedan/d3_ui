@@ -130,8 +130,27 @@ class D3PhotoStripState extends State<D3PhotoStrip> {
   /// showing whatever it last resolved to. Call this once that event is
   /// known, mirroring how `D3ImageViewerState.replaceImage` lets a
   /// caller push a fresh image into an already-built viewer.
+  ///
+  /// **Caution:** the re-run reads whatever `thumbnailResolveImage`
+  /// itself reads (often ambient app state, e.g. a Riverpod provider) --
+  /// if that state hasn't actually finished updating yet by the time
+  /// this is called, the resolver re-runs against the *old* value and
+  /// this is a no-op in effect. A caller that already has the exact
+  /// path to show (rather than needing it re-derived) should use
+  /// [replaceThumbnail] instead, which has no such dependency.
   void refreshThumbnail(int index) {
     _thumbnailKeys[index]?.currentState?.refresh();
+  }
+
+  /// Sets the thumbnail at [index] to show [path] directly, with no
+  /// re-run of `thumbnailResolveImage` and no dependency on any ambient
+  /// state being current -- the imperative counterpart to
+  /// [refreshThumbnail], for a caller that already knows the exact
+  /// path to show (e.g. it just produced that file itself) rather than
+  /// needing the resolver consulted again. Mirrors
+  /// `D3ImageViewerState.replaceImage` exactly.
+  void replaceThumbnail(int index, String path) {
+    _thumbnailKeys[index]?.currentState?.replace(path);
   }
 
   void _openViewer(BuildContext context, int index) {
@@ -301,6 +320,9 @@ class _D3PhotoThumbnailState extends State<_D3PhotoThumbnail> {
 
   /// See `D3PhotoStripState.refreshThumbnail`.
   void refresh() => _resolve();
+
+  /// See `D3PhotoStripState.replaceThumbnail`.
+  void replace(String path) => setState(() => _displayPath = path);
 
   @override
   Widget build(BuildContext context) {
