@@ -99,4 +99,108 @@ void main() {
       );
     });
   });
+
+  group('D3ImageViewerState.replaceImage', () {
+    testWidgets('swaps the shown image at the given index in place', (
+      tester,
+    ) async {
+      final key = GlobalKey<D3ImageViewerState>();
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            key: key,
+            images: const [
+              D3ImageSource.network('https://example.com/original.png'),
+            ],
+          ),
+        ),
+      );
+
+      key.currentState!.replaceImage(
+        0,
+        const D3ImageSource.network('https://example.com/replaced.png'),
+      );
+      await tester.pump();
+
+      final image = tester.widget<Image>(find.byType(Image));
+      final provider = image.image as NetworkImage;
+      expect(provider.url, 'https://example.com/replaced.png');
+    });
+
+    testWidgets('does not affect actionsBuilder\'s own current-index '
+        'tracking', (tester) async {
+      final key = GlobalKey<D3ImageViewerState>();
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            key: key,
+            images: const [
+              D3ImageSource.network('https://example.com/a.png'),
+              D3ImageSource.network('https://example.com/b.png'),
+            ],
+            actionsBuilder: (index) => [Text('actions for $index')],
+          ),
+        ),
+      );
+
+      key.currentState!.replaceImage(
+        0,
+        const D3ImageSource.network('https://example.com/a2.png'),
+      );
+      await tester.pump();
+
+      expect(key.currentState!.currentIndex, 0);
+      expect(find.text('actions for 0'), findsOneWidget);
+    });
+
+    testWidgets('an out-of-range index is a no-op, not a crash', (
+      tester,
+    ) async {
+      final key = GlobalKey<D3ImageViewerState>();
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            key: key,
+            images: const [
+              D3ImageSource.network('https://example.com/a.png'),
+            ],
+          ),
+        ),
+      );
+
+      key.currentState!.replaceImage(
+        5,
+        const D3ImageSource.network('https://example.com/z.png'),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a genuinely new images list from the parent still takes '
+        'effect via the normal declarative rebuild path', (tester) async {
+      var images = const [D3ImageSource.network('https://example.com/a.png')];
+      late StateSetter setLocalState;
+
+      await tester.pumpWidget(
+        _wrap(
+          StatefulBuilder(
+            builder: (context, setState) {
+              setLocalState = setState;
+              return D3ImageViewer(images: images);
+            },
+          ),
+        ),
+      );
+
+      setLocalState(() {
+        images = const [D3ImageSource.network('https://example.com/b.png')];
+      });
+      await tester.pump();
+
+      final image = tester.widget<Image>(find.byType(Image));
+      final provider = image.image as NetworkImage;
+      expect(provider.url, 'https://example.com/b.png');
+    });
+  });
 }

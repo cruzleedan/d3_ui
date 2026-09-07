@@ -123,18 +123,59 @@ class D3ImageViewerState extends State<D3ImageViewer> {
   late final PageController _pageController;
   late int _currentIndex;
 
+  /// Local, mutable copy of [D3ImageViewer.images] -- seeded from it, but
+  /// evolves independently afterward via [replaceImage], the same way
+  /// [_currentIndex] is seeded from [D3ImageViewer.initialIndex] but then
+  /// tracked as this state's own value. Needed because [replaceImage]
+  /// has to change what's actually painted without the caller rebuilding
+  /// this whole widget (and, with it, the route/PageView/scroll position
+  /// it lives in) from further up the tree.
+  late List<D3ImageSource> _images;
+
   /// The zero-based index of the currently visible image.
   int get currentIndex => _currentIndex;
 
-  int get _count => widget.images.length;
+  int get _count => _images.length;
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.images.isEmpty
+    _images = List.of(widget.images);
+    _currentIndex = _images.isEmpty
         ? 0
         : widget.initialIndex.clamp(0, _count - 1);
     _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void didUpdateWidget(covariant D3ImageViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A normal declarative rebuild from further up the tree (the parent
+    // passed a genuinely new `images` list) still takes effect --
+    // [replaceImage] is an additional, imperative way to update this
+    // state, not a replacement for the ordinary Flutter data flow.
+    if (!identical(widget.images, oldWidget.images)) {
+      _images = List.of(widget.images);
+      if (_currentIndex >= _images.length) {
+        _currentIndex = _images.isEmpty ? 0 : _images.length - 1;
+      }
+    }
+  }
+
+  /// Swaps the image shown at [index] for [source], in place -- for a
+  /// caller that produces a new version of one image *after* this
+  /// viewer is already on screen (e.g. an edit/annotation flow whose own
+  /// screen pops back into this one) and wants the update to appear
+  /// immediately, without leaving and re-entering the viewer.
+  ///
+  /// Does not touch [D3ImageViewer.images] itself or notify the widget
+  /// that built this viewer -- if the caller's own underlying data
+  /// (e.g. a list of file paths it owns) also needs updating so a later,
+  /// fresh build of this viewer shows the same replacement, that is the
+  /// caller's separate responsibility.
+  void replaceImage(int index, D3ImageSource source) {
+    if (index < 0 || index >= _images.length) return;
+    setState(() => _images[index] = source);
   }
 
   @override
@@ -153,7 +194,7 @@ class D3ImageViewerState extends State<D3ImageViewer> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.images.isEmpty) {
+    if (_images.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
@@ -198,7 +239,7 @@ class D3ImageViewerState extends State<D3ImageViewer> {
                 minScale: 0.5,
                 maxScale: 6.0,
                 child: Center(
-                  child: _D3ViewerImage(source: widget.images[index]),
+                  child: _D3ViewerImage(source: _images[index]),
                 ),
               );
             },
