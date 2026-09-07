@@ -390,6 +390,25 @@ void main() {
       expect(find.byType(D3ImageViewer), findsOneWidget);
     });
 
+    testWidgets('mid-drag, the AppBar moves with the image -- the whole '
+        'screen drags together, not just the photo', (tester) async {
+      await pumpPushed(tester);
+
+      final appBarBefore = tester.getTopLeft(find.byType(AppBar));
+
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(D3ImageViewer)),
+      );
+      await gesture.moveBy(const Offset(0, 60));
+      await tester.pump();
+
+      final appBarDuring = tester.getTopLeft(find.byType(AppBar));
+      expect(appBarDuring.dy, greaterThan(appBarBefore.dy));
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+    });
+
     // The "stay active only while unzoomed" gate (_isZoomed, checked
     // against the page's own TransformationController) is intentionally
     // not exercised here via a simulated pinch gesture -- reliably
@@ -425,6 +444,73 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('2 / 2'), findsOneWidget);
+    });
+  });
+
+  group('D3ImageViewer.push', () {
+    testWidgets('pushes a non-opaque route -- the base screen stays in '
+        'the tree underneath, not disposed', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: D3AppTheme.light(),
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () => D3ImageViewer.push(
+                    context,
+                    images: const [
+                      D3ImageSource.network('https://example.com/a.png'),
+                    ],
+                  ),
+                  child: const Text('base screen marker'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('base screen marker'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(D3ImageViewer), findsOneWidget);
+      // Still present (just obscured), not popped off the tree --
+      // exactly what a non-opaque route preserves and a normal opaque
+      // MaterialPageRoute would not guarantee.
+      expect(find.text('base screen marker'), findsOneWidget);
+    });
+
+    testWidgets('dismissing pops back to the base screen', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: D3AppTheme.light(),
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () => D3ImageViewer.push(
+                    context,
+                    images: const [
+                      D3ImageSource.network('https://example.com/a.png'),
+                    ],
+                  ),
+                  child: const Text('Open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.drag(find.byType(D3ImageViewer), const Offset(0, 200));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(D3ImageViewer), findsNothing);
+      expect(find.text('Open'), findsOneWidget);
     });
   });
 }
