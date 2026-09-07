@@ -10,26 +10,26 @@ class D3TokensExtension extends ThemeExtension<D3TokensExtension> {
     required this.colors,
     required this.buttonTokens,
     required this.inputTokens,
-    required this.photoStripTokens,
+    required this.photoGalleryTokens,
   });
 
   final D3ColorTokens colors;
   final D3ButtonTokens buttonTokens;
   final D3InputTokens inputTokens;
-  final D3PhotoStripTokens photoStripTokens;
+  final D3PhotoGalleryTokens photoGalleryTokens;
 
   @override
   D3TokensExtension copyWith({
     D3ColorTokens? colors,
     D3ButtonTokens? buttonTokens,
     D3InputTokens? inputTokens,
-    D3PhotoStripTokens? photoStripTokens,
+    D3PhotoGalleryTokens? photoGalleryTokens,
   }) {
     return D3TokensExtension(
       colors: colors ?? this.colors,
       buttonTokens: buttonTokens ?? this.buttonTokens,
       inputTokens: inputTokens ?? this.inputTokens,
-      photoStripTokens: photoStripTokens ?? this.photoStripTokens,
+      photoGalleryTokens: photoGalleryTokens ?? this.photoGalleryTokens,
     );
   }
 
@@ -43,14 +43,14 @@ class D3TokensExtension extends ThemeExtension<D3TokensExtension> {
     colors: D3ColorTokens.light,
     buttonTokens: D3ButtonTokens.defaults,
     inputTokens: D3InputTokens.defaults,
-    photoStripTokens: D3PhotoStripTokens.defaults,
+    photoGalleryTokens: D3PhotoGalleryTokens.defaults,
   );
 
   static const dark = D3TokensExtension(
     colors: D3ColorTokens.dark,
     buttonTokens: D3ButtonTokens.defaults,
     inputTokens: D3InputTokens.defaults,
-    photoStripTokens: D3PhotoStripTokens.defaults,
+    photoGalleryTokens: D3PhotoGalleryTokens.defaults,
   );
 }
 
@@ -296,12 +296,12 @@ class D3InputTokens {
   }
 }
 
-/// Tokens for [D3PhotoStrip] — thumbnail sizing and the remove-button hit
+/// Tokens for `D3PhotoGallery` — thumbnail sizing and the remove-button hit
 /// target. [removeButtonHitSize] is kept independent of [removeButtonGlyphSize]
 /// so the tappable area can meet the Material touch-target minimum (48dp)
 /// without inflating the visible glyph.
-class D3PhotoStripTokens {
-  const D3PhotoStripTokens({
+class D3PhotoGalleryTokens {
+  const D3PhotoGalleryTokens({
     required this.thumbnailSize,
     required this.thumbnailGap,
     required this.thumbnailRadius,
@@ -330,7 +330,7 @@ class D3PhotoStripTokens {
   /// standard "badge" placement).
   final double removeButtonOffset;
 
-  static const defaults = D3PhotoStripTokens(
+  static const defaults = D3PhotoGalleryTokens(
     thumbnailSize: D3Spacing.s64,
     thumbnailGap: D3Spacing.s8,
     thumbnailRadius: D3Radius.sm,
@@ -339,7 +339,7 @@ class D3PhotoStripTokens {
     removeButtonOffset: -D3Spacing.s12,
   );
 
-  D3PhotoStripTokens copyWith({
+  D3PhotoGalleryTokens copyWith({
     double? thumbnailSize,
     double? thumbnailGap,
     double? thumbnailRadius,
@@ -347,7 +347,7 @@ class D3PhotoStripTokens {
     double? removeButtonGlyphSize,
     double? removeButtonOffset,
   }) {
-    return D3PhotoStripTokens(
+    return D3PhotoGalleryTokens(
       thumbnailSize: thumbnailSize ?? this.thumbnailSize,
       thumbnailGap: thumbnailGap ?? this.thumbnailGap,
       thumbnailRadius: thumbnailRadius ?? this.thumbnailRadius,
@@ -367,5 +367,5 @@ extension D3ThemeExtensions on BuildContext {
   D3ColorTokens get d3Colors => d3Tokens.colors;
   D3ButtonTokens get d3ButtonTokens => d3Tokens.buttonTokens;
   D3InputTokens get d3InputTokens => d3Tokens.inputTokens;
-  D3PhotoStripTokens get d3PhotoStripTokens => d3Tokens.photoStripTokens;
+  D3PhotoGalleryTokens get d3PhotoGalleryTokens => d3Tokens.photoGalleryTokens;
 }

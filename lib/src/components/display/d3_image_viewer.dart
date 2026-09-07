@@ -212,7 +212,7 @@ class D3ImageViewerState extends State<D3ImageViewer>
   /// dismiss gesture below (owned here, at the whole-screen level) can
   /// check whether the *current* page is zoomed in without reaching
   /// into each page's own private state. Populated lazily as pages
-  /// build, matching the same per-index-key pattern `D3PhotoStrip` uses
+  /// build, matching the same per-index-key pattern `D3PhotoGallery` uses
   /// for its own thumbnails -- entries for indices no longer valid are
   /// pruned in [build] rather than left to accumulate.
   final Map<int, TransformationController> _zoomControllers = {};

@@ -7,12 +7,12 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
-  group('D3PhotoStrip.viewerActionsBuilder', () {
+  group('D3PhotoGallery.viewerActionsBuilder', () {
     testWidgets('forwards actions into the pushed viewer, keyed by the '
         'tapped index', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             photoPaths: const ['a.png', 'b.png'],
             itemLabel: 'Test item',
             viewerActionsBuilder: (index) => [Text('action for $index')],
@@ -32,7 +32,7 @@ void main() {
         'unchanged from before this parameter existed', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          const D3PhotoStrip(
+          const D3PhotoGallery(
             photoPaths: ['a.png'],
             itemLabel: 'Test item',
           ),
@@ -51,7 +51,7 @@ void main() {
         'one viewer session', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             photoPaths: const ['a.png', 'b.png'],
             itemLabel: 'Test item',
             viewerActionsBuilder: (index) => [Text('action for $index')],
@@ -70,13 +70,13 @@ void main() {
     });
   });
 
-  group('D3PhotoStrip.viewerResolveImage', () {
+  group('D3PhotoGallery.viewerResolveImage', () {
     testWidgets('forwards into the pushed viewer, called for the tapped '
         'index', (tester) async {
       final calledFor = <int>[];
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             photoPaths: const ['a.png', 'b.png'],
             itemLabel: 'Test item',
             viewerResolveImage: (index) async {
@@ -98,7 +98,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          const D3PhotoStrip(
+          const D3PhotoGallery(
             photoPaths: ['a.png'],
             itemLabel: 'Test item',
           ),
@@ -113,13 +113,13 @@ void main() {
     });
   });
 
-  group('D3PhotoStrip.thumbnailResolveImage', () {
+  group('D3PhotoGallery.thumbnailResolveImage', () {
     testWidgets('shows photoPaths\' own entry immediately, then swaps once '
         'resolved', (tester) async {
       var release = false;
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             photoPaths: const ['a.png'],
             itemLabel: 'Test item',
             thumbnailResolveImage: (index) async {
@@ -149,7 +149,7 @@ void main() {
       final calledFor = <int>[];
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             photoPaths: const ['a.png', 'b.png'],
             itemLabel: 'Test item',
             thumbnailResolveImage: (index) async {
@@ -169,7 +169,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          const D3PhotoStrip(
+          const D3PhotoGallery(
             photoPaths: ['a.png'],
             itemLabel: 'Test item',
           ),
@@ -191,7 +191,7 @@ void main() {
 
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             photoPaths: const ['a.png'],
             itemLabel: 'Test item',
             thumbnailResolveImage: resolver,
@@ -205,7 +205,7 @@ void main() {
       // an inline lambda passed anew on every parent rebuild.
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             photoPaths: const ['a.png'],
             itemLabel: 'Test item',
             thumbnailResolveImage: (index) async {
@@ -221,16 +221,16 @@ void main() {
     });
   });
 
-  group('D3PhotoStripState.refreshThumbnail', () {
+  group('D3PhotoGalleryState.refreshThumbnail', () {
     testWidgets('re-runs thumbnailResolveImage for that index, swapping '
         'the displayed image even though photoPaths itself did not '
         'change', (tester) async {
       var resolvedValue = 'first.png';
-      final key = GlobalKey<D3PhotoStripState>();
+      final key = GlobalKey<D3PhotoGalleryState>();
 
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             key: key,
             photoPaths: const ['a.png'],
             itemLabel: 'Test item',
@@ -254,10 +254,10 @@ void main() {
     testWidgets('an out-of-range index is a no-op, not a crash', (
       tester,
     ) async {
-      final key = GlobalKey<D3PhotoStripState>();
+      final key = GlobalKey<D3PhotoGalleryState>();
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             key: key,
             photoPaths: const ['a.png'],
             itemLabel: 'Test item',
@@ -273,15 +273,15 @@ void main() {
     });
   });
 
-  group('D3PhotoStripState.replaceThumbnail', () {
+  group('D3PhotoGalleryState.replaceThumbnail', () {
     testWidgets('shows the given path directly, without calling '
         'thumbnailResolveImage', (tester) async {
       var resolveCallCount = 0;
-      final key = GlobalKey<D3PhotoStripState>();
+      final key = GlobalKey<D3PhotoGalleryState>();
 
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             key: key,
             photoPaths: const ['a.png'],
             itemLabel: 'Test item',
@@ -307,10 +307,10 @@ void main() {
     testWidgets('an out-of-range index is a no-op, not a crash', (
       tester,
     ) async {
-      final key = GlobalKey<D3PhotoStripState>();
+      final key = GlobalKey<D3PhotoGalleryState>();
       await tester.pumpWidget(
         _wrap(
-          D3PhotoStrip(
+          D3PhotoGallery(
             key: key,
             photoPaths: const ['a.png'],
             itemLabel: 'Test item',
@@ -323,6 +323,51 @@ void main() {
       await tester.pump();
 
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('layout wraps instead of scrolling', () {
+    // Regression coverage for an on-device report: with the previous
+    // single-row, horizontally-scrolling layout, the add-photo tile
+    // (always the last item) scrolled off-screen once enough
+    // thumbnails filled the visible width, with no visual hint it was
+    // still reachable -- effectively undiscoverable once an item
+    // already had a handful of photos. A Wrap has no such off-screen
+    // state: every child, including the add tile, is laid out and
+    // present in the tree regardless of count.
+    testWidgets('every thumbnail and the add tile are all present at '
+        'once, not just the ones that would fit in one scrolling row', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoGallery(
+            photoPaths: List.generate(12, (i) => 'photo$i.png'),
+            itemLabel: 'Test item',
+            onAdd: () {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Image), findsNWidgets(12));
+      expect(find.byIcon(Icons.add), findsOneWidget);
+    });
+
+    testWidgets('uses Wrap, not a scrolling ListView', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoGallery(
+            photoPaths: List.generate(12, (i) => 'photo$i.png'),
+            itemLabel: 'Test item',
+            onAdd: () {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Wrap), findsOneWidget);
+      expect(find.byType(ListView), findsNothing);
     });
   });
 }
