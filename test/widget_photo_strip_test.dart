@@ -69,4 +69,47 @@ void main() {
       expect(find.text('action for 1'), findsOneWidget);
     });
   });
+
+  group('D3PhotoStrip.viewerResolveImage', () {
+    testWidgets('forwards into the pushed viewer, called for the tapped '
+        'index', (tester) async {
+      final calledFor = <int>[];
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoStrip(
+            photoPaths: const ['a.png', 'b.png'],
+            itemLabel: 'Test item',
+            viewerResolveImage: (index) async {
+              calledFor.add(index);
+              return D3ImageSource.local('resolved-$index.png');
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(GestureDetector).at(1));
+      await tester.pumpAndSettle();
+
+      expect(calledFor, [1]);
+    });
+
+    testWidgets('omitting it changes nothing from before it existed', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const D3PhotoStrip(
+            photoPaths: ['a.png'],
+            itemLabel: 'Test item',
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(GestureDetector).first);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(D3ImageViewer), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
