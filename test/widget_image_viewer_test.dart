@@ -419,15 +419,6 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    // Full pinch-to-zoom outcome (verifying InteractiveViewer's own
-    // resulting scale) is not exercised here -- reliably driving its
-    // scale gesture recognizer to a specific, assertable end state
-    // through WidgetTester's synthetic multi-pointer events proved
-    // flaky in practice. What *is* tested below is the actual
-    // mechanism this recognizer is responsible for: ceding the
-    // gesture, mid-drag, the moment a second pointer appears -- the
-    // resulting pinch behaviour itself is InteractiveViewer's own,
-    // unmodified, and covered by manual on-device verification.
     testWidgets('a second pointer joining mid-drag stops the dismiss '
         'gesture from continuing to track the first', (tester) async {
       await pumpPushed(tester);
@@ -447,13 +438,16 @@ void main() {
       expect(appBarMidDrag.dy, greaterThan(appBarBefore.dy));
 
       // A second finger touches down elsewhere on the image -- the
-      // start of what would be a pinch.
+      // start of what would be a pinch. InteractiveViewer's own
+      // onInteractionUpdate reports the resulting pointerCount == 2
+      // from here on, which _onInteractionUpdate treats as "no longer
+      // a single-finger dismiss drag" (see _dragIsSingleFinger).
       final second = await tester.startGesture(center + const Offset(40, 0));
       await tester.pump();
 
       // The first finger keeps moving, as it would mid-pinch. If the
-      // dismiss recognizer had not ceded the gesture, the AppBar would
-      // keep sliding down with it.
+      // pointerCount check above were missing, the AppBar would keep
+      // sliding down with it.
       final appBarAtRejection = tester.getTopLeft(find.byType(AppBar));
       await first.moveBy(const Offset(0, 40));
       await tester.pump();
@@ -507,6 +501,66 @@ void main() {
       final scale = interactiveViewer.transformationController!.value
           .getMaxScaleOnAxis();
       expect(scale, greaterThan(1.01));
+    });
+
+    testWidgets('dismiss still works after an earlier horizontal swipe '
+        'attempt', (tester) async {
+      // Regression coverage for an on-device report: swipe-to-dismiss
+      // became unreliable after a horizontal page-swipe attempt had
+      // happened first. Under the current architecture (driven by
+      // InteractiveViewer's own onInteractionStart/Update/End, not a
+      // sibling recognizer competing for the same pointer -- see
+      // _D3ViewerPage's doc comment) there is no separate
+      // pointer-tracking state of this widget's own left to go stale,
+      // but this still exercises the same real user sequence end to
+      // end.
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: D3AppTheme.light(),
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => D3ImageViewer(
+                        images: const [
+                          D3ImageSource.network('https://example.com/a.png'),
+                          D3ImageSource.network('https://example.com/b.png'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  child: const Text('Open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      // A horizontal swipe attempt -- InteractiveViewer reports it via
+      // onInteractionStart/Update/End the same as any other
+      // single-finger interaction.
+      final horizontal = await tester.startGesture(
+        tester.getCenter(find.byType(D3ImageViewer)),
+      );
+      await horizontal.moveBy(const Offset(-20, 0));
+      await tester.pump();
+      await horizontal.moveBy(const Offset(-40, 0));
+      await tester.pump();
+      await horizontal.up();
+      await tester.pumpAndSettle();
+
+      // Now a genuine, separate single-finger vertical drag -- must
+      // still dismiss normally.
+      await tester.drag(find.byType(D3ImageViewer), const Offset(0, 200));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(D3ImageViewer), findsNothing);
+      expect(find.text('Open'), findsOneWidget);
     });
 
     testWidgets('paging via the nav arrow still works, unaffected by the '
