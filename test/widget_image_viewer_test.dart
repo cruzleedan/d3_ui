@@ -333,4 +333,98 @@ void main() {
       );
     });
   });
+
+  group('swipe down to dismiss', () {
+    // Pushed on top of a base screen (rather than _wrap's bare `home:`)
+    // so a successful dismiss has somewhere to pop back to -- otherwise
+    // Navigator.maybePop would have nothing to observe.
+    Future<void> pumpPushed(WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: D3AppTheme.light(),
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => D3ImageViewer(
+                        images: const [
+                          D3ImageSource.network('https://example.com/a.png'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  child: const Text('Open'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      expect(find.byType(D3ImageViewer), findsOneWidget);
+    }
+
+    testWidgets('a drag past the threshold dismisses the viewer', (
+      tester,
+    ) async {
+      await pumpPushed(tester);
+
+      await tester.drag(find.byType(D3ImageViewer), const Offset(0, 200));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(D3ImageViewer), findsNothing);
+      expect(find.text('Open'), findsOneWidget);
+    });
+
+    testWidgets('a short drag snaps back instead of dismissing', (
+      tester,
+    ) async {
+      await pumpPushed(tester);
+
+      await tester.drag(find.byType(D3ImageViewer), const Offset(0, 40));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(D3ImageViewer), findsOneWidget);
+    });
+
+    // The "stay active only while unzoomed" gate (_isZoomed, checked
+    // against the page's own TransformationController) is intentionally
+    // not exercised here via a simulated pinch gesture -- reliably
+    // driving InteractiveViewer's scale gesture recognizer through
+    // WidgetTester's synthetic multi-pointer events proved flaky in
+    // practice (zoom state after the simulated pinch didn't reliably
+    // match a real pinch's outcome). The gate itself is a single-line,
+    // directly-reviewable condition (`_zoom.value.getMaxScaleOnAxis() >
+    // 1.01`), covered by manual on-device verification instead.
+
+    testWidgets('paging via the nav arrow still works, unaffected by the '
+        'dismiss gesture', (tester) async {
+      // A plain drag on the viewer is claimed by InteractiveViewer's own
+      // pan handling before it reaches PageView (true with or without
+      // the dismiss gesture -- confirmed by reproducing the same result
+      // against this file's pre-dismiss-gesture code), so paging in
+      // every other test in this file goes through the nav arrow
+      // instead of a drag. This test exists to confirm that path is
+      // still intact after adding the vertical-drag recognizer.
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            images: const [
+              D3ImageSource.network('https://example.com/a.png'),
+              D3ImageSource.network('https://example.com/b.png'),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+
+      expect(find.text('2 / 2'), findsOneWidget);
+    });
+  });
 }
