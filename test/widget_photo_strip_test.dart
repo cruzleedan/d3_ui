@@ -220,4 +220,56 @@ void main() {
       expect(callCount, 1);
     });
   });
+
+  group('D3PhotoStripState.refreshThumbnail', () {
+    testWidgets('re-runs thumbnailResolveImage for that index, swapping '
+        'the displayed image even though photoPaths itself did not '
+        'change', (tester) async {
+      var resolvedValue = 'first.png';
+      final key = GlobalKey<D3PhotoStripState>();
+
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoStrip(
+            key: key,
+            photoPaths: const ['a.png'],
+            itemLabel: 'Test item',
+            thumbnailResolveImage: (index) async => resolvedValue,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      var image = tester.widget<Image>(find.byType(Image));
+      expect((image.image as FileImage).file.path, 'first.png');
+
+      resolvedValue = 'second.png';
+      key.currentState!.refreshThumbnail(0);
+      await tester.pumpAndSettle();
+
+      image = tester.widget<Image>(find.byType(Image));
+      expect((image.image as FileImage).file.path, 'second.png');
+    });
+
+    testWidgets('an out-of-range index is a no-op, not a crash', (
+      tester,
+    ) async {
+      final key = GlobalKey<D3PhotoStripState>();
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoStrip(
+            key: key,
+            photoPaths: const ['a.png'],
+            itemLabel: 'Test item',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      key.currentState!.refreshThumbnail(5);
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
