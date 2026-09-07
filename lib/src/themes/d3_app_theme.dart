@@ -23,7 +23,7 @@ abstract final class D3AppTheme {
     D3ColorTokens? colors,
     D3InputTokens? inputTokens,
     D3ButtonTokens? buttonTokens,
-    D3PhotoStripTokens? photoStripTokens,
+    D3PhotoGalleryTokens? photoGalleryTokens,
     D3TokensExtension? overrides,
     List<ThemeExtension<dynamic>> extraExtensions = const [],
   }) {
@@ -34,7 +34,7 @@ abstract final class D3AppTheme {
           colors: effectiveColors,
           inputTokens: inputTokens,
           buttonTokens: buttonTokens,
-          photoStripTokens: photoStripTokens,
+          photoGalleryTokens: photoGalleryTokens,
         );
     return _build(
       brightness: Brightness.light,
@@ -55,7 +55,7 @@ abstract final class D3AppTheme {
     D3ColorTokens? colors,
     D3InputTokens? inputTokens,
     D3ButtonTokens? buttonTokens,
-    D3PhotoStripTokens? photoStripTokens,
+    D3PhotoGalleryTokens? photoGalleryTokens,
     D3TokensExtension? overrides,
     List<ThemeExtension<dynamic>> extraExtensions = const [],
   }) {
@@ -66,7 +66,7 @@ abstract final class D3AppTheme {
           colors: effectiveColors,
           inputTokens: inputTokens,
           buttonTokens: buttonTokens,
-          photoStripTokens: photoStripTokens,
+          photoGalleryTokens: photoGalleryTokens,
         );
     return _build(
       brightness: Brightness.dark,

@@ -4,35 +4,47 @@ import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// D3PhotoStrip
+// D3PhotoGallery
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// A horizontal row of local-file photo thumbnails with an accessible
+/// A wrapping grid of local-file photo thumbnails with an accessible
 /// remove affordance and tap-to-view wiring into [D3ImageViewer].
 ///
 /// Generalizes a pattern that appears independently across several apps
-/// (checklist items, amendment screens, report content): a scrollable row
-/// of square thumbnails, each opening a full-screen [D3ImageViewer] on tap,
-/// with an optional remove button per thumbnail. Centralizing it here fixes
+/// (checklist items, amendment screens, report content): a grid of square
+/// thumbnails, each opening a full-screen [D3ImageViewer] on tap, with an
+/// optional remove button per thumbnail. Centralizing it here fixes
 /// touch-target and semantics gaps once instead of per call site — the
 /// remove button's hit area meets the 48dp Material minimum regardless of
-/// its visible glyph size (see [D3PhotoStripTokens]).
+/// its visible glyph size (see [D3PhotoGalleryTokens]).
+///
+/// Wraps to as many rows as needed rather than scrolling horizontally
+/// (originally `D3PhotoStrip`, a single scrolling row) — every photo, and
+/// [onAdd]'s tile, is glanceable at once with no scroll gesture needed to
+/// discover them. Reported on-device: with a single scrolling row, once
+/// enough thumbnails filled the visible width the add-photo tile (always
+/// the last item) scrolled out of view with no visual hint it was still
+/// there, making it effectively undiscoverable once an item already had a
+/// handful of photos. A caller embeds this in a layout that itself scrolls
+/// (a checklist item's own card, already variable-height for other reasons
+/// — the note field, status controls), so a taller grid for a photo-heavy
+/// item is consistent with how the rest of that layout already behaves.
 ///
 /// ```dart
-/// D3PhotoStrip(
+/// D3PhotoGallery(
 ///   photoPaths: item.photoPaths,
 ///   itemLabel: item.text,
 ///   onRemove: (index) => removePhoto(item.id, index),
 /// )
 ///
 /// // Read-only (e.g. report/detail views) — omit onRemove.
-/// D3PhotoStrip(
+/// D3PhotoGallery(
 ///   photoPaths: result.photoPaths,
 ///   itemLabel: result.itemText,
 /// )
 /// ```
-class D3PhotoStrip extends StatefulWidget {
-  const D3PhotoStrip({
+class D3PhotoGallery extends StatefulWidget {
+  const D3PhotoGallery({
     super.key,
     required this.photoPaths,
     required this.itemLabel,
@@ -53,7 +65,7 @@ class D3PhotoStrip extends StatefulWidget {
   final String itemLabel;
 
   /// Called with the tapped photo's index when its remove button is
-  /// pressed. When null, no remove button is shown (read-only strip).
+  /// pressed. When null, no remove button is shown (read-only gallery).
   final ValueChanged<int>? onRemove;
 
   /// Optional title widget for the full-screen [D3ImageViewer]. Defaults to
@@ -62,18 +74,16 @@ class D3PhotoStrip extends StatefulWidget {
 
   /// When provided, an image-thumbnail-shaped `+` tile (sized to match
   /// the photo thumbnails) is appended after the last photo, and the
-  /// strip renders even when [photoPaths] is empty (just the tile
+  /// gallery renders even when [photoPaths] is empty (just the tile
   /// alone) instead of collapsing to nothing. Use this instead of a
-  /// separate "Add photo" button below the strip so adding a photo
+  /// separate "Add photo" button below the gallery so adding a photo
   /// reads as "an empty photo slot," not a generic action — and so
-  /// callers don't need to reimplement this strip's own thumbnail
-  /// rendering just to add a trailing tile (its own internal
-  /// [ListView] can't be nested inside another scrollable, so
-  /// composing around it from outside isn't an option).
+  /// callers don't need to reimplement this gallery's own thumbnail
+  /// rendering just to add a trailing tile.
   final VoidCallback? onAdd;
 
   /// Extra AppBar trailing buttons for the full-screen viewer, forwarded
-  /// straight into [D3ImageViewer.actionsBuilder] -- this strip only
+  /// straight into [D3ImageViewer.actionsBuilder] -- this gallery only
   /// ever deals in plain file paths/thumbnails, so it has no opinion on
   /// what those actions are or do; the caller supplies whatever a given
   /// photo needs (e.g. "Annotate"/"Download" for an app that marks up
@@ -86,35 +96,35 @@ class D3PhotoStrip extends StatefulWidget {
 
   /// Forwarded straight into [D3ImageViewer.resolveImage] -- for a
   /// caller whose real display image needs an async transform this
-  /// strip's own plain `photoPaths` can't express (e.g. flattening
+  /// gallery's own plain `photoPaths` can't express (e.g. flattening
   /// annotations onto a photo before it can be *shown*, not just before
   /// it can be shared). Called once per photo the first time it becomes
   /// the visible page, not for every thumbnail up front.
   final Future<D3ImageSource> Function(int index)? viewerResolveImage;
 
-  /// Like [viewerResolveImage], but for a thumbnail in this strip
+  /// Like [viewerResolveImage], but for a thumbnail in this gallery
   /// itself rather than the full-screen viewer -- returns a local file
   /// path (a thumbnail is always a plain [Image.file], never network),
   /// resolved once per thumbnail as soon as it's built, showing
   /// [photoPaths]'s own entry immediately while it resolves.
   ///
   /// Unlike the viewer (one visible page at a time), every thumbnail in
-  /// the strip is live at once, so this runs for every visible
+  /// the gallery is live at once, so this runs for every visible
   /// thumbnail up front rather than being deferred to an as-visited
   /// basis -- a caller doing real work here (e.g. flattening
   /// annotations) should keep it cheap or already-cached at its own
-  /// layer, since a long strip means many concurrent calls.
+  /// layer, since a long gallery means many concurrent calls.
   final Future<String> Function(int index)? thumbnailResolveImage;
 
   @override
-  State<D3PhotoStrip> createState() => D3PhotoStripState();
+  State<D3PhotoGallery> createState() => D3PhotoGalleryState();
 }
 
-class D3PhotoStripState extends State<D3PhotoStrip> {
+class D3PhotoGalleryState extends State<D3PhotoGallery> {
   /// One key per currently-built thumbnail, so [refreshThumbnail] can
-  /// reach a specific `_D3PhotoThumbnailState` without this strip being
+  /// reach a specific `_D3PhotoThumbnailState` without this gallery being
   /// a `StatelessWidget` wrapper the caller has no handle into. Rebuilt
-  /// alongside the list itself rather than cached across rebuilds --
+  /// alongside the grid itself rather than cached across rebuilds --
   /// `GlobalKey`s are cheap and a stale one pointing at an unmounted
   /// thumbnail is worse than a fresh one each build.
   final Map<int, GlobalKey<_D3PhotoThumbnailState>> _thumbnailKeys = {};
@@ -123,10 +133,10 @@ class D3PhotoStripState extends State<D3PhotoStrip> {
   /// discarding whatever it last resolved to.
   ///
   /// Needed because a thumbnail only re-resolves on its own when
-  /// [D3PhotoStrip.photoPaths]'s entry at that position actually
+  /// [D3PhotoGallery.photoPaths]'s entry at that position actually
   /// changes -- an external event that changes what the resolver would
   /// now return (e.g. a photo's annotations were just edited on a
-  /// screen pushed from this strip's own viewer) leaves the thumbnail
+  /// screen pushed from this gallery's own viewer) leaves the thumbnail
   /// showing whatever it last resolved to. Call this once that event is
   /// known, mirroring how `D3ImageViewerState.replaceImage` lets a
   /// caller push a fresh image into an already-built viewer.
@@ -170,27 +180,20 @@ class D3PhotoStripState extends State<D3PhotoStrip> {
       return const SizedBox.shrink();
     }
 
-    final tokens = context.d3PhotoStripTokens;
-    final itemCount = widget.photoPaths.length + (widget.onAdd != null ? 1 : 0);
+    final tokens = context.d3PhotoGalleryTokens;
 
     _thumbnailKeys.removeWhere((index, _) => index >= widget.photoPaths.length);
 
-    return SizedBox(
-      height: tokens.thumbnailSize,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: itemCount,
-        separatorBuilder: (_, _) => SizedBox(width: tokens.thumbnailGap),
-        itemBuilder: (context, index) {
-          if (index == widget.photoPaths.length) {
-            return _D3AddPhotoTile(onTap: widget.onAdd!, tokens: tokens);
-          }
-          final key = _thumbnailKeys.putIfAbsent(
-            index,
-            () => GlobalKey<_D3PhotoThumbnailState>(),
-          );
-          return _D3PhotoThumbnail(
-            key: key,
+    return Wrap(
+      spacing: tokens.thumbnailGap,
+      runSpacing: tokens.thumbnailGap,
+      children: [
+        for (var index = 0; index < widget.photoPaths.length; index++)
+          _D3PhotoThumbnail(
+            key: _thumbnailKeys.putIfAbsent(
+              index,
+              () => GlobalKey<_D3PhotoThumbnailState>(),
+            ),
             path: widget.photoPaths[index],
             index: index,
             count: widget.photoPaths.length,
@@ -201,9 +204,10 @@ class D3PhotoStripState extends State<D3PhotoStrip> {
             onRemove: widget.onRemove == null
                 ? null
                 : () => widget.onRemove!(index),
-          );
-        },
-      ),
+          ),
+        if (widget.onAdd != null)
+          _D3AddPhotoTile(onTap: widget.onAdd!, tokens: tokens),
+      ],
     );
   }
 }
@@ -212,7 +216,7 @@ class _D3AddPhotoTile extends StatelessWidget {
   const _D3AddPhotoTile({required this.onTap, required this.tokens});
 
   final VoidCallback onTap;
-  final D3PhotoStripTokens tokens;
+  final D3PhotoGalleryTokens tokens;
 
   @override
   Widget build(BuildContext context) {
@@ -265,11 +269,11 @@ class _D3PhotoThumbnail extends StatefulWidget {
   final int index;
   final int count;
   final String itemLabel;
-  final D3PhotoStripTokens tokens;
+  final D3PhotoGalleryTokens tokens;
   final VoidCallback onTap;
   final VoidCallback? onRemove;
 
-  /// See `D3PhotoStrip.thumbnailResolveImage`.
+  /// See `D3PhotoGallery.thumbnailResolveImage`.
   final Future<String> Function(int index)? resolveImage;
 
   @override
@@ -313,10 +317,10 @@ class _D3PhotoThumbnailState extends State<_D3PhotoThumbnail> {
     });
   }
 
-  /// See `D3PhotoStripState.refreshThumbnail`.
+  /// See `D3PhotoGalleryState.refreshThumbnail`.
   void refresh() => _resolve();
 
-  /// See `D3PhotoStripState.replaceThumbnail`.
+  /// See `D3PhotoGalleryState.replaceThumbnail`.
   void replace(String path) => setState(() => _displayPath = path);
 
   @override
