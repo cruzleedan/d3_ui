@@ -396,10 +396,20 @@ void main() {
 
       final appBarBefore = tester.getTopLeft(find.byType(AppBar));
 
+      // Two incremental moves rather than one large jump -- a single
+      // moveBy past the touch-slop threshold in one step is not how a
+      // real drag is ever actually delivered (always many small
+      // pointer-move events) and, empirically, doesn't reliably cross
+      // VerticalDragGestureRecognizer's own slop-then-accept sequence
+      // in this test binding either. tester.drag (used by the other
+      // tests in this group) already breaks a drag into multiple
+      // moveBy calls under the hood for the same reason.
       final gesture = await tester.startGesture(
         tester.getCenter(find.byType(D3ImageViewer)),
       );
-      await gesture.moveBy(const Offset(0, 60));
+      await gesture.moveBy(const Offset(0, 20));
+      await tester.pump();
+      await gesture.moveBy(const Offset(0, 40));
       await tester.pump();
 
       final appBarDuring = tester.getTopLeft(find.byType(AppBar));
@@ -409,15 +419,95 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    // The "stay active only while unzoomed" gate (_isZoomed, checked
-    // against the page's own TransformationController) is intentionally
-    // not exercised here via a simulated pinch gesture -- reliably
-    // driving InteractiveViewer's scale gesture recognizer through
-    // WidgetTester's synthetic multi-pointer events proved flaky in
-    // practice (zoom state after the simulated pinch didn't reliably
-    // match a real pinch's outcome). The gate itself is a single-line,
-    // directly-reviewable condition (`_zoom.value.getMaxScaleOnAxis() >
-    // 1.01`), covered by manual on-device verification instead.
+    // Full pinch-to-zoom outcome (verifying InteractiveViewer's own
+    // resulting scale) is not exercised here -- reliably driving its
+    // scale gesture recognizer to a specific, assertable end state
+    // through WidgetTester's synthetic multi-pointer events proved
+    // flaky in practice. What *is* tested below is the actual
+    // mechanism this recognizer is responsible for: ceding the
+    // gesture, mid-drag, the moment a second pointer appears -- the
+    // resulting pinch behaviour itself is InteractiveViewer's own,
+    // unmodified, and covered by manual on-device verification.
+    testWidgets('a second pointer joining mid-drag stops the dismiss '
+        'gesture from continuing to track the first', (tester) async {
+      await pumpPushed(tester);
+
+      final appBarBefore = tester.getTopLeft(find.byType(AppBar));
+      final center = tester.getCenter(find.byType(D3ImageViewer));
+
+      final first = await tester.startGesture(center);
+      await first.moveBy(const Offset(0, 20));
+      await tester.pump();
+      await first.moveBy(const Offset(0, 40));
+      await tester.pump();
+
+      final appBarMidDrag = tester.getTopLeft(find.byType(AppBar));
+      // Sanity check: the drag was genuinely progressing before the
+      // second pointer arrives, so the assertion below is meaningful.
+      expect(appBarMidDrag.dy, greaterThan(appBarBefore.dy));
+
+      // A second finger touches down elsewhere on the image -- the
+      // start of what would be a pinch.
+      final second = await tester.startGesture(center + const Offset(40, 0));
+      await tester.pump();
+
+      // The first finger keeps moving, as it would mid-pinch. If the
+      // dismiss recognizer had not ceded the gesture, the AppBar would
+      // keep sliding down with it.
+      final appBarAtRejection = tester.getTopLeft(find.byType(AppBar));
+      await first.moveBy(const Offset(0, 40));
+      await tester.pump();
+      final appBarAfterSecondPointer = tester.getTopLeft(find.byType(AppBar));
+
+      expect(appBarAfterSecondPointer.dy, appBarAtRejection.dy);
+
+      await first.up();
+      await second.up();
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('a genuine two-finger pinch still zooms the image', (
+      tester,
+    ) async {
+      final key = GlobalKey<D3ImageViewerState>();
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            key: key,
+            images: const [
+              D3ImageSource.network('https://example.com/a.png'),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final center = tester.getCenter(find.byType(D3ImageViewer));
+
+      final p1 = await tester.startGesture(center - const Offset(20, 0));
+      final p2 = await tester.startGesture(center + const Offset(20, 0));
+      await tester.pump();
+
+      // Incremental moves spreading the fingers apart, matching how a
+      // real pinch (and every other gesture in this file) is delivered
+      // -- a single large jump doesn't reliably cross
+      // ScaleGestureRecognizer's own detection threshold in this
+      // binding either, the same lesson as the drag tests above.
+      for (var i = 0; i < 10; i++) {
+        await p1.moveBy(const Offset(-10, 0));
+        await p2.moveBy(const Offset(10, 0));
+        await tester.pump();
+      }
+      await p1.up();
+      await p2.up();
+      await tester.pumpAndSettle();
+
+      final interactiveViewer = tester.widget<InteractiveViewer>(
+        find.byType(InteractiveViewer),
+      );
+      final scale = interactiveViewer.transformationController!.value
+          .getMaxScaleOnAxis();
+      expect(scale, greaterThan(1.01));
+    });
 
     testWidgets('paging via the nav arrow still works, unaffected by the '
         'dismiss gesture', (tester) async {
