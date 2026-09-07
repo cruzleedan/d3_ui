@@ -204,7 +204,7 @@ class D3ImageViewer extends StatefulWidget {
 
 // Public state so callers can read [currentIndex] via a GlobalKey if needed.
 class D3ImageViewerState extends State<D3ImageViewer>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final PageController _pageController;
   late int _currentIndex;
 
@@ -225,6 +225,88 @@ class D3ImageViewerState extends State<D3ImageViewer>
     final controller = _zoomControllers[_currentIndex];
     if (controller == null) return false;
     return controller.value.getMaxScaleOnAxis() > 1.01;
+  }
+
+  /// Drives both the reset-zoom button and double-tap-to-zoom -- a
+  /// single controller reused across whichever page is animating,
+  /// rather than one per page, since only one page is ever visible
+  /// (and thus animatable) at a time.
+  late final AnimationController _zoomAnim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 200),
+  );
+
+  /// Animates [controller] from its current matrix to [end], used by
+  /// both [_resetZoom] (end is always identity) and [_D3ViewerPage]'s
+  /// double-tap handler (end is either a zoomed-in matrix centred on
+  /// the tap point, or identity if already zoomed in). A plain
+  /// `controller.value = end` would jump instantly; this animates it
+  /// the same way a pinch or pan already feels continuous.
+  void _animateZoomTo(TransformationController controller, Matrix4 end) {
+    final tween = Matrix4Tween(begin: controller.value, end: end);
+    void listener() {
+      controller.value = tween.evaluate(_zoomAnim);
+    }
+
+    _zoomAnim
+      ..removeListener(_lastZoomAnimListener ?? () {})
+      ..reset();
+    _lastZoomAnimListener = listener;
+    _zoomAnim
+      ..addListener(listener)
+      ..forward();
+  }
+
+  /// The listener most recently added to [_zoomAnim] by
+  /// [_animateZoomTo] -- kept so it can be removed before the next
+  /// animation adds its own, since [_zoomAnim] is shared across pages
+  /// and calls and would otherwise accumulate one stale listener (each
+  /// still writing into whatever [TransformationController] it closed
+  /// over) per reset/double-tap for the lifetime of this viewer.
+  VoidCallback? _lastZoomAnimListener;
+
+  void _resetZoom() {
+    final controller = _zoomControllers[_currentIndex];
+    if (controller == null) return;
+    _animateZoomTo(controller, Matrix4.identity());
+  }
+
+  /// Target scale for a double-tap zoom-in. Fixed rather than
+  /// proportional to `InteractiveViewer.maxScale` -- enough to make a
+  /// double-tap clearly useful for reading fine detail without needing
+  /// a second double-tap or a pinch to get further in, while still
+  /// leaving most of the image in view.
+  static const double _doubleTapScale = 2.5;
+
+  /// Handles a double tap on the current page's [InteractiveViewer]:
+  /// zooms in centred on [tapPosition] if currently at (or near) 1x,
+  /// or back out to identity if already zoomed in -- the second tap of
+  /// "double tap in, double tap out" that every standard photo viewer
+  /// supports.
+  ///
+  /// [tapPosition] is in the *scene's* local coordinates (i.e. already
+  /// run through [TransformationController]'s own inverse, matching
+  /// what [GestureDetector.onDoubleTapDown] reports when nested inside
+  /// an already-transformed child) -- see `_D3ViewerPage` for exactly
+  /// how it's captured. The target matrix translates that point to the
+  /// viewport's centre, scales around it, matching the standard
+  /// "zoom toward where you tapped" feel rather than always zooming
+  /// toward the image's centre regardless of tap location.
+  void _handleDoubleTap(
+    TransformationController controller,
+    Offset tapPosition,
+    Size viewportSize,
+  ) {
+    final currentlyZoomed = controller.value.getMaxScaleOnAxis() > 1.01;
+    if (currentlyZoomed) {
+      _animateZoomTo(controller, Matrix4.identity());
+      return;
+    }
+    final target = Matrix4.identity()
+      ..translateByDouble(viewportSize.width / 2, viewportSize.height / 2, 0, 1)
+      ..scaleByDouble(_doubleTapScale, _doubleTapScale, _doubleTapScale, 1)
+      ..translateByDouble(-tapPosition.dx, -tapPosition.dy, 0, 1);
+    _animateZoomTo(controller, target);
   }
 
   late final AnimationController _snapBack = AnimationController(
@@ -357,6 +439,7 @@ class D3ImageViewerState extends State<D3ImageViewer>
   void dispose() {
     _pageController.dispose();
     _snapBack.dispose();
+    _zoomAnim.dispose();
     for (final controller in _zoomControllers.values) {
       controller.dispose();
     }
@@ -465,7 +548,31 @@ class D3ImageViewerState extends State<D3ImageViewer>
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         title: widget.title ?? defaultTitle,
-        actions: widget.actionsBuilder?.call(_currentIndex) ?? widget.actions,
+        actions: [
+          // Disabled (not hidden) at 1x, so it reads as "nothing to
+          // reset" rather than a control that silently does nothing --
+          // matches the equivalent button in d3_image_annotator's own
+          // D3AnnotatorScreen. Listens to the current page's own
+          // controller directly (ValueListenableBuilder) rather than
+          // relying on a setState from _onInteractionUpdate/End, since
+          // InteractiveViewer's pinch/pan handling updates the
+          // controller internally without going through either of
+          // those callbacks in every case (e.g. inertial fling
+          // settling after release).
+          ValueListenableBuilder<Matrix4>(
+            valueListenable: _zoomControllerFor(_currentIndex),
+            builder: (context, matrix, _) {
+              final zoomed = matrix.getMaxScaleOnAxis() > 1.01;
+              return IconButton(
+                tooltip: 'Reset zoom',
+                onPressed: zoomed ? _resetZoom : null,
+                disabledColor: Colors.white24,
+                icon: const Icon(Icons.zoom_out_map),
+              );
+            },
+          ),
+          ...widget.actionsBuilder?.call(_currentIndex) ?? widget.actions,
+        ],
       ),
       body: Stack(
         children: [
@@ -491,6 +598,8 @@ class D3ImageViewerState extends State<D3ImageViewer>
                 onInteractionStart: isCurrent ? _onInteractionStart : null,
                 onInteractionUpdate: isCurrent ? _onInteractionUpdate : null,
                 onInteractionEnd: isCurrent ? _onInteractionEnd : null,
+                onDoubleTap: (controller, tapPosition, viewportSize) =>
+                    _handleDoubleTap(controller, tapPosition, viewportSize),
               );
             },
           ),
@@ -597,6 +706,22 @@ class D3ImageViewerState extends State<D3ImageViewer>
 /// showing [source] at full opacity, unqualified, during that window
 /// reads as a flicker rather than a normal loading state for a
 /// resolver whose real output looks meaningfully different.
+///
+/// [onDoubleTap], if given, is called with this page's own
+/// [zoomController], the tap position, and the viewport's size,
+/// whenever the user double-taps the image -- standard "double tap to
+/// zoom in, double tap again to zoom back out" behaviour. The
+/// `GestureDetector` driving it sits as [InteractiveViewer]'s direct
+/// child (not a sibling wrapping it) specifically so
+/// `onDoubleTapDown`'s reported position is already in the untransformed
+/// scene's own local coordinates -- what [D3ImageViewerState
+/// ._handleDoubleTap]'s matrix math needs -- rather than viewport
+/// coordinates that would need un-transforming by the current zoom/pan
+/// by hand. A `DoubleTapGestureRecognizer` does not compete with
+/// [InteractiveViewer]'s own `ScaleGestureRecognizer` for the same
+/// gesture (a tap requires no significant movement, a scale does), so
+/// this pairing needs none of the arena-priority work the whole-screen
+/// dismiss drag did.
 class _D3ViewerPage extends StatelessWidget {
   const _D3ViewerPage({
     required this.source,
@@ -605,6 +730,7 @@ class _D3ViewerPage extends StatelessWidget {
     this.onInteractionStart,
     this.onInteractionUpdate,
     this.onInteractionEnd,
+    this.onDoubleTap,
   });
 
   final D3ImageSource source;
@@ -613,6 +739,12 @@ class _D3ViewerPage extends StatelessWidget {
   final GestureScaleStartCallback? onInteractionStart;
   final GestureScaleUpdateCallback? onInteractionUpdate;
   final GestureScaleEndCallback? onInteractionEnd;
+  final void Function(
+    TransformationController controller,
+    Offset tapPosition,
+    Size viewportSize,
+  )?
+  onDoubleTap;
 
   @override
   Widget build(BuildContext context) {
@@ -623,19 +755,32 @@ class _D3ViewerPage extends StatelessWidget {
       onInteractionStart: onInteractionStart,
       onInteractionUpdate: onInteractionUpdate,
       onInteractionEnd: onInteractionEnd,
-      child: Center(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            AnimatedOpacity(
-              opacity: isResolving ? 0.3 : 1.0,
-              duration: const Duration(milliseconds: 150),
-              child: _D3ViewerImage(source: source),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          Offset? doubleTapPosition;
+          return GestureDetector(
+            onDoubleTapDown: (details) => doubleTapPosition = details.localPosition,
+            onDoubleTap: () {
+              final position = doubleTapPosition;
+              if (position == null || onDoubleTap == null) return;
+              onDoubleTap!(zoomController, position, constraints.biggest);
+            },
+            child: Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  AnimatedOpacity(
+                    opacity: isResolving ? 0.3 : 1.0,
+                    duration: const Duration(milliseconds: 150),
+                    child: _D3ViewerImage(source: source),
+                  ),
+                  if (isResolving)
+                    const CircularProgressIndicator(color: Colors.white),
+                ],
+              ),
             ),
-            if (isResolving)
-              const CircularProgressIndicator(color: Colors.white),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

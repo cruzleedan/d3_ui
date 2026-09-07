@@ -688,4 +688,104 @@ void main() {
       expect(find.text('Open'), findsOneWidget);
     });
   });
+
+  group('double tap to zoom', () {
+    Future<void> doubleTapAt(WidgetTester tester, Offset location) async {
+      // Two taps close enough together in time for the framework's
+      // DoubleTapGestureRecognizer to treat them as one double tap,
+      // rather than two independent single taps -- there is no
+      // dedicated WidgetTester helper for this, so it's built from two
+      // tapAt calls with a short gap.
+      await tester.tapAt(location);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tapAt(location);
+      await tester.pump();
+    }
+
+    testWidgets('zooms in on double tap, back out on a second double tap', (
+      tester,
+    ) async {
+      final key = GlobalKey<D3ImageViewerState>();
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            key: key,
+            images: const [
+              D3ImageSource.network('https://example.com/a.png'),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final center = tester.getCenter(find.byType(D3ImageViewer));
+
+      await doubleTapAt(tester, center);
+      await tester.pump(const Duration(milliseconds: 250));
+
+      var interactiveViewer = tester.widget<InteractiveViewer>(
+        find.byType(InteractiveViewer),
+      );
+      var scale = interactiveViewer.transformationController!.value
+          .getMaxScaleOnAxis();
+      expect(scale, greaterThan(1.01));
+
+      await doubleTapAt(tester, center);
+      await tester.pump(const Duration(milliseconds: 250));
+
+      interactiveViewer = tester.widget<InteractiveViewer>(
+        find.byType(InteractiveViewer),
+      );
+      scale = interactiveViewer.transformationController!.value
+          .getMaxScaleOnAxis();
+      expect(scale, closeTo(1.0, 0.01));
+    });
+  });
+
+  group('reset zoom button', () {
+    testWidgets('disabled at 1x, enabled once zoomed, resets on tap', (
+      tester,
+    ) async {
+      final key = GlobalKey<D3ImageViewerState>();
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            key: key,
+            images: const [
+              D3ImageSource.network('https://example.com/a.png'),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      IconButton resetButton() =>
+          tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_out_map));
+
+      expect(resetButton().onPressed, isNull);
+
+      final interactiveViewer = tester.widget<InteractiveViewer>(
+        find.byType(InteractiveViewer),
+      );
+      interactiveViewer.transformationController!.value = Matrix4.identity()
+        ..scaleByDouble(2.5, 2.5, 2.5, 1);
+      await tester.pump();
+
+      expect(resetButton().onPressed, isNotNull);
+
+      await tester.tap(find.widgetWithIcon(IconButton, Icons.zoom_out_map));
+      // A single large-duration pump right after the tap does not
+      // reliably advance the reset animation in this test binding
+      // (confirmed by reproduction -- the animation ticks correctly
+      // with two smaller pumps but not one large one covering the same
+      // total elapsed time), so it's pumped in two steps here instead.
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      final scale = interactiveViewer.transformationController!.value
+          .getMaxScaleOnAxis();
+      expect(scale, closeTo(1.0, 0.01));
+      expect(resetButton().onPressed, isNull);
+    });
+  });
 }
