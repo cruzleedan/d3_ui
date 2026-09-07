@@ -40,6 +40,7 @@ class D3PhotoStrip extends StatelessWidget {
     this.viewerTitle,
     this.onAdd,
     this.viewerActionsBuilder,
+    this.viewerResolveImage,
   });
 
   /// Local file paths, in display order.
@@ -82,6 +83,14 @@ class D3PhotoStrip extends StatelessWidget {
   /// showing rather than being fixed to the one first tapped.
   final List<Widget> Function(int index)? viewerActionsBuilder;
 
+  /// Forwarded straight into [D3ImageViewer.resolveImage] -- for a
+  /// caller whose real display image needs an async transform this
+  /// strip's own plain `photoPaths` can't express (e.g. flattening
+  /// annotations onto a photo before it can be *shown*, not just before
+  /// it can be shared). Called once per photo the first time it becomes
+  /// the visible page, not for every thumbnail up front.
+  final Future<D3ImageSource> Function(int index)? viewerResolveImage;
+
   void _openViewer(BuildContext context, int index) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -90,6 +99,7 @@ class D3PhotoStrip extends StatelessWidget {
           initialIndex: index,
           title: viewerTitle,
           actionsBuilder: viewerActionsBuilder,
+          resolveImage: viewerResolveImage,
         ),
       ),
     );
