@@ -268,6 +268,24 @@ class D3ImageViewerState extends State<D3ImageViewer>
   /// rebuild, never calls it a second time for the same index.
   final Set<int> _resolved = {};
 
+  /// Indices with a [D3ImageViewer.resolveImage] call currently in
+  /// flight -- drives a loading state over that page (see
+  /// [_D3ViewerPage.isResolving]) instead of showing the pre-resolve
+  /// [D3ImageViewer.images] entry as if it were the final image.
+  ///
+  /// Needed because a resolver whose real output differs visibly from
+  /// its corresponding [D3ImageViewer.images] entry (e.g. an annotated
+  /// photo, where the placeholder is the same photo with no marks on
+  /// it at all) makes the "show the placeholder immediately, swap once
+  /// resolved" default read as a flicker rather than a normal loading
+  /// transition -- reported on-device: opening an annotated photo
+  /// visibly showed the bare file for several hundred milliseconds
+  /// before the marked-up version appeared. A resolver whose output
+  /// matches its placeholder closely (typical case: same image, e.g.
+  /// just a differently-hosted copy) will not read as a flicker either
+  /// way, so this costs nothing in that case beyond a brief spinner.
+  final Set<int> _resolving = {};
+
   /// The zero-based index of the currently visible image.
   int get currentIndex => _currentIndex;
 
@@ -311,8 +329,10 @@ class D3ImageViewerState extends State<D3ImageViewer>
     final index = _currentIndex;
     if (!_resolved.add(index)) return;
 
+    setState(() => _resolving.add(index));
     resolver(index).then((source) {
       if (!mounted) return;
+      setState(() => _resolving.remove(index));
       replaceImage(index, source);
     });
   }
@@ -462,6 +482,7 @@ class D3ImageViewerState extends State<D3ImageViewer>
               return _D3ViewerPage(
                 source: _images[index],
                 zoomController: _zoomControllerFor(index),
+                isResolving: _resolving.contains(index),
                 // Only the current page's interactions can mean
                 // anything to the whole-screen dismiss gesture -- a
                 // pre-built neighbour (PageView keeps adjacent pages
@@ -569,10 +590,18 @@ class D3ImageViewerState extends State<D3ImageViewer>
 /// [ScaleStartDetails]/[ScaleUpdateDetails]/[ScaleEndDetails] all carry
 /// a `pointerCount` field, which is what actually distinguishes "this
 /// is a single-finger drag" from "this is a pinch" here.
+///
+/// [isResolving] dims [source] and overlays a spinner while
+/// `D3ImageViewer.resolveImage` has an in-flight call for this page --
+/// see [D3ImageViewerState._resolving]'s own doc comment for why
+/// showing [source] at full opacity, unqualified, during that window
+/// reads as a flicker rather than a normal loading state for a
+/// resolver whose real output looks meaningfully different.
 class _D3ViewerPage extends StatelessWidget {
   const _D3ViewerPage({
     required this.source,
     required this.zoomController,
+    required this.isResolving,
     this.onInteractionStart,
     this.onInteractionUpdate,
     this.onInteractionEnd,
@@ -580,6 +609,7 @@ class _D3ViewerPage extends StatelessWidget {
 
   final D3ImageSource source;
   final TransformationController zoomController;
+  final bool isResolving;
   final GestureScaleStartCallback? onInteractionStart;
   final GestureScaleUpdateCallback? onInteractionUpdate;
   final GestureScaleEndCallback? onInteractionEnd;
@@ -594,7 +624,18 @@ class _D3ViewerPage extends StatelessWidget {
       onInteractionUpdate: onInteractionUpdate,
       onInteractionEnd: onInteractionEnd,
       child: Center(
-        child: _D3ViewerImage(source: source),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            AnimatedOpacity(
+              opacity: isResolving ? 0.3 : 1.0,
+              duration: const Duration(milliseconds: 150),
+              child: _D3ViewerImage(source: source),
+            ),
+            if (isResolving)
+              const CircularProgressIndicator(color: Colors.white),
+          ],
+        ),
       ),
     );
   }
