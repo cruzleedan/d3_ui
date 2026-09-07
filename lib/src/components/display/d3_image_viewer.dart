@@ -70,6 +70,7 @@ class D3ImageViewer extends StatefulWidget {
     this.actionsBuilder,
     this.onPageChanged,
     this.emptyText = 'No images',
+    this.resolveImage,
   }) : assert(
          actions.length == 0 || actionsBuilder == null,
          'pass at most one of actions/actionsBuilder',
@@ -114,6 +115,39 @@ class D3ImageViewer extends StatefulWidget {
   /// Text shown when [images] is empty.
   final String emptyText;
 
+  /// Resolves the *actual* image to show for a given index,
+  /// asynchronously, called once per index the first time it becomes
+  /// the current page (on initial build and again after each page
+  /// change) -- not on every rebuild, and not for pages the user never
+  /// visits.
+  ///
+  /// The corresponding entry from [images] is shown immediately while
+  /// this resolves, then swapped in place (the same `replaceImage`
+  /// mechanism a caller can also trigger manually via
+  /// `D3ImageViewerState`) once it completes -- so a slow resolution
+  /// never blocks the viewer from opening, it just briefly shows the
+  /// passed-in source first.
+  ///
+  /// For a caller whose real image needs a transform [images] itself
+  /// can't express up front (e.g. an annotated photo that must be
+  /// flattened before it can be *shown*, not just before it can be
+  /// shared) -- resolving eagerly for every entry in [images] would
+  /// waste that transform's cost on pages the user may never scroll to;
+  /// this defers it to exactly the pages actually viewed.
+  ///
+  /// ```dart
+  /// D3ImageViewer(
+  ///   images: [for (final p in photos) D3ImageSource.local(p.path)],
+  ///   resolveImage: (index) async {
+  ///     final photo = photos[index];
+  ///     if (photo.annotations == null) return D3ImageSource.local(photo.path);
+  ///     final flattened = await flatten(photo);
+  ///     return D3ImageSource.local(flattened);
+  ///   },
+  /// )
+  /// ```
+  final Future<D3ImageSource> Function(int index)? resolveImage;
+
   @override
   State<D3ImageViewer> createState() => D3ImageViewerState();
 }
@@ -132,6 +166,11 @@ class D3ImageViewerState extends State<D3ImageViewer> {
   /// it lives in) from further up the tree.
   late List<D3ImageSource> _images;
 
+  /// Indices [D3ImageViewer.resolveImage] has already been called for
+  /// (successfully or not) -- so revisiting a page, or any other
+  /// rebuild, never calls it a second time for the same index.
+  final Set<int> _resolved = {};
+
   /// The zero-based index of the currently visible image.
   int get currentIndex => _currentIndex;
 
@@ -145,6 +184,7 @@ class D3ImageViewerState extends State<D3ImageViewer> {
         ? 0
         : widget.initialIndex.clamp(0, _count - 1);
     _pageController = PageController(initialPage: _currentIndex);
+    _resolveCurrentIfNeeded();
   }
 
   @override
@@ -156,10 +196,28 @@ class D3ImageViewerState extends State<D3ImageViewer> {
     // state, not a replacement for the ordinary Flutter data flow.
     if (!identical(widget.images, oldWidget.images)) {
       _images = List.of(widget.images);
+      _resolved.clear();
       if (_currentIndex >= _images.length) {
         _currentIndex = _images.isEmpty ? 0 : _images.length - 1;
       }
+      _resolveCurrentIfNeeded();
     }
+  }
+
+  /// Calls [D3ImageViewer.resolveImage] for [_currentIndex], exactly
+  /// once per index, swapping the result in via [replaceImage] when (if)
+  /// it resolves. A no-op when [D3ImageViewer.resolveImage] is null, the
+  /// index is already resolved, or [_images] is empty.
+  void _resolveCurrentIfNeeded() {
+    final resolver = widget.resolveImage;
+    if (resolver == null || _images.isEmpty) return;
+    final index = _currentIndex;
+    if (!_resolved.add(index)) return;
+
+    resolver(index).then((source) {
+      if (!mounted) return;
+      replaceImage(index, source);
+    });
   }
 
   /// Swaps the image shown at [index] for [source], in place -- for a
@@ -232,6 +290,7 @@ class D3ImageViewerState extends State<D3ImageViewer> {
             itemCount: _count,
             onPageChanged: (i) {
               setState(() => _currentIndex = i);
+              _resolveCurrentIfNeeded();
               widget.onPageChanged?.call(i);
             },
             itemBuilder: (context, index) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:d3_ui/d3_ui.dart';
@@ -201,6 +203,134 @@ void main() {
       final image = tester.widget<Image>(find.byType(Image));
       final provider = image.image as NetworkImage;
       expect(provider.url, 'https://example.com/b.png');
+    });
+  });
+
+  group('D3ImageViewer.resolveImage', () {
+    testWidgets('shows the passed-in image immediately, then swaps to the '
+        'resolved one once it completes', (tester) async {
+      final resolveCompleter = Completer<D3ImageSource>();
+
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            images: const [
+              D3ImageSource.network('https://example.com/original.png'),
+            ],
+            resolveImage: (index) => resolveCompleter.future,
+          ),
+        ),
+      );
+
+      var image = tester.widget<Image>(find.byType(Image));
+      expect(
+        (image.image as NetworkImage).url,
+        'https://example.com/original.png',
+      );
+
+      resolveCompleter.complete(
+        const D3ImageSource.network('https://example.com/resolved.png'),
+      );
+      await tester.pump();
+
+      image = tester.widget<Image>(find.byType(Image));
+      expect(
+        (image.image as NetworkImage).url,
+        'https://example.com/resolved.png',
+      );
+    });
+
+    testWidgets('is called at most once per index, not on every rebuild', (
+      tester,
+    ) async {
+      var callCount = 0;
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            images: const [
+              D3ImageSource.network('https://example.com/a.png'),
+            ],
+            resolveImage: (index) async {
+              callCount++;
+              return const D3ImageSource.network('https://example.com/a2.png');
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(callCount, 1);
+
+      // An unrelated rebuild of the same widget tree (e.g. a parent
+      // setState) must not re-trigger resolution for an index already
+      // resolved.
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            images: const [
+              D3ImageSource.network('https://example.com/a.png'),
+            ],
+            resolveImage: (index) async {
+              callCount++;
+              return const D3ImageSource.network('https://example.com/a2.png');
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(callCount, 1);
+    });
+
+    testWidgets('is called again for a newly-visited page after swiping', (
+      tester,
+    ) async {
+      // Local sources rather than network -- resolving to a *third*,
+      // not-yet-fetched network URL after the swipe reliably fails in
+      // this test binding's sandboxed HttpClient (every request returns
+      // 400), which is a test-environment artifact unrelated to the
+      // resolution logic under test here.
+      final calledFor = <int>[];
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            images: const [
+              D3ImageSource.local('a.png'),
+              D3ImageSource.local('b.png'),
+            ],
+            resolveImage: (index) async {
+              calledFor.add(index);
+              return D3ImageSource.local('$index-r.png');
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(calledFor, [0]);
+
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+
+      expect(calledFor, [0, 1]);
+    });
+
+    testWidgets('omitting resolveImage changes nothing from before it '
+        'existed', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            images: const [
+              D3ImageSource.network('https://example.com/a.png'),
+            ],
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final image = tester.widget<Image>(find.byType(Image));
+      expect(
+        (image.image as NetworkImage).url,
+        'https://example.com/a.png',
+      );
     });
   });
 }
