@@ -29,6 +29,16 @@ class D3ImageSource {
 /// ([InteractiveViewer]). Navigation arrows and dot indicators are shown
 /// automatically when there are multiple images.
 ///
+/// **Opening it**
+///
+/// Prefer [push] over pushing this widget directly with a plain
+/// `MaterialPageRoute` -- it also drags down to dismiss (unzoomed, one
+/// finger), and that gesture is meant to visibly reveal the screen
+/// underneath as it moves, which needs the route itself to be
+/// non-opaque. [push] sets that up; a plain route would still show the
+/// viewer correctly, it just would not reveal anything behind it while
+/// dragging.
+///
 /// **Customising the AppBar**
 ///
 /// Pass any widgets to [actions] to add trailing buttons — typically icon
@@ -148,14 +158,120 @@ class D3ImageViewer extends StatefulWidget {
   /// ```
   final Future<D3ImageSource> Function(int index)? resolveImage;
 
+  /// Pushes a [D3ImageViewer] via a non-opaque route, so its own
+  /// swipe-down-to-dismiss drag visibly reveals the screen underneath
+  /// as it moves -- a plain `Navigator.push(MaterialPageRoute(...))`
+  /// paints an opaque barrier that hides whatever's behind regardless
+  /// of the viewer's own [Opacity], since the route beneath is either
+  /// not kept in the tree at all or is painted over. Prefer this over
+  /// pushing [D3ImageViewer] directly whenever the drag-to-dismiss
+  /// reveal is wanted (which is always, for this widget) -- the plain
+  /// route form still works but the reveal effect will not show.
+  static Future<T?> push<T>(
+    BuildContext context, {
+    required List<D3ImageSource> images,
+    int initialIndex = 0,
+    Widget? title,
+    List<Widget> actions = const [],
+    List<Widget> Function(int index)? actionsBuilder,
+    ValueChanged<int>? onPageChanged,
+    String emptyText = 'No images',
+    Future<D3ImageSource> Function(int index)? resolveImage,
+  }) {
+    return Navigator.of(context).push<T>(
+      PageRouteBuilder<T>(
+        opaque: false,
+        barrierColor: Colors.transparent,
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (context, _, _) => D3ImageViewer(
+          images: images,
+          initialIndex: initialIndex,
+          title: title,
+          actions: actions,
+          actionsBuilder: actionsBuilder,
+          onPageChanged: onPageChanged,
+          emptyText: emptyText,
+          resolveImage: resolveImage,
+        ),
+      ),
+    );
+  }
+
   @override
   State<D3ImageViewer> createState() => D3ImageViewerState();
 }
 
 // Public state so callers can read [currentIndex] via a GlobalKey if needed.
-class D3ImageViewerState extends State<D3ImageViewer> {
+class D3ImageViewerState extends State<D3ImageViewer>
+    with SingleTickerProviderStateMixin {
   late final PageController _pageController;
   late int _currentIndex;
+
+  /// One [TransformationController] per currently-built page, so the
+  /// dismiss gesture below (owned here, at the whole-screen level) can
+  /// check whether the *current* page is zoomed in without reaching
+  /// into each page's own private state. Populated lazily as pages
+  /// build, matching the same per-index-key pattern `D3PhotoStrip` uses
+  /// for its own thumbnails -- entries for indices no longer valid are
+  /// pruned in [build] rather than left to accumulate.
+  final Map<int, TransformationController> _zoomControllers = {};
+
+  TransformationController _zoomControllerFor(int index) {
+    return _zoomControllers.putIfAbsent(index, TransformationController.new);
+  }
+
+  bool get _currentPageIsZoomed {
+    final controller = _zoomControllers[_currentIndex];
+    if (controller == null) return false;
+    return controller.value.getMaxScaleOnAxis() > 1.01;
+  }
+
+  /// Raw active-pointer count, tracked via [Listener] rather than a
+  /// gesture recognizer -- [Listener] sees every pointer down/up before
+  /// gesture arena resolution happens, so this is accurate regardless
+  /// of which recognizer ends up winning a given gesture.
+  ///
+  /// Needed because [InteractiveViewer] always registers a
+  /// `ScaleGestureRecognizer` (unconditionally, `panEnabled`/
+  /// `scaleEnabled` are only checked *after* it already has the
+  /// gesture), so a sibling `GestureDetector` for the dismiss drag
+  /// cannot reliably win a single-finger drag against it just by also
+  /// registering a recognizer -- confirmed by reproduction: the sibling
+  /// detector's callbacks never fired at all while `InteractiveViewer`
+  /// was mounted, `panEnabled` notwithstanding. The only way found to
+  /// give the dismiss gesture priority is to not give `InteractiveViewer`
+  /// anything to compete with in the first place: each page only
+  /// mounts it once genuinely interacting with 2+ fingers (a pinch) or
+  /// already zoomed in -- see `_D3ViewerPage`.
+  int _pointerCount = 0;
+
+  late final AnimationController _snapBack = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 200),
+  )..addListener(() {
+      setState(() => _dragDy = _snapBackStart * (1 - _snapBack.value));
+    });
+
+  /// [_dragDy] at the moment a snap-back animation starts -- read by the
+  /// listener above on every tick. A field rather than a captured local
+  /// so the listener can be registered once in the initializer instead
+  /// of being re-added (and left stacked, one extra call per past
+  /// release) every time [_animateSnapBack] runs.
+  double _snapBackStart = 0;
+
+  /// How far the whole screen has been dragged down this
+  /// swipe-to-dismiss gesture, in logical pixels. Drives the
+  /// translate/fade/scale in [build]; reset to 0 once a drag ends
+  /// (whether it dismissed or snapped back).
+  double _dragDy = 0;
+
+  /// Past this many logical pixels of downward drag, releasing
+  /// dismisses instead of snapping back. Unaffected by screen size --
+  /// deliberately a fixed, hand-feel distance rather than e.g. a
+  /// fraction of screen height, so it takes the same amount of thumb
+  /// travel on a small phone as a large tablet.
+  static const double _dismissThreshold = 120;
 
   /// Local, mutable copy of [D3ImageViewer.images] -- seeded from it, but
   /// evolves independently afterward via [replaceImage], the same way
@@ -239,6 +355,10 @@ class D3ImageViewerState extends State<D3ImageViewer> {
   @override
   void dispose() {
     _pageController.dispose();
+    _snapBack.dispose();
+    for (final controller in _zoomControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -248,6 +368,32 @@ class D3ImageViewerState extends State<D3ImageViewer> {
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
     );
+  }
+
+  void _onVerticalDragUpdate(DragUpdateDetails details) {
+    setState(() => _dragDy = (_dragDy + details.delta.dy).clamp(0, 400));
+  }
+
+  void _onVerticalDragEnd(DragEndDetails details) {
+    // Dismiss either on distance (dragged past the threshold) or on a
+    // fast downward flick released before reaching it -- matching how
+    // e.g. iOS/Google Photos treat a quick flick as clear dismiss
+    // intent even if the finger didn't travel far.
+    final velocity = details.primaryVelocity ?? 0;
+    final pastThreshold = _dragDy > _dismissThreshold;
+    final fastFlick = velocity > 800;
+    if (pastThreshold || fastFlick) {
+      Navigator.maybePop(context);
+      return;
+    }
+    _animateSnapBack();
+  }
+
+  void _animateSnapBack() {
+    _snapBackStart = _dragDy;
+    _snapBack
+      ..reset()
+      ..forward();
   }
 
   @override
@@ -275,7 +421,16 @@ class D3ImageViewerState extends State<D3ImageViewer> {
           )
         : null;
 
-    return Scaffold(
+    // Stale entries (an index no longer present, e.g. after replaceImage
+    // shrinks the effective count -- doesn't happen today but keeps this
+    // correct if it ever does) are pruned rather than left to accumulate.
+    _zoomControllers.removeWhere((index, controller) {
+      final stale = index >= _count;
+      if (stale) controller.dispose();
+      return stale;
+    });
+
+    final scaffold = Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -294,9 +449,18 @@ class D3ImageViewerState extends State<D3ImageViewer> {
               widget.onPageChanged?.call(i);
             },
             itemBuilder: (context, index) {
-              return _D3ViewerPage(
-                source: _images[index],
-                onDismiss: () => Navigator.maybePop(context),
+              final zoomController = _zoomControllerFor(index);
+              return AnimatedBuilder(
+                animation: zoomController,
+                builder: (context, _) {
+                  final zoomed =
+                      zoomController.value.getMaxScaleOnAxis() > 1.01;
+                  return _D3ViewerPage(
+                    source: _images[index],
+                    zoomController: zoomController,
+                    interactive: zoomed || _pointerCount >= 2,
+                  );
+                },
               );
             },
           ),
@@ -344,6 +508,42 @@ class D3ImageViewerState extends State<D3ImageViewer> {
         ],
       ),
     );
+
+    // The whole screen (AppBar, body, everything) drags and fades
+    // together, like a modal being pulled off screen -- not just the
+    // image inside a fixed frame. Scale/opacity both max out well
+    // before _dismissThreshold so the screen already reads as
+    // "about to close" at the moment it actually would.
+    final progress = (_dragDy / _dismissThreshold).clamp(0.0, 1.0);
+    final screenScale = 1 - progress * 0.1;
+    final screenOpacity = 1 - progress * 0.4;
+
+    return Listener(
+      // Counts raw pointers ahead of gesture arena resolution -- see
+      // _pointerCount's own doc comment for why this exists at all
+      // (InteractiveViewer can't be reliably out-competed by a sibling
+      // recognizer, so pages instead don't mount it until this count,
+      // or existing zoom, says the user is genuinely interacting).
+      onPointerDown: (_) => setState(() => _pointerCount++),
+      onPointerUp: (_) => setState(() => _pointerCount--),
+      onPointerCancel: (_) => setState(() => _pointerCount--),
+      child: GestureDetector(
+        // Null (not a closure that ignores the event) when the current
+        // page is zoomed, so this recognizer genuinely does not compete
+        // for the gesture -- InteractiveViewer is left as the sole
+        // vertical-drag claimant for panning a zoomed image.
+        onVerticalDragUpdate:
+            _currentPageIsZoomed ? null : _onVerticalDragUpdate,
+        onVerticalDragEnd: _currentPageIsZoomed ? null : _onVerticalDragEnd,
+        child: Transform.translate(
+          offset: Offset(0, _dragDy),
+          child: Opacity(
+            opacity: screenOpacity,
+            child: Transform.scale(scale: screenScale, child: scaffold),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -351,129 +551,53 @@ class D3ImageViewerState extends State<D3ImageViewer> {
 // _D3ViewerPage
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// One page of [D3ImageViewer]: the zoomable image, plus a
-/// swipe-down-to-dismiss gesture layered on top of [InteractiveViewer]
-/// rather than replacing it.
+/// One page of [D3ImageViewer]: the image, wrapped in [InteractiveViewer]
+/// only while [interactive].
 ///
-/// The two gestures would otherwise fight over the same vertical drag:
-/// [InteractiveViewer] wants it to pan a zoomed-in image, this widget
-/// wants it to drag the whole page toward [onDismiss]. Resolved by
-/// scale, matching how Google Photos/iOS Photos behave — a vertical
-/// drag dismisses only while the image is at its default 1.0x scale;
-/// once zoomed past that, the same drag pans instead, and this
-/// widget's own [GestureDetector] steps aside entirely (`onVerticalDrag*`
-/// left null that frame, so [InteractiveViewer] is the only recognizer
-/// left to claim the gesture).
-class _D3ViewerPage extends StatefulWidget {
-  const _D3ViewerPage({required this.source, required this.onDismiss});
+/// [zoomController] is owned by [D3ImageViewerState], not this widget --
+/// the whole-screen swipe-down-to-dismiss gesture (also owned there)
+/// needs to read the *current* page's zoom level to decide whether a
+/// vertical drag should dismiss or be left for [InteractiveViewer] to
+/// pan with, and reaching into a StatefulWidget's own private State from
+/// outside is not possible, so the controller is threaded in instead.
+///
+/// [interactive] gates whether [InteractiveViewer] is mounted **at
+/// all**, not just whether it acts on what it receives --
+/// [InteractiveViewer] always registers its own `ScaleGestureRecognizer`
+/// once built, unconditionally win the gesture arena for a single-finger
+/// drag against a sibling `GestureDetector` regardless of its
+/// `panEnabled`/`scaleEnabled` flags (confirmed by reproduction: a
+/// sibling detector's vertical-drag callbacks simply never fired while
+/// `InteractiveViewer` was mounted, `panEnabled: false` notwithstanding
+/// -- those flags are only checked *after* the gesture is already
+/// claimed). The only reliable way found to give the dismiss gesture
+/// priority is to not give `InteractiveViewer` anything to compete with
+/// in the first place: this page renders a plain, gesture-inert image
+/// until the caller says it's genuinely being interacted with (a second
+/// finger just touched down, or the image is already zoomed in from an
+/// earlier interaction) -- see `D3ImageViewerState._pointerCount`.
+class _D3ViewerPage extends StatelessWidget {
+  const _D3ViewerPage({
+    required this.source,
+    required this.zoomController,
+    required this.interactive,
+  });
 
   final D3ImageSource source;
-  final VoidCallback onDismiss;
-
-  @override
-  State<_D3ViewerPage> createState() => _D3ViewerPageState();
-}
-
-class _D3ViewerPageState extends State<_D3ViewerPage>
-    with SingleTickerProviderStateMixin {
-  late final TransformationController _zoom = TransformationController();
-  late final AnimationController _snapBack = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 200),
-  )..addListener(() {
-      setState(() => _dragDy = _snapBackStart * (1 - _snapBack.value));
-    });
-
-  /// [_dragDy] at the moment a snap-back animation starts -- read by the
-  /// listener above on every tick. A field rather than a captured local
-  /// so the listener can be registered once in the initializer instead
-  /// of being re-added (and left stacked, one extra call per past
-  /// release) every time [_animateSnapBack] runs.
-  double _snapBackStart = 0;
-
-  /// How far the page has been dragged down this gesture, in logical
-  /// pixels. Drives the translate/fade/scale below; reset to 0 once a
-  /// drag ends (whether it dismissed or snapped back).
-  double _dragDy = 0;
-
-  /// Past this many logical pixels of downward drag, releasing
-  /// dismisses instead of snapping back. Unaffected by screen size --
-  /// deliberately a fixed, hand-feel distance rather than e.g. a
-  /// fraction of screen height, so it takes the same amount of thumb
-  /// travel on a small phone as a large tablet.
-  static const double _dismissThreshold = 120;
-
-  bool get _isZoomed => _zoom.value.getMaxScaleOnAxis() > 1.01;
-
-  @override
-  void dispose() {
-    _zoom.dispose();
-    _snapBack.dispose();
-    super.dispose();
-  }
-
-  void _onVerticalDragUpdate(DragUpdateDetails details) {
-    setState(() => _dragDy = (_dragDy + details.delta.dy).clamp(0, 400));
-  }
-
-  void _onVerticalDragEnd(DragEndDetails details) {
-    // Dismiss either on distance (dragged past the threshold) or on a
-    // fast downward flick released before reaching it -- matching how
-    // e.g. iOS/Google Photos treat a quick flick as clear dismiss
-    // intent even if the finger didn't travel far.
-    final velocity = details.primaryVelocity ?? 0;
-    final pastThreshold = _dragDy > _dismissThreshold;
-    final fastFlick = velocity > 800;
-    if (pastThreshold || fastFlick) {
-      widget.onDismiss();
-      return;
-    }
-    _animateSnapBack();
-  }
-
-  void _animateSnapBack() {
-    _snapBackStart = _dragDy;
-    _snapBack
-      ..reset()
-      ..forward();
-  }
+  final TransformationController zoomController;
+  final bool interactive;
 
   @override
   Widget build(BuildContext context) {
-    // The image scales down and its opacity drops slightly as it's
-    // dragged, both maxing out well before _dismissThreshold so the
-    // page already reads as "about to close" at the moment it actually
-    // would. No backdrop fade: this page sits inside an opaque
-    // MaterialPageRoute pushed by the caller (D3PhotoStrip et al.), so
-    // there is nothing visible behind it to fade into regardless --
-    // fading a same-colour overlay over the Scaffold's own solid black
-    // would be motion with no visible effect.
-    final progress = (_dragDy / _dismissThreshold).clamp(0.0, 1.0);
-    final imageScale = 1 - progress * 0.15;
-    final imageOpacity = 1 - progress * 0.4;
-
-    return GestureDetector(
-      // Null (not a closure that ignores the event) when zoomed, so
-      // this recognizer genuinely does not compete for the gesture --
-      // InteractiveViewer is left as the sole vertical-drag claimant.
-      onVerticalDragUpdate: _isZoomed ? null : _onVerticalDragUpdate,
-      onVerticalDragEnd: _isZoomed ? null : _onVerticalDragEnd,
-      child: Transform.translate(
-        offset: Offset(0, _dragDy),
-        child: Opacity(
-          opacity: imageOpacity,
-          child: Transform.scale(
-            scale: imageScale,
-            child: InteractiveViewer(
-              transformationController: _zoom,
-              minScale: 0.5,
-              maxScale: 6.0,
-              child: Center(
-                child: _D3ViewerImage(source: widget.source),
-              ),
-            ),
-          ),
-        ),
+    if (!interactive) {
+      return Center(child: _D3ViewerImage(source: source));
+    }
+    return InteractiveViewer(
+      transformationController: zoomController,
+      minScale: 0.5,
+      maxScale: 6.0,
+      child: Center(
+        child: _D3ViewerImage(source: source),
       ),
     );
   }

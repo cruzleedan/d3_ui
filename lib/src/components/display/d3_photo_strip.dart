@@ -154,18 +154,13 @@ class D3PhotoStripState extends State<D3PhotoStrip> {
   }
 
   void _openViewer(BuildContext context, int index) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => D3ImageViewer(
-          images: [
-            for (final p in widget.photoPaths) D3ImageSource.local(p),
-          ],
-          initialIndex: index,
-          title: widget.viewerTitle,
-          actionsBuilder: widget.viewerActionsBuilder,
-          resolveImage: widget.viewerResolveImage,
-        ),
-      ),
+    D3ImageViewer.push(
+      context,
+      images: [for (final p in widget.photoPaths) D3ImageSource.local(p)],
+      initialIndex: index,
+      title: widget.viewerTitle,
+      actionsBuilder: widget.viewerActionsBuilder,
+      resolveImage: widget.viewerResolveImage,
     );
   }
 
