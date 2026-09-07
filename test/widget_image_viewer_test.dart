@@ -240,6 +240,37 @@ void main() {
       );
     });
 
+    testWidgets('shows a loading spinner over the placeholder while '
+        'resolveImage is in flight, gone once it resolves', (tester) async {
+      // Regression coverage: showing the placeholder at full strength
+      // as if it were final (no loading indication at all) read as a
+      // flicker on-device for a resolver whose real output looks
+      // meaningfully different from the placeholder -- e.g. a raw
+      // photo swapping to the same photo with annotations drawn on it.
+      final resolveCompleter = Completer<D3ImageSource>();
+
+      await tester.pumpWidget(
+        _wrap(
+          D3ImageViewer(
+            images: const [
+              D3ImageSource.network('https://example.com/original.png'),
+            ],
+            resolveImage: (index) => resolveCompleter.future,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      resolveCompleter.complete(
+        const D3ImageSource.network('https://example.com/resolved.png'),
+      );
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+    });
+
     testWidgets('is called at most once per index, not on every rebuild', (
       tester,
     ) async {
