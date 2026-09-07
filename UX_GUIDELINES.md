@@ -73,6 +73,52 @@ parts.
   required/label handling) rather than relying on a submit-time error
   alone to communicate that a field is mandatory.
 
+## Read-only / locked state
+
+- **One widget, one visual language, gated by a flag — never two
+  differently-styled widgets switched by a caller-supplied boolean.**
+  When a record can be "locked" or otherwise made non-editable (a
+  finished/locked visit, a submitted form, an archived record), the
+  same field/card/row widget should render in both states, with a
+  single internal flag (e.g. `isReadOnly`) changing its *appearance*
+  — not a parent choosing between two structurally different widgets
+  (e.g. a plain `Text`-based summary card vs. a `D3TextField`-based
+  editable card) depending on lock state. Two widgets drift: one gets
+  a bug fix or a layout tweak the other doesn't, and the user sees the
+  same conceptual field look and behave differently depending on a
+  code path they can't see. `site_inspector` went through exactly that
+  progression — a `showEditableHeader`-style flag choosing between
+  `_OverviewCard` and `_EditableOverviewCard`, then later merged into
+  one `_OverviewCard` gated by `isReadOnly` (site_inspector's
+  context/work/0028) — so treat "two widgets for one concept, chosen
+  by a flag" as a smell to fix on sight in any app sharing `d3_ui`,
+  not a shape to introduce fresh in a new screen.
+- **Read-only styling belongs in the field's own status resolution,
+  not in the focus/interaction layer.** `D3TextField`/`D3DateField`
+  already compute one `D3FieldStatus` (idle/focused/filled/error/
+  success/disabled) that drives all their styling; a read-only field
+  should resolve to `D3FieldStatus.disabled` from that same status
+  getter (`isReadOnly || !isEnabled`), not by nulling out or
+  disconnecting the field's `FocusNode`. Stripping the focus node to
+  fake a read-only look breaks the widget's documented external-
+  focus-node contract and its listener lifecycle (a node reconnected
+  only in `initState` won't reattach if `isReadOnly` later flips back
+  to false) — the status layer already exists for exactly this kind
+  of visual-state problem, so extend it there first.
+- **Field/card-level widgets take `isReadOnly`; app/domain-level
+  widgets can keep their own domain name (`locked`, `isFinished`,
+  `isArchived`) and translate it to `isReadOnly` at the point they
+  pass it down.** `D3TextField.isReadOnly`/`D3DateField.isReadOnly`
+  describe the rendering effect and should stay named that way
+  regardless of *why* a field is non-editable. A screen-specific
+  widget one level up (e.g. this app's `_ResultRow.locked`, wired as
+  `isReadOnly: widget.locked` at its own field call sites) is fine to
+  keep its domain name — it's documenting the actual trigger for
+  readers of that widget, and the translation to `isReadOnly` happens
+  exactly where the visual effect is applied. The smell to avoid is a
+  *shared* field/card component inventing its own domain-flavored flag
+  name instead of `isReadOnly`.
+
 ## Motion
 
 - **`D3Motion` tokens are mandatory.** Never hardcode a raw

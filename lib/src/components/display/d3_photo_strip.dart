@@ -38,6 +38,8 @@ class D3PhotoStrip extends StatelessWidget {
     required this.itemLabel,
     this.onRemove,
     this.viewerTitle,
+    this.onAdd,
+    this.viewerActionsBuilder,
   });
 
   /// Local file paths, in display order.
@@ -56,6 +58,30 @@ class D3PhotoStrip extends StatelessWidget {
   /// the viewer's own "N / M" counter.
   final Widget? viewerTitle;
 
+  /// When provided, an image-thumbnail-shaped `+` tile (sized to match
+  /// the photo thumbnails) is appended after the last photo, and the
+  /// strip renders even when [photoPaths] is empty (just the tile
+  /// alone) instead of collapsing to nothing. Use this instead of a
+  /// separate "Add photo" button below the strip so adding a photo
+  /// reads as "an empty photo slot," not a generic action — and so
+  /// callers don't need to reimplement this strip's own thumbnail
+  /// rendering just to add a trailing tile (its own internal
+  /// [ListView] can't be nested inside another scrollable, so
+  /// composing around it from outside isn't an option).
+  final VoidCallback? onAdd;
+
+  /// Extra AppBar trailing buttons for the full-screen viewer, forwarded
+  /// straight into [D3ImageViewer.actionsBuilder] -- this strip only
+  /// ever deals in plain file paths/thumbnails, so it has no opinion on
+  /// what those actions are or do; the caller supplies whatever a given
+  /// photo needs (e.g. "Annotate"/"Download" for an app that marks up
+  /// photos), keyed by the same zero-based index [photoPaths] uses.
+  ///
+  /// Re-evaluated as the user swipes between photos inside one viewer
+  /// session, so actions stay correct for whichever photo is actually
+  /// showing rather than being fixed to the one first tapped.
+  final List<Widget> Function(int index)? viewerActionsBuilder;
+
   void _openViewer(BuildContext context, int index) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -63,6 +89,7 @@ class D3PhotoStrip extends StatelessWidget {
           images: [for (final p in photoPaths) D3ImageSource.local(p)],
           initialIndex: index,
           title: viewerTitle,
+          actionsBuilder: viewerActionsBuilder,
         ),
       ),
     );
@@ -70,17 +97,21 @@ class D3PhotoStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (photoPaths.isEmpty) return const SizedBox.shrink();
+    if (photoPaths.isEmpty && onAdd == null) return const SizedBox.shrink();
 
     final tokens = context.d3PhotoStripTokens;
+    final itemCount = photoPaths.length + (onAdd != null ? 1 : 0);
 
     return SizedBox(
       height: tokens.thumbnailSize,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: photoPaths.length,
+        itemCount: itemCount,
         separatorBuilder: (_, _) => SizedBox(width: tokens.thumbnailGap),
         itemBuilder: (context, index) {
+          if (index == photoPaths.length) {
+            return _D3AddPhotoTile(onTap: onAdd!, tokens: tokens);
+          }
           return _D3PhotoThumbnail(
             path: photoPaths[index],
             index: index,
@@ -91,6 +122,42 @@ class D3PhotoStrip extends StatelessWidget {
             onRemove: onRemove == null ? null : () => onRemove!(index),
           );
         },
+      ),
+    );
+  }
+}
+
+class _D3AddPhotoTile extends StatelessWidget {
+  const _D3AddPhotoTile({required this.onTap, required this.tokens});
+
+  final VoidCallback onTap;
+  final D3PhotoStripTokens tokens;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.d3Colors;
+    final radius = BorderRadius.circular(tokens.thumbnailRadius);
+
+    return Semantics(
+      label: 'Add photo',
+      button: true,
+      child: SizedBox(
+        width: tokens.thumbnailSize,
+        height: tokens.thumbnailSize,
+        child: Material(
+          color: colors.surfaceContainerHigh,
+          shape: RoundedRectangleBorder(
+            borderRadius: radius,
+            side: BorderSide(color: colors.outline.withValues(alpha: 0.4)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Center(
+              child: Icon(Icons.add, color: colors.onSurfaceVariant),
+            ),
+          ),
+        ),
       ),
     );
   }

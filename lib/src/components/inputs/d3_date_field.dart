@@ -15,12 +15,14 @@ class D3DateField extends StatefulWidget {
     this.errorText,
     this.isRequired = false,
     this.isEnabled = true,
+    this.isReadOnly = false,
     this.firstDate,
     this.lastDate,
     this.onChanged,
     this.semanticsLabel,
     this.useD3CalendarPicker = false,
     this.markedDates,
+    this.displayFormat,
   });
 
   final String label;
@@ -30,10 +32,19 @@ class D3DateField extends StatefulWidget {
   final String? errorText;
   final bool isRequired;
   final bool isEnabled;
+  final bool isReadOnly;
   final DateTime? firstDate;
   final DateTime? lastDate;
   final ValueChanged<DateTime>? onChanged;
   final String? semanticsLabel;
+
+  /// Overrides the field's own ISO ("2026-09-04") display text with a
+  /// caller-supplied formatter — e.g. `D3DateFormat.medium` for
+  /// "Sep 4, 2026". Defaults to null (ISO), preserving every existing
+  /// consumer's visual behavior unchanged; opt in per call site rather
+  /// than changing the shared default, since some consumers may
+  /// genuinely want the compact, sortable ISO shape.
+  final String Function(DateTime)? displayFormat;
 
   /// Opt into [showD3CalendarPicker] (themed to match d3_ui) instead of the
   /// stock [showDatePicker]. Defaults to false to keep existing consumers'
@@ -126,7 +137,9 @@ class _D3DateFieldState extends State<D3DateField> {
         ? colors.surface
         : colors.surfaceVariant;
 
-    final displayText = _selected != null ? _format(_selected!) : null;
+    final displayText = _selected != null
+        ? (widget.displayFormat ?? _format)(_selected!)
+        : null;
 
     Widget field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +192,7 @@ class _D3DateFieldState extends State<D3DateField> {
             ),
           ),
           child: InkWell(
-            onTap: widget.isEnabled ? _pick : null,
+            onTap: widget.isEnabled && !widget.isReadOnly ? _pick : null,
             onHighlightChanged: (v) => setState(() => _isFocused = v),
             borderRadius: BorderRadius.circular(tokens.radius),
             child: ConstrainedBox(

@@ -67,9 +67,13 @@ class D3ImageViewer extends StatefulWidget {
     this.initialIndex = 0,
     this.title,
     this.actions = const [],
+    this.actionsBuilder,
     this.onPageChanged,
     this.emptyText = 'No images',
-  });
+  }) : assert(
+         actions.length == 0 || actionsBuilder == null,
+         'pass at most one of actions/actionsBuilder',
+       );
 
   /// Images to display. Must not be empty.
   final List<D3ImageSource> images;
@@ -81,8 +85,28 @@ class D3ImageViewer extends StatefulWidget {
   /// for multi-image sets and nothing for single images.
   final Widget? title;
 
-  /// Widgets added to the AppBar trailing area.
+  /// Widgets added to the AppBar trailing area, fixed for the whole viewer
+  /// session regardless of which page is showing.
+  ///
+  /// Use [actionsBuilder] instead when the right actions depend on which
+  /// image is currently visible (e.g. one image in the set has an action
+  /// the others don't) — passing both is a caller error.
   final List<Widget> actions;
+
+  /// Like [actions], but re-evaluated on every page change with the
+  /// current zero-based index, so the AppBar's trailing buttons can differ
+  /// per image rather than being fixed for the whole viewer session.
+  ///
+  /// ```dart
+  /// D3ImageViewer(
+  ///   images: photos,
+  ///   actionsBuilder: (index) => [
+  ///     if (photos[index].hasMarkup)
+  ///       IconButton(icon: const Icon(Icons.download), onPressed: ...),
+  ///   ],
+  /// )
+  /// ```
+  final List<Widget> Function(int index)? actionsBuilder;
 
   /// Called whenever the page changes. Receives the new zero-based index.
   final ValueChanged<int>? onPageChanged;
@@ -158,7 +182,7 @@ class D3ImageViewerState extends State<D3ImageViewer> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         title: widget.title ?? defaultTitle,
-        actions: widget.actions,
+        actions: widget.actionsBuilder?.call(_currentIndex) ?? widget.actions,
       ),
       body: Stack(
         children: [
