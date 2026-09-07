@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/src/tokens/d3_spacing.dart';
 
@@ -228,14 +227,6 @@ class D3ImageViewerState extends State<D3ImageViewer>
     return controller.value.getMaxScaleOnAxis() > 1.01;
   }
 
-  /// The single recognizer instance backing the whole-screen dismiss
-  /// gesture -- created once, not per build, since a fresh recognizer
-  /// on every rebuild would forget mid-gesture whether it had already
-  /// rejected itself for a second pointer. See
-  /// [_D3DismissDragRecognizer]'s own doc comment for what it does and
-  /// why a plain [VerticalDragGestureRecognizer] is not enough.
-  final _dismissRecognizer = _D3DismissDragRecognizer();
-
   late final AnimationController _snapBack = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 200),
@@ -346,7 +337,6 @@ class D3ImageViewerState extends State<D3ImageViewer>
   void dispose() {
     _pageController.dispose();
     _snapBack.dispose();
-    _dismissRecognizer.dispose();
     for (final controller in _zoomControllers.values) {
       controller.dispose();
     }
@@ -361,18 +351,46 @@ class D3ImageViewerState extends State<D3ImageViewer>
     );
   }
 
-  void _onVerticalDragUpdate(DragUpdateDetails details) {
-    setState(() => _dragDy = (_dragDy + details.delta.dy).clamp(0, 400));
+  /// Whether the interaction currently in progress on [InteractiveViewer]
+  /// started as (and has stayed) a single-finger touch -- set in
+  /// [_onInteractionStart], read in [_onInteractionUpdate]/
+  /// [_onInteractionEnd] to decide whether this interaction is "our"
+  /// dismiss drag at all. Needed because [InteractiveViewer]'s own
+  /// callbacks fire for *every* interaction it handles (pans, pinches,
+  /// and everything between), not just the single-finger case this
+  /// gesture cares about.
+  bool _dragIsSingleFinger = false;
+
+  void _onInteractionStart(ScaleStartDetails details) {
+    _dragIsSingleFinger = details.pointerCount == 1;
   }
 
-  void _onVerticalDragEnd(DragEndDetails details) {
+  void _onInteractionUpdate(ScaleUpdateDetails details) {
+    if (_currentPageIsZoomed || !_dragIsSingleFinger) return;
+    // A second finger touching down mid-gesture changes pointerCount
+    // without a fresh onInteractionStart -- once that happens this is
+    // no longer "our" gesture (a pinch is starting), so stop treating
+    // further updates as dismiss drag and let InteractiveViewer's own
+    // pan/scale handling take over from here for the rest of this
+    // interaction.
+    if (details.pointerCount != 1) {
+      _dragIsSingleFinger = false;
+      _animateSnapBack();
+      return;
+    }
+    setState(
+      () => _dragDy = (_dragDy + details.focalPointDelta.dy).clamp(0, 400),
+    );
+  }
+
+  void _onInteractionEnd(ScaleEndDetails details) {
+    if (!_dragIsSingleFinger) return;
     // Dismiss either on distance (dragged past the threshold) or on a
     // fast downward flick released before reaching it -- matching how
     // e.g. iOS/Google Photos treat a quick flick as clear dismiss
     // intent even if the finger didn't travel far.
-    final velocity = details.primaryVelocity ?? 0;
     final pastThreshold = _dragDy > _dismissThreshold;
-    final fastFlick = velocity > 800;
+    final fastFlick = details.velocity.pixelsPerSecond.dy > 800;
     if (pastThreshold || fastFlick) {
       Navigator.maybePop(context);
       return;
@@ -440,9 +458,18 @@ class D3ImageViewerState extends State<D3ImageViewer>
               widget.onPageChanged?.call(i);
             },
             itemBuilder: (context, index) {
+              final isCurrent = index == _currentIndex;
               return _D3ViewerPage(
                 source: _images[index],
                 zoomController: _zoomControllerFor(index),
+                // Only the current page's interactions can mean
+                // anything to the whole-screen dismiss gesture -- a
+                // pre-built neighbour (PageView keeps adjacent pages
+                // around for swipe pre-caching) receives no touches of
+                // its own to report.
+                onInteractionStart: isCurrent ? _onInteractionStart : null,
+                onInteractionUpdate: isCurrent ? _onInteractionUpdate : null,
+                onInteractionEnd: isCurrent ? _onInteractionEnd : null,
               );
             },
           ),
@@ -500,104 +527,13 @@ class D3ImageViewerState extends State<D3ImageViewer>
     final screenScale = 1 - progress * 0.1;
     final screenOpacity = 1 - progress * 0.4;
 
-    return RawGestureDetector(
-      gestures: {
-        _D3DismissDragRecognizer:
-            GestureRecognizerFactoryWithHandlers<_D3DismissDragRecognizer>(
-          // A fresh recognizer per build would forget which pointers
-          // it already rejected mid-gesture -- reused via a stable
-          // instance instead, the same way GestureDetector itself
-          // reuses recognizers across rebuilds internally.
-          () => _dismissRecognizer,
-          (instance) {
-            instance
-              ..onUpdate = _currentPageIsZoomed ? null : _onVerticalDragUpdate
-              ..onEnd = _currentPageIsZoomed ? null : _onVerticalDragEnd;
-          },
-        ),
-      },
-      child: Transform.translate(
-        offset: Offset(0, _dragDy),
-        child: Opacity(
-          opacity: screenOpacity,
-          child: Transform.scale(scale: screenScale, child: scaffold),
-        ),
+    return Transform.translate(
+      offset: Offset(0, _dragDy),
+      child: Opacity(
+        opacity: screenOpacity,
+        child: Transform.scale(scale: screenScale, child: scaffold),
       ),
     );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// _D3DismissDragRecognizer
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// A [VerticalDragGestureRecognizer] that rejects itself the instant a
-/// second pointer joins the gesture, instead of the default behaviour
-/// (silently tracking only the first/latest pointer and ignoring the
-/// rest).
-///
-/// This is what actually lets the whole-screen dismiss drag and
-/// [InteractiveViewer]'s pinch-to-zoom coexist. The two problems this
-/// solves, in order:
-///
-/// 1. A plain sibling [GestureDetector] cannot reliably win a
-///    single-finger drag against [InteractiveViewer] at all --
-///    [InteractiveViewer] always registers a `ScaleGestureRecognizer`
-///    once mounted, and typically wins that arena regardless of its
-///    own `panEnabled` (which is only checked after the gesture is
-///    already claimed). A [RawGestureDetector] using this recognizer,
-///    by contrast, genuinely competes and is written to win the
-///    single-finger case on purpose (see 2).
-/// 2. But simply winning single-finger drags is not enough on its own
-///    -- a naive version would also win (or interfere with) the start
-///    of a two-finger pinch, since the first of the two fingers to
-///    touch down looks identical to an ordinary single-finger drag
-///    until the second one arrives. This recognizer specifically
-///    watches for that second pointer and rejects itself the moment it
-///    sees one, handing the whole gesture back to the arena --
-///    [InteractiveViewer]'s own scale recognizer, being the only
-///    remaining claimant, then wins and starts the pinch normally.
-///
-/// An earlier approach tried gating this by only *mounting*
-/// [InteractiveViewer] once a second pointer was already down, which
-/// does not work: that second pointer's down event has already been
-/// dispatched and hit-tested by the time the resulting rebuild swaps
-/// the widget in, so the newly-mounted recognizer never actually saw
-/// it and pinch never starts. Rejecting from within an
-/// always-present, always-tracking recognizer avoids that race
-/// entirely -- there is nothing to mount late.
-class _D3DismissDragRecognizer extends VerticalDragGestureRecognizer {
-  final Set<int> _pointers = {};
-
-  @override
-  void addAllowedPointer(PointerDownEvent event) {
-    _pointers.add(event.pointer);
-    if (_pointers.length > 1) {
-      // A pinch is starting. Rejecting *this* pointer's own arena
-      // entry is not enough on its own -- by the time a second finger
-      // arrives, this recognizer has typically already won the first
-      // pointer's arena (that's what let the drag move anything in the
-      // first place), and `resolve()` only affects arenas not yet
-      // decided. Explicitly stopping tracking on the already-accepted
-      // pointer is what actually releases it: internally this ends the
-      // recognizer's own gesture (calling `onEnd` as if the finger had
-      // simply lifted, which is what the earlier pointers do a moment
-      // later anyway in a real pinch) rather than leaving it silently
-      // still consuming that finger's further movement.
-      final tracked = List.of(_pointers)..remove(event.pointer);
-      for (final pointer in tracked) {
-        stopTrackingPointer(pointer);
-      }
-      resolvePointer(event.pointer, GestureDisposition.rejected);
-      return;
-    }
-    super.addAllowedPointer(event);
-  }
-
-  @override
-  void didStopTrackingLastPointer(int pointer) {
-    _pointers.clear();
-    super.didStopTrackingLastPointer(pointer);
   }
 }
 
@@ -614,25 +550,39 @@ class _D3DismissDragRecognizer extends VerticalDragGestureRecognizer {
 /// pan with, and reaching into a StatefulWidget's own private State from
 /// outside is not possible, so the controller is threaded in instead.
 ///
-/// [InteractiveViewer] is always mounted here (pinch-to-zoom must work
-/// from the very first frame a second finger touches down -- a widget
-/// that only mounts *after* that pointer event, in response to a
-/// rebuild, never actually sees it: a recognizer only joins the gesture
-/// arena for a pointer that was already down when it was added,
-/// confirmed by reproduction against an earlier version of this file
-/// that tried exactly that and broke pinch-zoom entirely). Giving the
-/// whole-screen dismiss gesture priority over a single-finger drag is
-/// instead handled by [D3ImageViewerState]'s own custom
-/// `_D3DismissDragRecognizer`, which explicitly rejects itself the
-/// moment a second pointer joins -- see that class's doc comment.
+/// [onInteractionStart]/[onInteractionUpdate]/[onInteractionEnd] forward
+/// straight to [InteractiveViewer]'s own identically-named callbacks --
+/// this is what actually drives the whole-screen dismiss gesture,
+/// rather than a sibling [GestureDetector]/[RawGestureDetector]
+/// competing with [InteractiveViewer] for the same pointer. That
+/// approach (tried first) could not be made reliable:
+/// [InteractiveViewer] always registers its own `ScaleGestureRecognizer`
+/// once mounted, and a sibling recognizer's odds of resolving the
+/// gesture arena first for a single-finger drag turned out to depend on
+/// where on screen the drag started (confirmed on-device: the dismiss
+/// drag worked reliably from the AppBar, where nothing else was
+/// competing, but not from over the image itself, where it was racing
+/// InteractiveViewer and often losing). [InteractiveViewer]'s own
+/// interaction callbacks sidestep the race entirely -- they fire for
+/// every gesture it handles regardless of who "wins" anything, since
+/// there is no competing recognizer to win against, and
+/// [ScaleStartDetails]/[ScaleUpdateDetails]/[ScaleEndDetails] all carry
+/// a `pointerCount` field, which is what actually distinguishes "this
+/// is a single-finger drag" from "this is a pinch" here.
 class _D3ViewerPage extends StatelessWidget {
   const _D3ViewerPage({
     required this.source,
     required this.zoomController,
+    this.onInteractionStart,
+    this.onInteractionUpdate,
+    this.onInteractionEnd,
   });
 
   final D3ImageSource source;
   final TransformationController zoomController;
+  final GestureScaleStartCallback? onInteractionStart;
+  final GestureScaleUpdateCallback? onInteractionUpdate;
+  final GestureScaleEndCallback? onInteractionEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -640,6 +590,9 @@ class _D3ViewerPage extends StatelessWidget {
       transformationController: zoomController,
       minScale: 0.5,
       maxScale: 6.0,
+      onInteractionStart: onInteractionStart,
+      onInteractionUpdate: onInteractionUpdate,
+      onInteractionEnd: onInteractionEnd,
       child: Center(
         child: _D3ViewerImage(source: source),
       ),
