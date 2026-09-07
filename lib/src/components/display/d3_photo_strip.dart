@@ -41,6 +41,7 @@ class D3PhotoStrip extends StatelessWidget {
     this.onAdd,
     this.viewerActionsBuilder,
     this.viewerResolveImage,
+    this.thumbnailResolveImage,
   });
 
   /// Local file paths, in display order.
@@ -91,6 +92,20 @@ class D3PhotoStrip extends StatelessWidget {
   /// the visible page, not for every thumbnail up front.
   final Future<D3ImageSource> Function(int index)? viewerResolveImage;
 
+  /// Like [viewerResolveImage], but for a thumbnail in this strip
+  /// itself rather than the full-screen viewer -- returns a local file
+  /// path (a thumbnail is always a plain [Image.file], never network),
+  /// resolved once per thumbnail as soon as it's built, showing
+  /// [photoPaths]'s own entry immediately while it resolves.
+  ///
+  /// Unlike the viewer (one visible page at a time), every thumbnail in
+  /// the strip is live at once, so this runs for every visible
+  /// thumbnail up front rather than being deferred to an as-visited
+  /// basis -- a caller doing real work here (e.g. flattening
+  /// annotations) should keep it cheap or already-cached at its own
+  /// layer, since a long strip means many concurrent calls.
+  final Future<String> Function(int index)? thumbnailResolveImage;
+
   void _openViewer(BuildContext context, int index) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -128,6 +143,7 @@ class D3PhotoStrip extends StatelessWidget {
             count: photoPaths.length,
             itemLabel: itemLabel,
             tokens: tokens,
+            resolveImage: thumbnailResolveImage,
             onTap: () => _openViewer(context, index),
             onRemove: onRemove == null ? null : () => onRemove!(index),
           );
@@ -177,7 +193,7 @@ class _D3AddPhotoTile extends StatelessWidget {
 // _D3PhotoThumbnail
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _D3PhotoThumbnail extends StatelessWidget {
+class _D3PhotoThumbnail extends StatefulWidget {
   const _D3PhotoThumbnail({
     required this.path,
     required this.index,
@@ -186,6 +202,7 @@ class _D3PhotoThumbnail extends StatelessWidget {
     required this.tokens,
     required this.onTap,
     required this.onRemove,
+    this.resolveImage,
   });
 
   final String path;
@@ -196,18 +213,62 @@ class _D3PhotoThumbnail extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onRemove;
 
+  /// See `D3PhotoStrip.thumbnailResolveImage`.
+  final Future<String> Function(int index)? resolveImage;
+
+  @override
+  State<_D3PhotoThumbnail> createState() => _D3PhotoThumbnailState();
+}
+
+class _D3PhotoThumbnailState extends State<_D3PhotoThumbnail> {
+  /// `widget.path` until (if) `widget.resolveImage` resolves to
+  /// something different -- shown immediately rather than waiting, the
+  /// same "display now, swap when ready" pattern `D3ImageViewer
+  /// .resolveImage` uses.
+  late String _displayPath = widget.path;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(covariant _D3PhotoThumbnail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A genuinely different photo at this list position (e.g. the
+    // caller's own underlying list changed) re-resolves from scratch;
+    // resolveImage itself changing identity (a caller passing a new
+    // closure on every rebuild, as an inline lambda commonly would)
+    // must NOT retrigger this -- only the path actually changing means
+    // there's a new photo to resolve.
+    if (widget.path != oldWidget.path) {
+      _displayPath = widget.path;
+      _resolve();
+    }
+  }
+
+  void _resolve() {
+    final resolver = widget.resolveImage;
+    if (resolver == null) return;
+    resolver(widget.index).then((path) {
+      if (!mounted) return;
+      setState(() => _displayPath = path);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
-    final radius = BorderRadius.circular(tokens.thumbnailRadius);
+    final radius = BorderRadius.circular(widget.tokens.thumbnailRadius);
 
     return Semantics(
-      label: 'Photo ${index + 1} of $count for $itemLabel',
+      label: 'Photo ${widget.index + 1} of ${widget.count} for ${widget.itemLabel}',
       button: true,
       image: true,
       child: SizedBox(
-        width: tokens.thumbnailSize,
-        height: tokens.thumbnailSize,
+        width: widget.tokens.thumbnailSize,
+        height: widget.tokens.thumbnailSize,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -216,11 +277,11 @@ class _D3PhotoThumbnail extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: radius),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
-                onTap: onTap,
+                onTap: widget.onTap,
                 child: Image.file(
-                  File(path),
-                  width: tokens.thumbnailSize,
-                  height: tokens.thumbnailSize,
+                  File(_displayPath),
+                  width: widget.tokens.thumbnailSize,
+                  height: widget.tokens.thumbnailSize,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => Icon(
                     Icons.broken_image_outlined,
@@ -229,25 +290,25 @@ class _D3PhotoThumbnail extends StatelessWidget {
                 ),
               ),
             ),
-            if (onRemove != null)
+            if (widget.onRemove != null)
               Positioned(
-                top: tokens.removeButtonOffset,
-                right: tokens.removeButtonOffset,
+                top: widget.tokens.removeButtonOffset,
+                right: widget.tokens.removeButtonOffset,
                 child: Semantics(
-                  label: 'Remove photo ${index + 1}',
+                  label: 'Remove photo ${widget.index + 1}',
                   button: true,
                   child: SizedBox(
-                    width: tokens.removeButtonHitSize,
-                    height: tokens.removeButtonHitSize,
+                    width: widget.tokens.removeButtonHitSize,
+                    height: widget.tokens.removeButtonHitSize,
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
                         customBorder: const CircleBorder(),
-                        onTap: onRemove,
+                        onTap: widget.onRemove,
                         child: Center(
                           child: Container(
-                            width: tokens.removeButtonGlyphSize,
-                            height: tokens.removeButtonGlyphSize,
+                            width: widget.tokens.removeButtonGlyphSize,
+                            height: widget.tokens.removeButtonGlyphSize,
                             decoration: BoxDecoration(
                               color: colors.error,
                               shape: BoxShape.circle,
@@ -255,7 +316,7 @@ class _D3PhotoThumbnail extends StatelessWidget {
                             ),
                             child: Icon(
                               Icons.close,
-                              size: tokens.removeButtonGlyphSize * 0.7,
+                              size: widget.tokens.removeButtonGlyphSize * 0.7,
                               color: colors.onError,
                             ),
                           ),

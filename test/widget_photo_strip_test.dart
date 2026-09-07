@@ -112,4 +112,112 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  group('D3PhotoStrip.thumbnailResolveImage', () {
+    testWidgets('shows photoPaths\' own entry immediately, then swaps once '
+        'resolved', (tester) async {
+      var release = false;
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoStrip(
+            photoPaths: const ['a.png'],
+            itemLabel: 'Test item',
+            thumbnailResolveImage: (index) async {
+              while (!release) {
+                await Future<void>.delayed(const Duration(milliseconds: 1));
+              }
+              return 'resolved.png';
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+
+      var image = tester.widget<Image>(find.byType(Image));
+      expect((image.image as FileImage).file.path, 'a.png');
+
+      release = true;
+      await tester.pumpAndSettle();
+
+      image = tester.widget<Image>(find.byType(Image));
+      expect((image.image as FileImage).file.path, 'resolved.png');
+    });
+
+    testWidgets('is called once per thumbnail with its own index', (
+      tester,
+    ) async {
+      final calledFor = <int>[];
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoStrip(
+            photoPaths: const ['a.png', 'b.png'],
+            itemLabel: 'Test item',
+            thumbnailResolveImage: (index) async {
+              calledFor.add(index);
+              return 'r$index.png';
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(calledFor, [0, 1]);
+    });
+
+    testWidgets('omitting it shows the plain photoPaths entry unchanged', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const D3PhotoStrip(
+            photoPaths: ['a.png'],
+            itemLabel: 'Test item',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final image = tester.widget<Image>(find.byType(Image));
+      expect((image.image as FileImage).file.path, 'a.png');
+    });
+
+    testWidgets('a resolver identity change alone (same path) does not '
+        'retrigger resolution', (tester) async {
+      var callCount = 0;
+      Future<String> resolver(int index) async {
+        callCount++;
+        return 'r.png';
+      }
+
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoStrip(
+            photoPaths: const ['a.png'],
+            itemLabel: 'Test item',
+            thumbnailResolveImage: resolver,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(callCount, 1);
+
+      // A fresh closure each time, same underlying photoPaths -- mirrors
+      // an inline lambda passed anew on every parent rebuild.
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoStrip(
+            photoPaths: const ['a.png'],
+            itemLabel: 'Test item',
+            thumbnailResolveImage: (index) async {
+              callCount++;
+              return 'r.png';
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(callCount, 1);
+    });
+  });
 }
