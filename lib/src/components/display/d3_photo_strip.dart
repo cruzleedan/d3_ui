@@ -39,6 +39,7 @@ class D3PhotoStrip extends StatelessWidget {
     this.onRemove,
     this.viewerTitle,
     this.onAdd,
+    this.viewerActionsBuilder,
   });
 
   /// Local file paths, in display order.
@@ -69,6 +70,18 @@ class D3PhotoStrip extends StatelessWidget {
   /// composing around it from outside isn't an option).
   final VoidCallback? onAdd;
 
+  /// Extra AppBar trailing buttons for the full-screen viewer, forwarded
+  /// straight into [D3ImageViewer.actionsBuilder] -- this strip only
+  /// ever deals in plain file paths/thumbnails, so it has no opinion on
+  /// what those actions are or do; the caller supplies whatever a given
+  /// photo needs (e.g. "Annotate"/"Download" for an app that marks up
+  /// photos), keyed by the same zero-based index [photoPaths] uses.
+  ///
+  /// Re-evaluated as the user swipes between photos inside one viewer
+  /// session, so actions stay correct for whichever photo is actually
+  /// showing rather than being fixed to the one first tapped.
+  final List<Widget> Function(int index)? viewerActionsBuilder;
+
   void _openViewer(BuildContext context, int index) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -76,6 +89,7 @@ class D3PhotoStrip extends StatelessWidget {
           images: [for (final p in photoPaths) D3ImageSource.local(p)],
           initialIndex: index,
           title: viewerTitle,
+          actionsBuilder: viewerActionsBuilder,
         ),
       ),
     );
