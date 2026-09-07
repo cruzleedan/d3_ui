@@ -31,7 +31,7 @@ import 'package:d3_ui/d3_ui.dart';
 ///   itemLabel: result.itemText,
 /// )
 /// ```
-class D3PhotoStrip extends StatelessWidget {
+class D3PhotoStrip extends StatefulWidget {
   const D3PhotoStrip({
     super.key,
     required this.photoPaths,
@@ -106,15 +106,45 @@ class D3PhotoStrip extends StatelessWidget {
   /// layer, since a long strip means many concurrent calls.
   final Future<String> Function(int index)? thumbnailResolveImage;
 
+  @override
+  State<D3PhotoStrip> createState() => D3PhotoStripState();
+}
+
+class D3PhotoStripState extends State<D3PhotoStrip> {
+  /// One key per currently-built thumbnail, so [refreshThumbnail] can
+  /// reach a specific `_D3PhotoThumbnailState` without this strip being
+  /// a `StatelessWidget` wrapper the caller has no handle into. Rebuilt
+  /// alongside the list itself rather than cached across rebuilds --
+  /// `GlobalKey`s are cheap and a stale one pointing at an unmounted
+  /// thumbnail is worse than a fresh one each build.
+  final Map<int, GlobalKey<_D3PhotoThumbnailState>> _thumbnailKeys = {};
+
+  /// Forces the thumbnail at [index] to re-run `thumbnailResolveImage`,
+  /// discarding whatever it last resolved to.
+  ///
+  /// Needed because a thumbnail only re-resolves on its own when
+  /// [D3PhotoStrip.photoPaths]'s entry at that position actually
+  /// changes -- an external event that changes what the resolver would
+  /// now return (e.g. a photo's annotations were just edited on a
+  /// screen pushed from this strip's own viewer) leaves the thumbnail
+  /// showing whatever it last resolved to. Call this once that event is
+  /// known, mirroring how `D3ImageViewerState.replaceImage` lets a
+  /// caller push a fresh image into an already-built viewer.
+  void refreshThumbnail(int index) {
+    _thumbnailKeys[index]?.currentState?.refresh();
+  }
+
   void _openViewer(BuildContext context, int index) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => D3ImageViewer(
-          images: [for (final p in photoPaths) D3ImageSource.local(p)],
+          images: [
+            for (final p in widget.photoPaths) D3ImageSource.local(p),
+          ],
           initialIndex: index,
-          title: viewerTitle,
-          actionsBuilder: viewerActionsBuilder,
-          resolveImage: viewerResolveImage,
+          title: widget.viewerTitle,
+          actionsBuilder: widget.viewerActionsBuilder,
+          resolveImage: widget.viewerResolveImage,
         ),
       ),
     );
@@ -122,10 +152,14 @@ class D3PhotoStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (photoPaths.isEmpty && onAdd == null) return const SizedBox.shrink();
+    if (widget.photoPaths.isEmpty && widget.onAdd == null) {
+      return const SizedBox.shrink();
+    }
 
     final tokens = context.d3PhotoStripTokens;
-    final itemCount = photoPaths.length + (onAdd != null ? 1 : 0);
+    final itemCount = widget.photoPaths.length + (widget.onAdd != null ? 1 : 0);
+
+    _thumbnailKeys.removeWhere((index, _) => index >= widget.photoPaths.length);
 
     return SizedBox(
       height: tokens.thumbnailSize,
@@ -134,18 +168,25 @@ class D3PhotoStrip extends StatelessWidget {
         itemCount: itemCount,
         separatorBuilder: (_, _) => SizedBox(width: tokens.thumbnailGap),
         itemBuilder: (context, index) {
-          if (index == photoPaths.length) {
-            return _D3AddPhotoTile(onTap: onAdd!, tokens: tokens);
+          if (index == widget.photoPaths.length) {
+            return _D3AddPhotoTile(onTap: widget.onAdd!, tokens: tokens);
           }
+          final key = _thumbnailKeys.putIfAbsent(
+            index,
+            () => GlobalKey<_D3PhotoThumbnailState>(),
+          );
           return _D3PhotoThumbnail(
-            path: photoPaths[index],
+            key: key,
+            path: widget.photoPaths[index],
             index: index,
-            count: photoPaths.length,
-            itemLabel: itemLabel,
+            count: widget.photoPaths.length,
+            itemLabel: widget.itemLabel,
             tokens: tokens,
-            resolveImage: thumbnailResolveImage,
+            resolveImage: widget.thumbnailResolveImage,
             onTap: () => _openViewer(context, index),
-            onRemove: onRemove == null ? null : () => onRemove!(index),
+            onRemove: widget.onRemove == null
+                ? null
+                : () => widget.onRemove!(index),
           );
         },
       ),
@@ -195,6 +236,7 @@ class _D3AddPhotoTile extends StatelessWidget {
 
 class _D3PhotoThumbnail extends StatefulWidget {
   const _D3PhotoThumbnail({
+    super.key,
     required this.path,
     required this.index,
     required this.count,
@@ -256,6 +298,9 @@ class _D3PhotoThumbnailState extends State<_D3PhotoThumbnail> {
       setState(() => _displayPath = path);
     });
   }
+
+  /// See `D3PhotoStripState.refreshThumbnail`.
+  void refresh() => _resolve();
 
   @override
   Widget build(BuildContext context) {
