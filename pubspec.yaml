@@ -22,6 +22,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_slidable: ^4.0.3
   material_ui: ^1.0.0
 dev_dependencies:
   flutter_test:

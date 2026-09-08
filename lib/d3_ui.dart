@@ -48,6 +48,7 @@ export 'src/components/navigation/d3_list_screen.dart';
 export 'src/components/navigation/d3_sticky_header.dart';
 export 'src/components/surfaces/d3_card.dart';
 export 'src/components/surfaces/d3_list_tile.dart';
+export 'src/components/surfaces/d3_slidable_row.dart';
 export 'src/components/dialogs/d3_dialog.dart';
 export 'src/components/dialogs/d3_calendar_picker.dart';
 export 'src/components/display/d3_avatar.dart';
