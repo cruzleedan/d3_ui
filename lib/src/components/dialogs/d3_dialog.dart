@@ -32,16 +32,38 @@ enum D3DialogIconPlacement { centered, leading }
 class D3DialogAction {
   const D3DialogAction({
     required this.label,
-    required this.onPressed,
+    this.onPressed,
+    this.onPressedWithContext,
     this.isDestructive = false,
     this.isDefault = false,
   }) : assert(
          !(isDestructive && isDefault),
          'A dialog action cannot be both destructive and default.',
+       ),
+       assert(
+         (onPressed == null) != (onPressedWithContext == null),
+         'D3DialogAction requires exactly one of onPressed or '
+         'onPressedWithContext.',
        );
 
   final String label;
-  final VoidCallback onPressed;
+
+  /// Closes over whatever `context` the caller had when building this
+  /// action — typically the *screen's* context, from before [D3Dialog
+  /// .show] was even called, not a context inside the dialog's own
+  /// subtree. Fine for anything that doesn't need to pop the dialog
+  /// itself (e.g. triggering a side effect); for closing the dialog,
+  /// prefer [onPressedWithContext] with [D3Dialog.pop] instead of
+  /// calling `Navigator.of(context).pop()` here — see [D3Dialog]'s own
+  /// doc comment for why that can pop the wrong route entirely when the
+  /// caller's screen is itself nested inside its own Navigator.
+  final VoidCallback? onPressed;
+
+  /// Like [onPressed], but receives a `context` guaranteed to be inside
+  /// the dialog's own subtree — pass this to [D3Dialog.pop] to close
+  /// the dialog correctly regardless of which Navigator actually hosts
+  /// it. Exactly one of [onPressed]/[onPressedWithContext] must be set.
+  final void Function(BuildContext context)? onPressedWithContext;
 
   /// Renders the label in [D3ColorTokens.error]. Filled in stacked layout.
   final bool isDestructive;
@@ -49,6 +71,15 @@ class D3DialogAction {
   /// Renders the label in [D3ColorTokens.primary] with semi-bold weight.
   /// Filled in stacked layout.
   final bool isDefault;
+
+  void _invoke(BuildContext dialogContext) {
+    final onPressed = this.onPressed;
+    if (onPressed != null) {
+      onPressed();
+    } else {
+      onPressedWithContext!(dialogContext);
+    }
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -70,11 +101,14 @@ class D3DialogAction {
 ///   title: 'Delete account',
 ///   message: 'This cannot be undone.',
 ///   actions: [
-///     D3DialogAction(label: 'Cancel', onPressed: () => Navigator.pop(context)),
+///     D3DialogAction(
+///       label: 'Cancel',
+///       onPressedWithContext: (ctx) => D3Dialog.pop(ctx),
+///     ),
 ///     D3DialogAction(
 ///       label: 'Delete',
 ///       isDestructive: true,
-///       onPressed: () => Navigator.pop(context, true),
+///       onPressedWithContext: (ctx) => D3Dialog.pop(ctx, true),
 ///     ),
 ///   ],
 /// );
@@ -95,7 +129,7 @@ class D3DialogAction {
 ///     D3DialogAction(
 ///       label: 'OK',
 ///       isDefault: true,
-///       onPressed: () => Navigator.pop(context),
+///       onPressedWithContext: (ctx) => D3Dialog.pop(ctx),
 ///     ),
 ///   ],
 /// );
@@ -103,6 +137,22 @@ class D3DialogAction {
 ///
 /// **No icon:**
 /// Falls back to compact text button layout.
+///
+/// **Closing the dialog:** use [D3DialogAction.onPressedWithContext] with
+/// [pop], not [D3DialogAction.onPressed] with `Navigator.pop(context)`
+/// or `Navigator.of(context).pop()`. `onPressed`'s `context` closes over
+/// whatever the *caller* had when building the action — typically the
+/// screen's own context, from before [show] was even called, not a
+/// context inside the dialog's own subtree. If that caller is nested
+/// inside its own `Navigator` (e.g. a `StatefulShellRoute` branch) and
+/// the dialog was shown with `useRootNavigator: true` (the default),
+/// `Navigator.of(callerContext)` resolves to the *wrong* Navigator — the
+/// one hosting the caller, not the one hosting the dialog — and can pop
+/// the caller's own (possibly single-page) route instead of the dialog.
+/// `onPressedWithContext`'s `context` is always inside the dialog's own
+/// subtree, so [pop] always closes the right route regardless of which
+/// Navigator actually hosts it — the same guarantee `D3BottomSheet.pop`/
+/// `D3FormSheet.pop` already give their own content.
 class D3Dialog extends StatelessWidget {
   const D3Dialog({
     super.key,
@@ -139,12 +189,6 @@ class D3Dialog extends StatelessWidget {
   /// List of action buttons. At least one required.
   final List<D3DialogAction> actions;
 
-  // ── Derived layout ─────────────────────────────────────────────────────────
-
-  /// Stacked layout when there is a centered icon; text buttons otherwise.
-  bool get _useStackedActions =>
-      icon != null && iconPlacement == D3DialogIconPlacement.centered;
-
   // ── Static API ─────────────────────────────────────────────────────────────
 
   static Future<T?> show<T>(
@@ -175,6 +219,22 @@ class D3Dialog extends StatelessWidget {
       ),
     );
   }
+
+  /// Closes the enclosing [D3Dialog] and returns [result] to the caller
+  /// of [show]. Call this with the `context` an [D3DialogAction.
+  /// onPressedWithContext] callback receives — **not** the context an
+  /// [D3DialogAction.onPressed] callback closes over — since only the
+  /// former is guaranteed to be inside this dialog's own subtree. See
+  /// this class's own doc comment for why using the wrong context can
+  /// pop an entirely different route.
+  static void pop<T>(BuildContext context, [T? result]) {
+    Navigator.of(context).pop(result);
+  }
+
+  // ── Derived layout ─────────────────────────────────────────────────────────
+
+  bool get _useStackedActions =>
+      icon != null && iconPlacement == D3DialogIconPlacement.centered;
 
   // ── Build ──────────────────────────────────────────────────────────────────
 
@@ -466,7 +526,7 @@ class _StackedButton extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(D3Radius.md),
         child: InkWell(
-          onTap: action.onPressed,
+          onTap: () => action._invoke(context),
           borderRadius: BorderRadius.circular(D3Radius.md),
           splashColor: Colors.white.withValues(alpha: 0.08),
           highlightColor: Colors.white.withValues(alpha: 0.04),
@@ -532,7 +592,7 @@ class _InlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: action.onPressed,
+      onPressed: () => action._invoke(context),
       style: TextButton.styleFrom(
         foregroundColor: _labelColor,
         overlayColor: _labelColor,

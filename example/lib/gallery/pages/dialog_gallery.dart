@@ -42,12 +42,12 @@ class DialogGallery extends StatelessWidget {
                     actions: [
                       D3DialogAction(
                         label: 'Cancel',
-                        onPressed: () => Navigator.pop(context, false),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx, false),
                       ),
                       D3DialogAction(
                         label: 'Delete',
                         isDestructive: true,
-                        onPressed: () => Navigator.pop(context, true),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx, true),
                       ),
                     ],
                   ),
@@ -67,12 +67,12 @@ class DialogGallery extends StatelessWidget {
                     actions: [
                       D3DialogAction(
                         label: 'Cancel',
-                        onPressed: () => Navigator.pop(context, false),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx, false),
                       ),
                       D3DialogAction(
                         label: 'Save',
                         isDefault: true,
-                        onPressed: () => Navigator.pop(context, true),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx, true),
                       ),
                     ],
                   ),
@@ -93,12 +93,12 @@ class DialogGallery extends StatelessWidget {
                     actions: [
                       D3DialogAction(
                         label: 'Cancel',
-                        onPressed: () => Navigator.pop(context, false),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx, false),
                       ),
                       D3DialogAction(
                         label: 'Sign out',
                         isDestructive: true,
-                        onPressed: () => Navigator.pop(context, true),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx, true),
                       ),
                     ],
                   ),
@@ -123,7 +123,7 @@ class DialogGallery extends StatelessWidget {
                       D3DialogAction(
                         label: 'OK',
                         isDefault: true,
-                        onPressed: () => Navigator.pop(context),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx),
                       ),
                     ],
                   ),
@@ -146,12 +146,12 @@ class DialogGallery extends StatelessWidget {
                     actions: [
                       D3DialogAction(
                         label: 'Later',
-                        onPressed: () => Navigator.pop(context),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx),
                       ),
                       D3DialogAction(
                         label: 'Manage storage',
                         isDefault: true,
-                        onPressed: () => Navigator.pop(context),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx),
                       ),
                     ],
                   ),
@@ -173,7 +173,7 @@ class DialogGallery extends StatelessWidget {
                       D3DialogAction(
                         label: 'Sign in',
                         isDefault: true,
-                        onPressed: () => Navigator.pop(context),
+                        onPressedWithContext: (ctx) => D3Dialog.pop(ctx),
                       ),
                     ],
                   ),
@@ -229,13 +229,13 @@ class DialogGallery extends StatelessWidget {
                       actions: [
                         D3DialogAction(
                           label: 'Cancel',
-                          onPressed: () => Navigator.pop(context),
+                          onPressedWithContext: (ctx) => D3Dialog.pop(ctx),
                         ),
                         D3DialogAction(
                           label: 'Rename',
                           isDefault: true,
-                          onPressed: () =>
-                              Navigator.pop(context, controller.text),
+                          onPressedWithContext: (ctx) =>
+                              D3Dialog.pop(ctx, controller.text),
                         ),
                       ],
                     );
