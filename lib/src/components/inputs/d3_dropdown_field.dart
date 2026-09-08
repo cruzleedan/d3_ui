@@ -1,6 +1,9 @@
 import 'package:d3_ui/d3_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'helpers/d3_field_status.dart';
+import 'helpers/d3_field_styling_mixin.dart';
+
 enum D3DropdownMode {
   /// Opens a [PopupMenuButton] anchored below the field.
   /// Best for static lists of 5 or fewer short items.
@@ -83,10 +86,18 @@ class D3DropdownField<T, V> extends StatefulWidget {
   State<D3DropdownField<T, V>> createState() => _D3DropdownFieldState<T, V>();
 }
 
-class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>> {
+class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>>
+    with D3FieldStylingMixin {
   T? _selected;
   bool _isFocused = false;
   final _focusNode = FocusNode(skipTraversal: true);
+
+  D3FieldStatus get _status => resolveD3FieldStatus(
+    isEnabled: widget.isEnabled,
+    errorText: widget.errorText,
+    hasFocus: _isFocused,
+    hasContent: _selected != null,
+  );
 
   @override
   void initState() {
@@ -161,20 +172,8 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>> {
     final tokens = context.d3InputTokens;
     final colors = context.d3Colors;
 
-    final hasError = widget.errorText != null;
-    final borderColor = !widget.isEnabled
-        ? colors.outline.withValues(alpha: 0.4)
-        : hasError
-        ? colors.error
-        : _isFocused
-        ? colors.primary
-        : colors.outline;
-
-    final bgColor = !widget.isEnabled
-        ? colors.surfaceVariant
-        : _isFocused
-        ? colors.surface
-        : colors.surfaceVariant;
+    final status = _status;
+    final style = resolveFieldStyle(status, colors, tokens);
 
     final displayText = _selected != null
         ? widget.itemLabel(_selected as T)
@@ -222,13 +221,11 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>> {
     final inputContainer = AnimatedContainer(
       duration: tokens.borderAnimDuration,
       decoration: BoxDecoration(
-        color: bgColor,
+        color: style.backgroundColor,
         borderRadius: BorderRadius.circular(tokens.radius),
         border: Border.all(
-          color: borderColor,
-          width: (_isFocused || hasError)
-              ? tokens.focusedBorderWidth
-              : tokens.borderWidth,
+          color: style.borderColor,
+          width: style.borderWidth,
           strokeAlign: BorderSide.strokeAlignInside,
         ),
       ),
@@ -313,7 +310,7 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>> {
               widget.errorText ?? widget.helperText!,
               style: TextStyle(
                 fontSize: tokens.helperSize,
-                color: hasError ? colors.error : colors.onSurfaceVariant,
+                color: style.helperTextColor,
                 height: 1.4,
               ),
             ),

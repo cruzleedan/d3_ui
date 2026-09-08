@@ -2,6 +2,9 @@ import 'package:d3_ui/d3_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
+import 'helpers/d3_field_status.dart';
+import 'helpers/d3_field_styling_mixin.dart';
+
 /// Decimal number input styled to match [D3TextField].
 ///
 /// Accepts numeric input with up to [decimalPlaces] decimal digits.
@@ -44,10 +47,18 @@ class D3DecimalField extends StatefulWidget {
   State<D3DecimalField> createState() => _D3DecimalFieldState();
 }
 
-class _D3DecimalFieldState extends State<D3DecimalField> {
+class _D3DecimalFieldState extends State<D3DecimalField>
+    with D3FieldStylingMixin {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
   bool _isFocused = false;
+
+  D3FieldStatus get _status => resolveD3FieldStatus(
+    isEnabled: widget.isEnabled,
+    errorText: widget.errorText,
+    hasFocus: _isFocused,
+    hasContent: _controller.text.isNotEmpty,
+  );
 
   @override
   void initState() {
@@ -95,20 +106,8 @@ class _D3DecimalFieldState extends State<D3DecimalField> {
     final tokens = context.d3InputTokens;
     final colors = context.d3Colors;
 
-    final hasError = widget.errorText != null;
-    final borderColor = !widget.isEnabled
-        ? colors.outline.withValues(alpha: 0.4)
-        : hasError
-        ? colors.error
-        : _isFocused
-        ? colors.primary
-        : colors.outline;
-
-    final bgColor = !widget.isEnabled
-        ? colors.surfaceVariant
-        : _isFocused
-        ? colors.surface
-        : colors.surfaceVariant;
+    final status = _status;
+    final style = resolveFieldStyle(status, colors, tokens);
 
     Widget field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,13 +149,11 @@ class _D3DecimalFieldState extends State<D3DecimalField> {
         AnimatedContainer(
           duration: tokens.borderAnimDuration,
           decoration: BoxDecoration(
-            color: bgColor,
+            color: style.backgroundColor,
             borderRadius: BorderRadius.circular(tokens.radius),
             border: Border.all(
-              color: borderColor,
-              width: (_isFocused || hasError)
-                  ? tokens.focusedBorderWidth
-                  : tokens.borderWidth,
+              color: style.borderColor,
+              width: style.borderWidth,
               strokeAlign: BorderSide.strokeAlignInside,
             ),
           ),
@@ -251,7 +248,7 @@ class _D3DecimalFieldState extends State<D3DecimalField> {
               widget.errorText ?? widget.helperText!,
               style: TextStyle(
                 fontSize: tokens.helperSize,
-                color: hasError ? colors.error : colors.onSurfaceVariant,
+                color: style.helperTextColor,
                 height: 1.4,
               ),
             ),

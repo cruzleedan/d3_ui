@@ -341,16 +341,14 @@ class D3TextFieldState extends State<D3TextField>
 
   // ── State resolution ───────────────────────────────────────────────────────
 
-  D3FieldStatus get _status {
-    if (!widget.isEnabled || widget.isReadOnly) return D3FieldStatus.disabled;
-    if (widget.errorText != null || _validationError != null) {
-      return D3FieldStatus.error;
-    }
-    if (widget.successText != null) return D3FieldStatus.success;
-    if (_isFocused) return D3FieldStatus.focused;
-    if (_controller.text.isNotEmpty) return D3FieldStatus.filled;
-    return D3FieldStatus.idle;
-  }
+  D3FieldStatus get _status => resolveD3FieldStatus(
+    isEnabled: widget.isEnabled,
+    isReadOnly: widget.isReadOnly,
+    errorText: _effectiveError,
+    successText: widget.successText,
+    hasFocus: _isFocused,
+    hasContent: _controller.text.isNotEmpty,
+  );
 
   String? get _effectiveError => widget.errorText ?? _validationError;
   String? get _effectiveHelper => _effectiveError ?? widget.helperText;
@@ -364,8 +362,7 @@ class D3TextFieldState extends State<D3TextField>
     final status = _status;
     final isMultiline = (widget.maxLines == null || (widget.maxLines ?? 1) > 1);
 
-    final borderColor = resolveBorderColor(status, colors);
-    final bgColor = resolveBackgroundColor(status, colors);
+    final style = resolveFieldStyle(status, colors, tokens);
 
     Widget field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,13 +386,11 @@ class D3TextFieldState extends State<D3TextField>
         AnimatedContainer(
           duration: tokens.borderAnimDuration,
           decoration: BoxDecoration(
-            color: bgColor,
+            color: style.backgroundColor,
             borderRadius: BorderRadius.circular(tokens.radius),
             border: Border.all(
-              color: borderColor,
-              width: isEmphasizedBorder(status)
-                  ? tokens.focusedBorderWidth
-                  : tokens.borderWidth,
+              color: style.borderColor,
+              width: style.borderWidth,
               strokeAlign: BorderSide.strokeAlignInside,
             ),
           ),

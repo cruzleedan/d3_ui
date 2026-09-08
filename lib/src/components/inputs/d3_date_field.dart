@@ -1,6 +1,9 @@
 import 'package:d3_ui/d3_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'helpers/d3_field_status.dart';
+import 'helpers/d3_field_styling_mixin.dart';
+
 /// Date picker field styled to match [D3TextField].
 ///
 /// Tapping the field or calendar icon opens [showDatePicker].
@@ -59,9 +62,17 @@ class D3DateField extends StatefulWidget {
   State<D3DateField> createState() => _D3DateFieldState();
 }
 
-class _D3DateFieldState extends State<D3DateField> {
+class _D3DateFieldState extends State<D3DateField> with D3FieldStylingMixin {
   DateTime? _selected;
   bool _isFocused = false;
+
+  D3FieldStatus get _status => resolveD3FieldStatus(
+    isEnabled: widget.isEnabled,
+    isReadOnly: widget.isReadOnly,
+    errorText: widget.errorText,
+    hasFocus: _isFocused,
+    hasContent: _selected != null,
+  );
 
   @override
   void initState() {
@@ -122,20 +133,8 @@ class _D3DateFieldState extends State<D3DateField> {
     final tokens = context.d3InputTokens;
     final colors = context.d3Colors;
 
-    final hasError = widget.errorText != null;
-    final borderColor = !widget.isEnabled
-        ? colors.outline.withValues(alpha: 0.4)
-        : hasError
-        ? colors.error
-        : _isFocused
-        ? colors.primary
-        : colors.outline;
-
-    final bgColor = !widget.isEnabled
-        ? colors.surfaceVariant
-        : _isFocused
-        ? colors.surface
-        : colors.surfaceVariant;
+    final status = _status;
+    final style = resolveFieldStyle(status, colors, tokens);
 
     final displayText = _selected != null
         ? (widget.displayFormat ?? _format)(_selected!)
@@ -181,13 +180,11 @@ class _D3DateFieldState extends State<D3DateField> {
         AnimatedContainer(
           duration: tokens.borderAnimDuration,
           decoration: BoxDecoration(
-            color: bgColor,
+            color: style.backgroundColor,
             borderRadius: BorderRadius.circular(tokens.radius),
             border: Border.all(
-              color: borderColor,
-              width: (_isFocused || hasError)
-                  ? tokens.focusedBorderWidth
-                  : tokens.borderWidth,
+              color: style.borderColor,
+              width: style.borderWidth,
               strokeAlign: BorderSide.strokeAlignInside,
             ),
           ),
@@ -236,7 +233,7 @@ class _D3DateFieldState extends State<D3DateField> {
               widget.errorText ?? widget.helperText!,
               style: TextStyle(
                 fontSize: tokens.helperSize,
-                color: hasError ? colors.error : colors.onSurfaceVariant,
+                color: style.helperTextColor,
                 height: 1.4,
               ),
             ),
