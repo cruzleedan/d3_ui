@@ -3,12 +3,9 @@
 Companion to `README.md` (component/API reference). This doc covers
 *behavior*, not visual style: navigation, screen states, form interaction,
 and motion — the conventions every app sharing `d3_ui` should follow so
-screens feel consistent without needing Figma or a design-doc workflow.
-
-Written per `context/work/0004-d3-ui-ux-and-navigation-guidelines.md`
-(workspace root) — see that item for the reasoning behind writing this
-down instead of adopting a design tool. Text-only, deliberately — no
-wireframes or mockups in scope.
+screens built by different people (or by an AI agent) still feel
+consistent without needing Figma or a shared design-doc workflow.
+Text-only, deliberately — no wireframes or mockups in scope.
 
 ---
 
@@ -34,6 +31,64 @@ wireframes or mockups in scope.
   task for apps whose goal is finishing quickly, not novel motion — and
   over hand-specifying Material's defaults, which would just mean keeping
   a copy in sync with Flutter's own for no benefit.
+
+## Modal surfaces — which one, and when
+
+`d3_ui` ships five ways to interrupt the user's current screen:
+`D3BottomSheet`, `D3FormSheet`, `D3Dialog` (+ `D3CalendarPicker`),
+`D3DropdownField`'s `popup` mode, and a plain pushed route. Picking wrong
+either makes a quick task feel heavier than it is, or nests modals in a
+way that breaks the "I'll be right back" contract a sheet is supposed to
+signal — e.g. a form sheet whose own picker field opens a second,
+independently-scrimmed sheet, whose own "add new" action opens a third.
+This section exists so that never needs rediscovering per app.
+
+**Base the choice on task depth, not on "does a sheet look nicer here."**
+Both Material Design 3 and Apple's Human Interface Guidelines converge on
+the same axis for this decision — how much focus and space the task
+genuinely needs — even though the two platforms differ on tone/motion:
+
+| Task shape | Material 3 says | Apple HIG says | `d3_ui` component |
+|---|---|---|---|
+| A single bounded choice from a short, static list (≤5 items) | anchored popup/menu | a menu/popover | `D3DropdownField(mode: popup)` |
+| A quick, contained action that doesn't need the user's full focus, with the calling screen still meaningfully relevant | modal bottom sheet | a sheet ("some of the parent view remains visible... helping people retain their original context") | `D3BottomSheet` / `D3FormSheet` |
+| A prompt requiring a decision before continuing, no meaningful body content beyond the question itself | dialog | an alert | `D3Dialog` |
+| A genuinely deep or multi-step task — real scrollable content, several fields, or a task that benefits from the user's undivided attention | full-screen dialog ("minimizes the appearance of stacked sheets of material") | full-screen modal ("in-depth content or a complex task... minimizes distractions") | pushed route (`D3Screen`) |
+
+**Never open a second modal surface from inside a `D3BottomSheet`/
+`D3FormSheet`/`D3Dialog`'s content.** Both platforms name this
+specifically as a failure mode, not just a style preference — Material 3
+calls out avoiding "stacked sheets of material (dialogs above dialogs)";
+it is the mechanism that makes a nested picker-with-quick-add feel like
+navigating deeper rather than doing one contained thing. Concretely:
+
+- **A picker inside an already-open sheet should default to
+  `D3DropdownMode.popup`** (anchored, no independent scrim) rather than
+  `sheet` mode, even if that same field would use `sheet` mode when
+  reached from a normal screen — the calling context, not just the list
+  length, decides. Reserve nested `sheet` mode for a list genuinely too
+  long for an anchored popup to work at all, and treat that as a signal
+  the flow itself may need rethinking, not a routine choice.
+- **A "quick add new item" affordance inside a picker (a search bar's
+  "+ New" action, an empty-state "create one" prompt) should expand
+  in-place within the same sheet/popup**, not push a second
+  `D3BottomSheet`/`D3FormSheet`. Capture only what's needed to select the
+  new item (usually just a name) — defer full editing (notes, secondary
+  fields) to the record's own dedicated edit screen, reached later, not
+  mid-flow. This mirrors how neither platform's picker/menu components
+  spawn an unrelated modal for "create new" — they resolve it inline.
+- **A confirmation dialog (discard guard, destructive-action confirm) is
+  the one exception** — `D3Dialog.show` from inside a sheet's own
+  `onConfirmDiscard` or a delete action is expected and fine, since it's
+  answering a direct question about the sheet's own content, not
+  navigating to an unrelated task. Don't generalize the "no modal inside
+  a modal" rule to forbid this.
+
+**When in doubt, prefer the shallower surface.** A popup that turns out
+to need search later is a small, additive change (flip `mode` to
+`sheet`); a nested sheet that turns out to feel too deep requires
+restructuring an already-shipped flow, which is the more expensive
+direction to be wrong in.
 
 ## Screen states
 
@@ -86,13 +141,12 @@ parts.
   editable card) depending on lock state. Two widgets drift: one gets
   a bug fix or a layout tweak the other doesn't, and the user sees the
   same conceptual field look and behave differently depending on a
-  code path they can't see. `site_inspector` went through exactly that
-  progression — a `showEditableHeader`-style flag choosing between
-  `_OverviewCard` and `_EditableOverviewCard`, then later merged into
-  one `_OverviewCard` gated by `isReadOnly` (site_inspector's
-  context/work/0028) — so treat "two widgets for one concept, chosen
-  by a flag" as a smell to fix on sight in any app sharing `d3_ui`,
-  not a shape to introduce fresh in a new screen.
+  code path they can't see. A consuming app that starts with a
+  `showEditableHeader`-style flag choosing between two structurally
+  different card widgets should merge them into one, gated by
+  `isReadOnly`, at the first opportunity — treat "two widgets for one
+  concept, chosen by a flag" as a smell to fix on sight in any app
+  sharing `d3_ui`, not a shape to introduce fresh in a new screen.
 - **Read-only styling belongs in the field's own status resolution,
   not in the focus/interaction layer.** `D3TextField`/`D3DateField`
   already compute one `D3FieldStatus` (idle/focused/filled/error/
@@ -127,8 +181,8 @@ parts.
   `D3Motion.standard/decelerate/accelerate/enter/exit` (or the
   button-specific `D3ButtonMotion` tokens), the same way spacing/color
   reference their own token sets.
-- **Bias toward minimal, functional motion.** This workspace's apps are
-  corporate/form-heavy utility apps (ERP-style workflows), not consumer or
+- **Bias toward minimal, functional motion.** `d3_ui` targets corporate/
+  form-heavy utility apps (ERP-style workflows), not consumer or
   marketing apps — animate to communicate state change (a screen
   transitioning, an item being added/removed, a button press), not for
   visual flourish. When in doubt, prefer no animation over a custom one.
@@ -140,6 +194,7 @@ parts.
 If a screen needs a pattern not described here (a new navigation shape, a
 state this doc doesn't list, a form interaction not covered), make the
 call, build it, and then consider whether the pattern is reusable enough
-to add here — the same promotion instinct as
-`context/work/0003-d3-ui-per-app-style-overrides-and-component-promotion-
-policy.md` applies to conventions, not just components.
+to add here — the same promotion instinct that governs when a component
+gets added to `d3_ui` at all applies to conventions, not just components:
+prove it's needed by at least one real screen before generalizing it into
+a rule every consumer is expected to follow.
