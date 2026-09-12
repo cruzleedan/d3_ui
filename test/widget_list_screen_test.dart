@@ -40,6 +40,65 @@ Widget _wrap({
 final _selectAllCheckbox = find.byIcon(Icons.check_box_outline_blank_rounded);
 
 void main() {
+  group('D3List separators', () {
+    // A sectioned list used to skip separators entirely, so card rows
+    // inside the same section sat flush against each other.
+    Widget build({
+      String? Function(String item)? sectionOf,
+    }) => MaterialApp(
+      theme: D3AppTheme.light(),
+      home: Scaffold(
+        body: D3List<String>(
+          items: const ['a', 'b', 'c'],
+          sectionBuilder: sectionOf == null
+              ? null
+              : (context, item, index) => sectionOf(item),
+          separatorBuilder: (_, _) =>
+              const SizedBox(key: ValueKey('sep'), height: 8),
+          itemBuilder:
+              (
+                context,
+                item,
+                index, {
+                bool isSelected = false,
+                bool inSelectionMode = false,
+                VoidCallback? onAvatarTap,
+              }) => Text('Item $item'),
+        ),
+      ),
+    );
+
+    testWidgets('separates rows in an unsectioned list', (tester) async {
+      await tester.pumpWidget(build());
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('sep')), findsNWidgets(2));
+    });
+
+    testWidgets('separates rows within a section', (tester) async {
+      // All three rows in one section → two separators, no header break.
+      await tester.pumpWidget(build(sectionOf: (_) => 'Today'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.byKey(const ValueKey('sep')), findsNWidgets(2));
+    });
+
+    testWidgets('omits the separator directly under a section header', (
+      tester,
+    ) async {
+      // a | b, c → headers before 'a' and 'b'; only b→c gets a separator.
+      await tester.pumpWidget(
+        build(sectionOf: (item) => item == 'a' ? 'Today' : 'Older'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('Older'), findsOneWidget);
+      expect(find.byKey(const ValueKey('sep')), findsOneWidget);
+    });
+  });
+
   group('D3ListScreen sub-header', () {
     testWidgets(
       'no filters and nothing selected → no select-all checkbox is shown',

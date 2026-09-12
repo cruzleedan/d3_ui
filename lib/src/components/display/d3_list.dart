@@ -406,15 +406,22 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
     for (int i = 0; i < widget.items.length; i++) {
       final item = widget.items[i];
 
+      var startsSection = false;
       if (widget.sectionBuilder != null) {
         final section = widget.sectionBuilder!(context, item, i);
         if (section != null && section != lastSection) {
           children.add(_SectionHeader(label: section));
           lastSection = section;
+          startsSection = true;
         }
       }
 
-      if (i > 0 && widget.sectionBuilder == null) {
+      // Separate consecutive rows, but never right after a section header —
+      // the header already provides the break, and a separator under it
+      // reads as a stray line. A sectioned list used to skip separators
+      // entirely, which also dropped the gap *between* rows inside a
+      // section; card-style rows then sat flush against each other.
+      if (i > 0 && !startsSection) {
         children.add(
           widget.separatorBuilder != null
               ? widget.separatorBuilder!(context, i)
