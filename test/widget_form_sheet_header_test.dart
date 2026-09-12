@@ -107,6 +107,39 @@ void main() {
       expect(saves, 0);
     });
 
+    testWidgets('listenable drives the action\'s live loading state', (
+      tester,
+    ) async {
+      // The sheet is built once, so a plain isLoading can't change after
+      // show(). Forms need the header to follow their own save state.
+      final saving = ValueNotifier<bool>(false);
+      addTearDown(saving.dispose);
+
+      await _open(
+        tester,
+        primaryAction: D3FormSheetAction(
+          label: 'Save',
+          onPressed: () {},
+          listenable: saving,
+          isLoadingBuilder: () => saving.value,
+        ),
+      );
+
+      expect(find.text('Save'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+
+      saving.value = true;
+      await tester.pump();
+
+      expect(find.text('Save'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      saving.value = false;
+      await tester.pumpAndSettle();
+
+      expect(find.text('Save'), findsOneWidget);
+    });
+
     testWidgets('a loading action shows a spinner and does not fire', (
       tester,
     ) async {

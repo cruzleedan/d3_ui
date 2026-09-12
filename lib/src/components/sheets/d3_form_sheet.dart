@@ -101,13 +101,30 @@ class D3FormSheet {
 /// Set [enabled] to false to show it dimmed and inert while the form is
 /// incomplete; set [isLoading] to swap it for a spinner while the save is
 /// in flight (taps are ignored in both states).
+///
+/// The sheet is built once, so a plain [enabled]/[isLoading] can't change
+/// afterwards. To drive them from form state, pass [listenable] (e.g. a
+/// `ValueNotifier<bool>` the form updates) along with [enabledBuilder]/
+/// [isLoadingBuilder]; the header then re-reads them whenever it fires.
 class D3FormSheetAction {
   const D3FormSheetAction({
     required this.label,
     required this.onPressed,
     this.enabled = true,
     this.isLoading = false,
+    this.listenable,
+    this.enabledBuilder,
+    this.isLoadingBuilder,
   });
+
+  /// Notifies the header to re-evaluate [enabledBuilder]/[isLoadingBuilder].
+  final Listenable? listenable;
+
+  /// Live replacement for [enabled], re-read on every [listenable] tick.
+  final bool Function()? enabledBuilder;
+
+  /// Live replacement for [isLoading], re-read on every [listenable] tick.
+  final bool Function()? isLoadingBuilder;
 
   /// Button text. Keep it a single word or short phrase — it shares one
   /// header row with the title and Cancel.
@@ -489,7 +506,21 @@ class _PrimaryAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final interactive = action.enabled && !action.isLoading;
+    final listenable = action.listenable;
+    if (listenable != null) {
+      return ListenableBuilder(
+        listenable: listenable,
+        builder: (context, _) => _build(
+          enabled: action.enabledBuilder?.call() ?? action.enabled,
+          isLoading: action.isLoadingBuilder?.call() ?? action.isLoading,
+        ),
+      );
+    }
+    return _build(enabled: action.enabled, isLoading: action.isLoading);
+  }
+
+  Widget _build({required bool enabled, required bool isLoading}) {
+    final interactive = enabled && !isLoading;
 
     return Semantics(
       button: true,
@@ -500,7 +531,7 @@ class _PrimaryAction extends StatelessWidget {
         onTap: interactive ? action.onPressed : null,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: action.isLoading
+          child: isLoading
               // Sized to the text it replaces so the header doesn't resize
               // when a save starts.
               ? SizedBox(
@@ -516,7 +547,7 @@ class _PrimaryAction extends StatelessWidget {
                   style: TextStyle(
                     fontSize: D3TypeScale.titleMdSize,
                     fontWeight: FontWeight.w600,
-                    color: action.enabled
+                    color: enabled
                         ? colors.primary
                         : colors.onSurfaceVariant.withValues(alpha: 0.4),
                   ),
