@@ -154,6 +154,15 @@ parts.
   trailing-aligned, not floating mid-form. For a `D3Screen` styled as a
   modal/sheet, prefer `D3ScreenAction.text('Save', onPressed: ...)` in the
   trailing app-bar slot over a body-embedded button.
+- **In a `D3FormSheet`, put the confirming action in the header** via
+  `primaryAction: D3FormSheetAction(label: 'Save', ...)` rather than a
+  full-width button at the bottom of the form body. Cancel then moves to
+  the header's leading side automatically, giving every form sheet the
+  same leading/trailing shape `D3Screen` already uses. Use `enabled` to
+  gate it on a valid form and `isLoading` while the save is in flight;
+  the action does **not** close the sheet itself, so call
+  `D3FormSheet.pop` once the save succeeds and a failed save can leave
+  the form open with the user's input intact.
 - **Required fields:** mark visually (e.g. `D3TextField`'s built-in
   required/label handling) rather than relying on a submit-time error
   alone to communicate that a field is mandatory.

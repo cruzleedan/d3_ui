@@ -57,11 +57,18 @@ class D3FormSheet {
   /// tap, back gesture). Return `true` to allow closing, `false` to
   /// cancel. When null, the sheet closes immediately — same contract as
   /// [D3BottomSheet.show].
+  ///
+  /// [primaryAction] puts the form's confirming action ("Save", "Add") in
+  /// the header's trailing slot and moves Cancel to the leading side,
+  /// matching [D3Screen]'s own leading/trailing convention. Prefer it over
+  /// a full-width button at the bottom of the form body. Omit it and the
+  /// header keeps its Cancel-only shape, so existing sheets are unaffected.
   static Future<T?> show<T>(
     BuildContext context, {
     String? title,
     String? subtitle,
     Widget? headerAction,
+    D3FormSheetAction? primaryAction,
     required Widget child,
     double maxHeightFraction = 0.9,
     Future<bool> Function()? onConfirmDiscard,
@@ -78,12 +85,45 @@ class D3FormSheet {
         title: title,
         subtitle: subtitle,
         headerAction: headerAction,
+        primaryAction: primaryAction,
         maxHeightFraction: maxHeightFraction,
         onConfirmDiscard: onConfirmDiscard,
         child: child,
       ),
     );
   }
+}
+
+/// The confirming action in a [D3FormSheet]'s header — "Save", "Add",
+/// "Done". Rendered in the trailing slot, where [D3Screen] puts a screen's
+/// primary action.
+///
+/// Set [enabled] to false to show it dimmed and inert while the form is
+/// incomplete; set [isLoading] to swap it for a spinner while the save is
+/// in flight (taps are ignored in both states).
+class D3FormSheetAction {
+  const D3FormSheetAction({
+    required this.label,
+    required this.onPressed,
+    this.enabled = true,
+    this.isLoading = false,
+  });
+
+  /// Button text. Keep it a single word or short phrase — it shares one
+  /// header row with the title and Cancel.
+  final String label;
+
+  /// Called on tap. Ignored while [enabled] is false or [isLoading] is true.
+  ///
+  /// This does not close the sheet: call [D3FormSheet.pop] from here once
+  /// the save succeeds, so a failed save can keep the form open.
+  final VoidCallback onPressed;
+
+  /// Whether the action can be invoked. False renders it dimmed.
+  final bool enabled;
+
+  /// Whether a save is in flight. Replaces the label with a spinner.
+  final bool isLoading;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -111,6 +151,7 @@ class _D3FormSheetContent<T> extends StatefulWidget {
     this.title,
     this.subtitle,
     this.headerAction,
+    this.primaryAction,
     required this.maxHeightFraction,
     this.onConfirmDiscard,
     required this.child,
@@ -119,6 +160,7 @@ class _D3FormSheetContent<T> extends StatefulWidget {
   final String? title;
   final String? subtitle;
   final Widget? headerAction;
+  final D3FormSheetAction? primaryAction;
   final double maxHeightFraction;
   final Future<bool> Function()? onConfirmDiscard;
   final Widget child;
@@ -194,6 +236,7 @@ class _D3FormSheetContentState<T> extends State<_D3FormSheetContent<T>> {
               title: widget.title,
               subtitle: widget.subtitle,
               headerAction: widget.headerAction,
+              primaryAction: widget.primaryAction,
               onClose: _tryClose,
               child: widget.child,
             ),
@@ -214,6 +257,7 @@ class _FormSheetSurface extends StatelessWidget {
     this.title,
     this.subtitle,
     this.headerAction,
+    this.primaryAction,
     required this.onClose,
     required this.child,
   });
@@ -222,6 +266,7 @@ class _FormSheetSurface extends StatelessWidget {
   final String? title;
   final String? subtitle;
   final Widget? headerAction;
+  final D3FormSheetAction? primaryAction;
   final VoidCallback onClose;
   final Widget child;
 
@@ -253,6 +298,7 @@ class _FormSheetSurface extends StatelessWidget {
               title: title,
               subtitle: subtitle,
               headerAction: headerAction,
+              primaryAction: primaryAction,
               colors: colors,
               onClose: onClose,
             ),
@@ -317,6 +363,7 @@ class _FormSheetHeader extends StatelessWidget {
     this.title,
     this.subtitle,
     this.headerAction,
+    this.primaryAction,
     required this.colors,
     required this.onClose,
   });
@@ -324,6 +371,7 @@ class _FormSheetHeader extends StatelessWidget {
   final String? title;
   final String? subtitle;
   final Widget? headerAction;
+  final D3FormSheetAction? primaryAction;
   final D3ColorTokens colors;
   final VoidCallback onClose;
 
@@ -376,16 +424,27 @@ class _FormSheetHeader extends StatelessWidget {
                 ],
               ),
             ),
+          // With a primary action present, the header takes D3Screen's
+          // leading/trailing shape — Cancel leads, the confirming action
+          // trails. Without one it keeps its original Cancel-on-the-right
+          // form, so sheets that haven't adopted primaryAction are
+          // untouched. See root context/work/0044.
           if (headerAction != null)
             Align(
-              alignment: Alignment.centerLeft,
+              alignment: primaryAction != null
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
               child: Padding(
-                padding: const EdgeInsets.only(left: 12),
+                padding: primaryAction != null
+                    ? const EdgeInsets.only(right: 12)
+                    : const EdgeInsets.only(left: 12),
                 child: headerAction!,
               ),
             ),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: primaryAction != null
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
             child: Semantics(
               button: true,
               label: 'Cancel',
@@ -409,7 +468,60 @@ class _FormSheetHeader extends StatelessWidget {
               ),
             ),
           ),
+          if (primaryAction != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: _PrimaryAction(action: primaryAction!, colors: colors),
+            ),
         ],
+      ),
+    );
+  }
+}
+
+// The header's trailing confirm button. Weightier than Cancel (semibold vs.
+// regular) so the two read as primary/secondary rather than as a pair.
+class _PrimaryAction extends StatelessWidget {
+  const _PrimaryAction({required this.action, required this.colors});
+
+  final D3FormSheetAction action;
+  final D3ColorTokens colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final interactive = action.enabled && !action.isLoading;
+
+    return Semantics(
+      button: true,
+      enabled: interactive,
+      label: action.label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: interactive ? action.onPressed : null,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: action.isLoading
+              // Sized to the text it replaces so the header doesn't resize
+              // when a save starts.
+              ? SizedBox(
+                  width: D3TypeScale.titleMdSize,
+                  height: D3TypeScale.titleMdSize,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colors.primary,
+                  ),
+                )
+              : Text(
+                  action.label,
+                  style: TextStyle(
+                    fontSize: D3TypeScale.titleMdSize,
+                    fontWeight: FontWeight.w600,
+                    color: action.enabled
+                        ? colors.primary
+                        : colors.onSurfaceVariant.withValues(alpha: 0.4),
+                  ),
+                ),
+        ),
       ),
     );
   }
