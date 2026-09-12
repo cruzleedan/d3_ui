@@ -108,6 +108,36 @@ action bar for the common "list of records" screen shape — reach for it
 before hand-building a list screen from `D3Screen` + `ListView` + loose
 parts.
 
+## Multi-select rows
+
+- **The selection indicator replaces a row's existing leading widget in
+  place — it is never added beside the row.** Use `D3SelectionLeading`,
+  passing the row's normal leading widget (an avatar, an icon) as its
+  `child` and that widget's own dimension as `size`. Entering selection
+  mode then changes only what sits inside the leading slot; the card's
+  width and everything inside it stay exactly where they were. The
+  tempting alternative — wrapping the card in an outer `Row` with a
+  `D3SelectCircle` beside it and the card in an `Expanded` — shrinks the
+  card and reflows every element inside it the moment selection starts,
+  which reads as a lot of simultaneous movement for what is conceptually
+  one small state change.
+- **A row with no leading widget to repurpose should make space for one
+  rather than wrapping from outside** — pass a same-sized placeholder as
+  `child`. Keeping the indicator inside the card's own bounds is the
+  property that matters; repurposing an avatar is just the neatest case.
+- **Selection changes only via the indicator or a long-press — never a
+  tap on the row body.** Long-press starts (and extends) a selection;
+  tapping the indicator adds or removes that one row. `D3SelectionLeading`
+  wires this through its `onToggle` — hand it the `onAvatarTap` callback
+  `D3List` already passes to `itemBuilder`.
+- **A row's own `onTap` keeps working during selection.** Point the card's
+  `onTap` at its normal behavior (opening the record) and leave it wired
+  in both modes — don't branch it on `inSelectionMode`, and never point it
+  at the selection toggle. This is a deliberate departure from the common
+  platform convention where a body tap toggles: a tap that silently drops
+  a selection the user has been assembling is the more costly surprise,
+  and the indicator gives them an unambiguous target for changing it.
+
 ## Forms
 
 - **Validation timing: `D3ValidationMode.onBlurThenChange`** (the default
@@ -124,6 +154,15 @@ parts.
   trailing-aligned, not floating mid-form. For a `D3Screen` styled as a
   modal/sheet, prefer `D3ScreenAction.text('Save', onPressed: ...)` in the
   trailing app-bar slot over a body-embedded button.
+- **In a `D3FormSheet`, put the confirming action in the header** via
+  `primaryAction: D3FormSheetAction(label: 'Save', ...)` rather than a
+  full-width button at the bottom of the form body. Cancel then moves to
+  the header's leading side automatically, giving every form sheet the
+  same leading/trailing shape `D3Screen` already uses. Use `enabled` to
+  gate it on a valid form and `isLoading` while the save is in flight;
+  the action does **not** close the sheet itself, so call
+  `D3FormSheet.pop` once the save succeeds and a failed save can leave
+  the form open with the user's input intact.
 - **Required fields:** mark visually (e.g. `D3TextField`'s built-in
   required/label handling) rather than relying on a submit-time error
   alone to communicate that a field is mandatory.

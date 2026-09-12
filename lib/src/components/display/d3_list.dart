@@ -137,6 +137,20 @@ class D3List<T> extends StatefulWidget {
        );
 
   final List<T> items;
+
+  /// Builds one row.
+  ///
+  /// While [selectable] is on, the row is handed its own selection state
+  /// plus `onAvatarTap` — a callback that toggles this row's selection,
+  /// non-null only in selection mode.
+  ///
+  /// **`onAvatarTap` is for the selection indicator alone** (see
+  /// [D3SelectionLeading], which takes it as `onToggle`). Selection is
+  /// changed only by that indicator or by a long-press — tapping a row's
+  /// body does *not* toggle it. So keep the card's own `onTap` pointed at
+  /// its normal behavior (opening the record) and leave it working during
+  /// selection: a tap on the card should do what the card says it does,
+  /// not silently drop the user's selection.
   final Widget Function(
     BuildContext context,
     T item,
@@ -305,7 +319,10 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
     widget.onSelectionChanged?.call(next);
   }
 
-  void _onTap(T item) {
+  // Toggles one row's selection. Reached only through the row's selection
+  // indicator (handed to `itemBuilder` as `onAvatarTap`) — never from a tap
+  // on the row body, which belongs to the row's own card.
+  void _toggleSelection(T item) {
     if (!widget._inSelectionMode) return;
     final id = widget.getItemId!(item);
     HapticFeedback.selectionClick();
@@ -389,15 +406,22 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
     for (int i = 0; i < widget.items.length; i++) {
       final item = widget.items[i];
 
+      var startsSection = false;
       if (widget.sectionBuilder != null) {
         final section = widget.sectionBuilder!(context, item, i);
         if (section != null && section != lastSection) {
           children.add(_SectionHeader(label: section));
           lastSection = section;
+          startsSection = true;
         }
       }
 
-      if (i > 0 && widget.sectionBuilder == null) {
+      // Separate consecutive rows, but never right after a section header —
+      // the header already provides the break, and a separator under it
+      // reads as a stray line. A sectioned list used to skip separators
+      // entirely, which also dropped the gap *between* rows inside a
+      // section; card-style rows then sat flush against each other.
+      if (i > 0 && !startsSection) {
         children.add(
           widget.separatorBuilder != null
               ? widget.separatorBuilder!(context, i)
@@ -414,14 +438,15 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
           i,
           isSelected: isSelected,
           inSelectionMode: widget._inSelectionMode,
-          onAvatarTap: widget._inSelectionMode ? () => _onTap(item) : null,
+          onAvatarTap: widget._inSelectionMode
+              ? () => _toggleSelection(item)
+              : null,
         );
         children.add(
           _SelectableWrapper(
             key: ValueKey(id),
             isSelected: isSelected,
             inSelectionMode: widget._inSelectionMode,
-            onTap: () => _onTap(item),
             onLongPress: () => _onLongPress(item),
             child: built,
           ),
@@ -445,7 +470,8 @@ class _D3ListState<T> extends State<D3List<T>> implements _D3ListActions {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // _SelectableWrapper
-// Wraps an item with a leading animated checkbox and selection highlight.
+// Adds long-press-to-select and the press-scale feedback to a row. Body taps
+// are deliberately left to the row's own card — see build().
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SelectableWrapper extends StatefulWidget {
@@ -453,14 +479,12 @@ class _SelectableWrapper extends StatefulWidget {
     super.key,
     required this.isSelected,
     required this.inSelectionMode,
-    required this.onTap,
     required this.onLongPress,
     required this.child,
   });
 
   final bool isSelected;
   final bool inSelectionMode;
-  final VoidCallback onTap;
   final VoidCallback onLongPress;
   final Widget child;
 
@@ -499,8 +523,16 @@ class _SelectableWrapperState extends State<_SelectableWrapper>
 
   @override
   Widget build(BuildContext context) {
+    // This wrapper deliberately does NOT toggle selection on a body tap.
+    // Selection changes only via the row's selection indicator
+    // (D3SelectionLeading, wired to `onAvatarTap`) or a long-press, so a
+    // tap on the card keeps doing what the card says it does — opening the
+    // record — and doesn't silently drop the user's selection. See root
+    // context/work/0043, whose original "two handlers both fire" diagnosis
+    // was disproved: the card's InkWell and this detector compete in one
+    // gesture arena and only the innermost wins, so a tap always toggled
+    // exactly once. The complaint was that it toggled *at all*.
     return GestureDetector(
-      onTap: widget.inSelectionMode ? widget.onTap : null,
       onLongPressStart: (_) {
         if (!widget.inSelectionMode) _pressCtrl.forward();
       },
@@ -519,19 +551,32 @@ class _SelectableWrapperState extends State<_SelectableWrapper>
 
 /// A circular check indicator used as a leading widget in selectable list items.
 ///
-/// Drop it directly into any card's leading slot. Toggle [filled] to animate
-/// between the empty ring (not selected) and filled check (selected) states
-/// using [AnimatedSwitcher] in the parent.
+/// Prefer [D3SelectionLeading] over placing this directly: it swaps a row's
+/// existing leading widget (an avatar, an icon) for this circle *in place*,
+/// at matching size, so entering selection mode doesn't resize the row. Use
+/// [D3SelectCircle] on its own only when there is no existing leading widget
+/// to repurpose.
+///
+/// [size] should match whatever the circle stands in for — a [D3Avatar] at
+/// [D3AvatarSize.md] is 40dp, not the 32dp default.
 class D3SelectCircle extends StatelessWidget {
-  const D3SelectCircle({super.key, required this.filled, required this.colors});
+  const D3SelectCircle({
+    super.key,
+    required this.filled,
+    required this.colors,
+    this.size = 32,
+  });
   final bool filled;
   final D3ColorTokens colors;
+
+  /// Outer diameter. Defaults to 32dp; match the widget being replaced.
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 32,
-      height: 32,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: filled ? colors.primary : Colors.transparent,
@@ -541,8 +586,101 @@ class D3SelectCircle extends StatelessWidget {
         ),
       ),
       child: filled
-          ? Icon(Icons.check_rounded, size: 16, color: colors.onPrimary)
+          // Scales with the circle so a 40dp circle doesn't get a check
+          // sized for a 32dp one.
+          ? Icon(Icons.check_rounded, size: size / 2, color: colors.onPrimary)
           : null,
+    );
+  }
+}
+
+/// Swaps a row's existing leading widget for a [D3SelectCircle] while the
+/// list is in selection mode, in place and at the same size — so entering
+/// selection mode changes only what's inside the leading slot, never the
+/// row's own width or layout.
+///
+/// This is the supported way to render a selection indicator on a list row.
+/// The alternative consumers tend to reach for — wrapping the whole card in
+/// an outer `Row` with the circle beside it — resizes the card and reflows
+/// everything inside it the instant selection begins, which reads as a lot
+/// of simultaneous movement.
+///
+/// Pass the row's normal leading widget as [child]; it is shown whenever
+/// [inSelectionMode] is false. [size] must match that widget's own
+/// dimensions (`D3AvatarSize.md.dimension` for a medium `D3Avatar`).
+///
+/// Tapping the indicator toggles selection via [onToggle], giving the user a
+/// way to unselect a row without relying on the row's own tap handler.
+///
+/// ```dart
+/// D3SelectionLeading(
+///   inSelectionMode: inSelectionMode,
+///   isSelected: isSelected,
+///   onToggle: onAvatarTap,
+///   size: D3AvatarSize.md.dimension,
+///   child: D3Avatar(name: project.name, size: D3AvatarSize.md),
+/// )
+/// ```
+///
+/// When a row has no leading widget to repurpose, pass a same-sized
+/// placeholder (e.g. `SizedBox.square(dimension: size)`) as [child] rather
+/// than wrapping the card from outside.
+class D3SelectionLeading extends StatelessWidget {
+  const D3SelectionLeading({
+    super.key,
+    required this.inSelectionMode,
+    required this.isSelected,
+    required this.child,
+    required this.size,
+    this.onToggle,
+  });
+
+  /// Whether the list is currently in selection mode.
+  final bool inSelectionMode;
+
+  /// Whether this row is selected. Drives the circle's filled state.
+  final bool isSelected;
+
+  /// The row's normal leading widget, shown when not selecting.
+  final Widget child;
+
+  /// Diameter of both states. Match [child]'s own size to keep the swap
+  /// from changing the row's layout.
+  final double size;
+
+  /// Toggles this row's selection. Usually the `onAvatarTap` callback
+  /// [D3List] hands to `itemBuilder`.
+  final VoidCallback? onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.d3Colors;
+
+    final Widget current = inSelectionMode
+        ? GestureDetector(
+            key: ValueKey(isSelected ? 'selected' : 'unselected'),
+            onTap: onToggle,
+            behavior: HitTestBehavior.opaque,
+            child: D3SelectCircle(
+              filled: isSelected,
+              colors: colors,
+              size: size,
+            ),
+          )
+        : KeyedSubtree(key: const ValueKey('leading'), child: child);
+
+    return SizedBox.square(
+      dimension: size,
+      child: AnimatedSwitcher(
+        duration: D3Motion.fast,
+        switchInCurve: D3Motion.standard,
+        switchOutCurve: D3Motion.standard,
+        transitionBuilder: (child, anim) => ScaleTransition(
+          scale: anim,
+          child: FadeTransition(opacity: anim, child: child),
+        ),
+        child: current,
+      ),
     );
   }
 }

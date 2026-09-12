@@ -322,30 +322,36 @@ class _PositionedFabAction extends StatelessWidget {
         ignoring: progress.value == 0,
         child: Opacity(
           opacity: t,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: D3Spacing.s10,
-                  vertical: D3Spacing.s6,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainer,
-                  borderRadius: D3Radius.circularSm,
-                ),
-                child: Text(
-                  action.label,
-                  style: TextStyle(fontSize: 12, color: colors.onSurface),
-                ),
-              ),
-              const SizedBox(width: D3Spacing.s8),
-              Semantics(
-                button: true,
-                label: action.label,
-                child: GestureDetector(
-                  onTap: onPressed,
-                  child: Container(
+          // The label and the icon circle are one tap target, not two. The
+          // label reads as part of the action — pointing at it and having
+          // nothing happen is the obvious way to get this wrong, so the
+          // whole row (and the gap between them) is tappable. See root
+          // context/work/0045.
+          child: Semantics(
+            button: true,
+            label: action.label,
+            child: GestureDetector(
+              onTap: onPressed,
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: D3Spacing.s10,
+                      vertical: D3Spacing.s6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.surfaceContainer,
+                      borderRadius: D3Radius.circularSm,
+                    ),
+                    child: Text(
+                      action.label,
+                      style: TextStyle(fontSize: 12, color: colors.onSurface),
+                    ),
+                  ),
+                  const SizedBox(width: D3Spacing.s8),
+                  Container(
                     width: circleSize,
                     height: circleSize,
                     decoration: BoxDecoration(
@@ -359,9 +365,9 @@ class _PositionedFabAction extends StatelessWidget {
                       size: 20,
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
