@@ -271,12 +271,19 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
       colors: colors,
     );
 
-    // Sub-header: single fixed-height row, content morphs between modes.
-    // Left: select-all checkbox. Right: active filter pill. The search
-    // icon lives in the title bar itself (below), not here — Material
+    // Sub-header: single fixed-height row. Left: select-all checkbox
+    // (selection mode only). Right: active filter pill. The search icon
+    // lives in the title bar itself (below), not here — Material
     // convention puts a screen's primary search action inline with the
     // title, trailing end, not in a secondary row underneath it.
-    // Nothing here changes size — zero layout shift.
+    //
+    // Rendered only when it has something to show: a filter pill, or the
+    // select-all control while selecting. A list screen with neither gets
+    // its 48dp back rather than reserving the row permanently. Entering
+    // selection mode on such a screen therefore shifts the list down by
+    // 48dp — a deliberate trade, see root context/work/0041.
+    final hasFilters = widget.filterOptions.isNotEmpty;
+    final showSubHeader = hasFilters || _inSelectionMode;
     final subHeader = _SubHeaderRow<T, F>(
       inSelectionMode: _inSelectionMode,
       selectedCount: _selectedIds.length,
@@ -312,7 +319,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
       floatingActionButtonLocation: widget.floatingActionButtonLocation,
       bottomNavigationBar: widget.bottomNavigationBar,
       titleBarOverride: _inSelectionMode ? cab : null,
-      headerSlot: subHeader,
+      headerSlot: showSubHeader ? subHeader : null,
       body: Column(
         children: [
           searchAnchor,
@@ -489,11 +496,16 @@ class _BarLabeledButton extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // _SubHeaderRow
 // Fixed-height row below the title bar. Content morphs between modes:
-//   Normal:    [select-all checkbox]  ────────────────────  [filter pill]
-//   Selection: [select-all checkbox (active)]  ───────────────────────────────
-// Height never changes → zero layout shift. The search icon lives in the
-// title bar itself (D3Screen's own `actions`, trailing/outermost-right per
-// Material convention), not here — see D3ListScreen.build().
+//   Normal:    ──────────────────────────────────────────  [filter pill]
+//   Selection: [select-all checkbox + label]  ─────────────────────────────────
+// The select-all control appears only while selecting; D3ListScreen omits
+// this row entirely when there are no filter options and nothing is
+// selected, so a plain list screen doesn't pay 48dp for an empty row.
+// Height is constant *while shown* — the shift happens on show/hide, which
+// root context/work/0041 accepted in exchange for the reclaimed space.
+// The search icon lives in the title bar itself (D3Screen's own `actions`,
+// trailing/outermost-right per Material convention), not here — see
+// D3ListScreen.build().
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SubHeaderRow<T, F> extends StatefulWidget {
@@ -633,44 +645,40 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
         child: Row(
           children: [
             // ── Select-all (full-height tap target) ───────────────────────
-            GestureDetector(
-              onTap: widget.inSelectionMode
-                  ? (_allSelected ? widget.onClearAll : widget.onSelectAll)
-                  : null,
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: checkboxLeft,
-                  right: D3Spacing.s16,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: D3Motion.fast,
-                      transitionBuilder: (child, anim) =>
-                          ScaleTransition(scale: anim, child: child),
-                      child: _allSelected
-                          ? Icon(
-                              key: const ValueKey('checked'),
-                              Icons.check_box_rounded,
-                              size: 20,
-                              color: colors.primary,
-                            )
-                          : Icon(
-                              key: const ValueKey('unchecked'),
-                              Icons.check_box_outline_blank_rounded,
-                              size: 20,
-                              color: widget.inSelectionMode
-                                  ? colors.onSurfaceVariant
-                                  : colors.onSurfaceVariant.withValues(
-                                      alpha: 0.25,
-                                    ),
-                            ),
-                    ),
-                    // Label only shown in selection mode
-                    if (widget.inSelectionMode) ...[
-                      SizedBox(width: textGap),
+            // Selection mode only. Outside it there is nothing to select
+            // all *of* yet, and a permanently-visible dimmed checkbox reads
+            // as a real-but-broken control — see root context/work/0041.
+            if (widget.inSelectionMode)
+              GestureDetector(
+                onTap: _allSelected ? widget.onClearAll : widget.onSelectAll,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: checkboxLeft,
+                    right: D3Spacing.s16,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedSwitcher(
+                        duration: D3Motion.fast,
+                        transitionBuilder: (child, anim) =>
+                            ScaleTransition(scale: anim, child: child),
+                        child: _allSelected
+                            ? Icon(
+                                key: const ValueKey('checked'),
+                                Icons.check_box_rounded,
+                                size: 20,
+                                color: colors.primary,
+                              )
+                            : Icon(
+                                key: const ValueKey('unchecked'),
+                                Icons.check_box_outline_blank_rounded,
+                                size: 20,
+                                color: colors.onSurfaceVariant,
+                              ),
+                      ),
+                      const SizedBox(width: textGap),
                       AnimatedSwitcher(
                         duration: D3Motion.fast,
                         transitionBuilder: (child, anim) =>
@@ -686,10 +694,13 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              )
+            else
+              // Keeps the filter pill on the trailing edge when the
+              // select-all control isn't present.
+              const SizedBox(width: D3Spacing.s16),
 
             const Spacer(),
 
