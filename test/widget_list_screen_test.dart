@@ -118,8 +118,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Select all'), findsOneWidget);
 
-      // Tapping the only selected row clears the selection.
-      await tester.tap(find.text('Item a'));
+      // The CAB's close button clears the selection. (A tap on the row
+      // body deliberately does not — see root context/work/0043.)
+      await tester.tap(find.byIcon(Icons.close_rounded));
       await tester.pumpAndSettle();
 
       expect(_selectAllCheckbox, findsNothing);
