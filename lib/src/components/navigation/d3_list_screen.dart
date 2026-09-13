@@ -147,17 +147,28 @@ class D3ListScreen<T, F> extends StatefulWidget {
   final ValueChanged<String>? onSearchChanged;
 
   /// Filters [items] synchronously given a text query and the active filter
-  /// set. Used inside the search page to keep results live as the user types
-  /// or changes filter chips. When null, no in-page filtering is applied
-  /// (items are shown as-is, which is only correct if [onSearchChanged] +
-  /// [onFiltersChanged] already update [items] via an external state manager).
+  /// set. The main list calls this with an empty query, and the search page
+  /// calls it as the user types or changes filter chips. Both paths receive
+  /// the original [items] collection rather than an already-filtered subset.
+  ///
+  /// When null, no local filtering is applied. Callers can instead update
+  /// [items] through [onSearchChanged] and [onFiltersChanged].
   final List<T> Function(List<T> items, String query, Set<F> activeFilters)?
   filterItems;
 
   // ── Filters ─────────────────────────────────────────────────────────────────
   final List<D3FilterOption<F>> filterOptions;
+
+  /// The caller-supplied active filters. Non-empty values take precedence over
+  /// [defaultFilters] when the screen initializes. Later changes from the
+  /// caller are synchronized into the screen's effective filter state.
   final Set<F> activeFilters;
+
+  /// Initial filters used when [activeFilters] is empty.
   final Set<F>? defaultFilters;
+
+  /// Notified after a filter change. This callback is optional because a
+  /// screen with [filterItems] can manage transient filter state locally.
   final ValueChanged<Set<F>>? onFiltersChanged;
   final bool multiSelectFilters;
 
@@ -183,6 +194,25 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
   bool get _inSelectionMode => _selectedIds.isNotEmpty;
 
   final _searchCtrl = D3SearchController();
+  late Set<F> _activeFilters;
+
+  @override
+  void initState() {
+    super.initState();
+    _activeFilters = _initialFilters(widget);
+  }
+
+  @override
+  void didUpdateWidget(D3ListScreen<T, F> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final activeFiltersChanged = !_sameSet(
+      oldWidget.activeFilters,
+      widget.activeFilters,
+    );
+    if (activeFiltersChanged) {
+      _activeFilters = Set<F>.from(widget.activeFilters);
+    }
+  }
 
   @override
   void dispose() {
@@ -194,6 +224,24 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
     setState(() => _selectedIds = ids);
   }
 
+  Set<F> _initialFilters(D3ListScreen<T, F> source) => Set<F>.from(
+    source.activeFilters.isNotEmpty
+        ? source.activeFilters
+        : source.defaultFilters ?? <F>{},
+  );
+
+  bool _sameSet(Set<F> first, Set<F> second) =>
+      first.length == second.length && first.every(second.contains);
+
+  List<T> _visibleItems() =>
+      widget.filterItems?.call(widget.items, '', _activeFilters) ??
+      widget.items;
+
+  void _onFiltersChanged(Set<F> filters) {
+    setState(() => _activeFilters = Set<F>.from(filters));
+    widget.onFiltersChanged?.call(filters);
+  }
+
   void _clearSelection() {
     HapticFeedback.lightImpact();
     _onSelectionChanged({});
@@ -201,7 +249,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
 
   void _selectAll() {
     HapticFeedback.lightImpact();
-    final all = widget.items.map(widget.getItemId).toSet();
+    final all = _visibleItems().map(widget.getItemId).toSet();
     _onSelectionChanged(all);
   }
 
@@ -210,6 +258,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
+    final visibleItems = _visibleItems();
 
     // Search anchor — hidden (zero size), opened programmatically via _searchCtrl.
     final searchAnchor = SizedBox.shrink(
@@ -238,15 +287,15 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
           padding: widget.padding,
         ),
         filterOptions: widget.filterOptions,
-        activeFilters: widget.activeFilters,
+        activeFilters: _activeFilters,
         defaultFilters: widget.defaultFilters,
-        onFiltersChanged: widget.onFiltersChanged,
+        onFiltersChanged: _onFiltersChanged,
         multiSelectFilters: widget.multiSelectFilters,
       ),
     );
 
     final list = D3List<T>(
-      items: widget.items,
+      items: visibleItems,
       isLoading: widget.isLoading,
       itemBuilder: widget.itemBuilder,
       getItemId: widget.getItemId,
@@ -287,13 +336,13 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
     final subHeader = _SubHeaderRow<T, F>(
       inSelectionMode: _inSelectionMode,
       selectedCount: _selectedIds.length,
-      totalCount: widget.items.length,
+      totalCount: visibleItems.length,
       onSelectAll: _selectAll,
       onClearAll: _clearSelection,
       filterOptions: widget.filterOptions,
-      activeFilters: widget.activeFilters,
+      activeFilters: _activeFilters,
       defaultFilters: widget.defaultFilters,
-      onFiltersChanged: widget.onFiltersChanged,
+      onFiltersChanged: _onFiltersChanged,
       colors: colors,
     );
 
@@ -561,7 +610,7 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
   }
 
   void _openFilterMenu() {
-    if (widget.filterOptions.isEmpty || widget.onFiltersChanged == null) return;
+    if (widget.filterOptions.isEmpty) return;
     final box = _pillKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return;
     final offset = box.localToGlobal(Offset.zero);
@@ -612,7 +661,9 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
       color: colors.surfaceContainerHigh,
       elevation: 3,
     ).then((selected) {
-      if (selected != null) widget.onFiltersChanged!({selected});
+      if (mounted && selected != null) {
+        widget.onFiltersChanged?.call({selected});
+      }
     });
   }
 
@@ -739,6 +790,14 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
+                                  Icon(
+                                    Icons.filter_list_rounded,
+                                    size: 14,
+                                    color: isFiltered
+                                        ? colors.primary
+                                        : colors.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: D3Spacing.s4),
                                   Text(
                                     activeLabel ??
                                         widget.filterOptions.first.label,
@@ -764,7 +823,6 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
                           ),
                         ),
                       ),
-
                   ],
                 ),
               ),
