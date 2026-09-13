@@ -443,7 +443,9 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
     _results = List<T>.from(widget.initialItems);
     _textController.addListener(_onTextChanged);
 
-    if (widget.initialQuery.isNotEmpty) {
+    // Local results must respect the initial filters even before any typing
+    // or chip tap. Keep the full initialItems available for later changes.
+    if (widget.isLocal || widget.initialQuery.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (widget.isLocal) {
