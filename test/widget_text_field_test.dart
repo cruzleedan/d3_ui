@@ -12,6 +12,63 @@ Widget _wrap(Widget child) {
 
 void main() {
   group('D3TextField', () {
+    testWidgets('suffix buttons respond across their 48 dp tap targets', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(const D3TextField(label: 'Password', obscureText: true)),
+      );
+
+      for (final offset in [
+        const Offset(-22, -22),
+        const Offset(22, -22),
+        const Offset(-22, 22),
+        const Offset(22, 22),
+      ]) {
+        await tester.enterText(find.byType(TextField), 'secret');
+        await tester.pumpAndSettle();
+
+        final clearButton = find
+            .ancestor(
+              of: find.byIcon(Icons.close_rounded),
+              matching: find.byType(GestureDetector),
+            )
+            .first;
+        final visibilityButton = find
+            .ancestor(
+              of: find.byIcon(Icons.visibility_outlined),
+              matching: find.byType(GestureDetector),
+            )
+            .first;
+        final clearRect = tester.getRect(clearButton);
+        final visibilityRect = tester.getRect(visibilityButton);
+        for (final rect in [clearRect, visibilityRect]) {
+          expect(rect.width, greaterThanOrEqualTo(48));
+          expect(rect.height, greaterThanOrEqualTo(48));
+        }
+        expect(clearRect.overlaps(visibilityRect), isFalse);
+
+        await tester.tapAt(visibilityRect.center + offset);
+        await tester.pump();
+        expect(
+          tester.widget<TextField>(find.byType(TextField)).obscureText,
+          isFalse,
+        );
+        await tester.tapAt(visibilityRect.center + offset);
+        await tester.pump();
+        expect(
+          tester.widget<TextField>(find.byType(TextField)).obscureText,
+          isTrue,
+        );
+
+        await tester.tapAt(clearRect.center + offset);
+        await tester.pump();
+        final field = tester.widget<TextField>(find.byType(TextField));
+        expect(field.controller!.text, isEmpty);
+        expect(field.focusNode!.hasFocus, isTrue);
+      }
+    });
+
     testWidgets('renders label and hint text', (tester) async {
       await tester.pumpWidget(
         _wrap(const D3TextField(label: 'Email', hintText: 'you@example.com')),
@@ -29,7 +86,9 @@ void main() {
       expect(lastValue, 'Dan');
     });
 
-    testWidgets('shows clear button only when focused with text', (tester) async {
+    testWidgets('shows clear button only when focused with text', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const D3TextField(label: 'Name')));
 
       // Idle, empty: no clear button.
@@ -108,7 +167,9 @@ void main() {
       expect(find.text('Required'), findsOneWidget);
     });
 
-    testWidgets('validate() can be called imperatively via GlobalKey', (tester) async {
+    testWidgets('validate() can be called imperatively via GlobalKey', (
+      tester,
+    ) async {
       final key = GlobalKey<D3TextFieldState>();
       await tester.pumpWidget(
         _wrap(
@@ -126,11 +187,11 @@ void main() {
       expect(find.text('Required'), findsOneWidget);
     });
 
-    testWidgets('disposes an owned controller but not an external one', (tester) async {
+    testWidgets('disposes an owned controller but not an external one', (
+      tester,
+    ) async {
       final externalController = TextEditingController();
-      await tester.pumpWidget(
-        _wrap(const D3TextField(label: 'Owned')),
-      );
+      await tester.pumpWidget(_wrap(const D3TextField(label: 'Owned')));
       // Remove the owned-controller field — should not throw.
       await tester.pumpWidget(_wrap(const SizedBox()));
 

@@ -560,20 +560,27 @@ class D3TextFieldState extends State<D3TextField>
               setState(() => _validationError = null);
               _focusNode.requestFocus();
             },
-            child: Padding(
-              padding: const EdgeInsets.all(13),
-              child: Container(
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.15),
-                ),
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.close_rounded,
-                  size: 12,
-                  color: colors.onSurfaceVariant,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minWidth: kMinInteractiveDimension,
+                minHeight: kMinInteractiveDimension,
+              ),
+              child: Center(
+                widthFactor: 1,
+                heightFactor: 1,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colors.onSurfaceVariant.withValues(alpha: 0.15),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 12,
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
@@ -605,13 +612,24 @@ class D3TextFieldState extends State<D3TextField>
     if (widget.obscureText) {
       parts.add(
         GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () => setState(() => _obscured = !_obscured),
-          child: Icon(
-            _obscured
-                ? Icons.visibility_outlined
-                : Icons.visibility_off_outlined,
-            size: tokens.iconSize,
-            color: colors.onSurfaceVariant,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: kMinInteractiveDimension,
+              minHeight: kMinInteractiveDimension,
+            ),
+            child: Center(
+              widthFactor: 1,
+              heightFactor: 1,
+              child: Icon(
+                _obscured
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                size: tokens.iconSize,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
           ),
         ),
       );
