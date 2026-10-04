@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
+import 'helpers/d3_tap_target.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // D3Radio
 // ─────────────────────────────────────────────────────────────────────────────
@@ -109,27 +111,24 @@ class _D3RadioState<T> extends State<D3Radio<T>>
       enabled: !widget._isDisabled,
       inMutuallyExclusiveGroup: true,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: _handleTap,
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Center(
-            child: AnimatedOpacity(
-              opacity: widget._isDisabled ? 0.35 : 1.0,
-              duration: D3Motion.base,
-              child: AnimatedBuilder(
-                animation: _anim,
-                builder: (context, _) => CustomPaint(
-                  size: const Size(22, 22),
-                  painter: _RadioPainter(
-                    progress: _anim.value,
-                    primaryColor: colors.primary,
-                    // Use onSurfaceVariant at full opacity — visible on both
-                    // light (neutral400 #64748B) and dark (neutral300 #94A3B8)
-                    // surfaces. The outer opacity wrapper handles disabled dimming,
-                    // so we don't pre-multiply alpha here.
-                    borderColor: colors.onSurfaceVariant,
-                  ),
+        child: D3TapTarget(
+          child: AnimatedOpacity(
+            opacity: widget._isDisabled ? 0.35 : 1.0,
+            duration: D3Motion.base,
+            child: AnimatedBuilder(
+              animation: _anim,
+              builder: (context, _) => CustomPaint(
+                size: const Size(22, 22),
+                painter: _RadioPainter(
+                  progress: _anim.value,
+                  primaryColor: colors.primary,
+                  // Use onSurfaceVariant at full opacity — visible on both
+                  // light (neutral400 #64748B) and dark (neutral300 #94A3B8)
+                  // surfaces. The outer opacity wrapper handles disabled dimming,
+                  // so we don't pre-multiply alpha here.
+                  borderColor: colors.onSurfaceVariant,
                 ),
               ),
             ),
@@ -141,19 +140,22 @@ class _D3RadioState<T> extends State<D3Radio<T>>
     if (widget.label == null) return button;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: _handleTap,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           button,
           const SizedBox(width: 2),
-          Text(
-            widget.label!,
-            style: TextStyle(
-              fontSize: D3TypeScale.bodyMdSize,
-              color: widget._isDisabled
-                  ? colors.onSurface.withValues(alpha: 0.35)
-                  : colors.onSurface,
+          Flexible(
+            child: Text(
+              widget.label!,
+              style: TextStyle(
+                fontSize: D3TypeScale.bodyMdSize,
+                color: widget._isDisabled
+                    ? colors.onSurface.withValues(alpha: 0.35)
+                    : colors.onSurface,
+              ),
             ),
           ),
         ],

@@ -180,7 +180,11 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>>
         : null;
 
     final fieldContent = ConstrainedBox(
-      constraints: BoxConstraints(minHeight: tokens.minHeight),
+      constraints: BoxConstraints(
+        minHeight: tokens.minHeight < kMinInteractiveDimension
+            ? kMinInteractiveDimension
+            : tokens.minHeight,
+      ),
       child: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: tokens.paddingH,
@@ -263,6 +267,7 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>>
                 child: fieldContent,
               )
             : GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: widget.isEnabled ? _openSheet : null,
                 child: fieldContent,
               ),

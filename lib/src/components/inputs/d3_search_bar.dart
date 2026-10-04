@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
+import 'helpers/d3_tap_target.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // D3SearchBar
 // ─────────────────────────────────────────────────────────────────────────────
@@ -140,6 +142,7 @@ class _D3SearchBarState extends State<D3SearchBar> {
     // readOnly bars are pure tap targets — never render focus state.
     final effectivelyFocused = _isFocused && !widget.readOnly;
 
+    const focusedBorderWidth = 1.5;
     final borderColor = effectivelyFocused
         ? colors.primary
         : colors.outline.withValues(alpha: 0.30);
@@ -149,6 +152,11 @@ class _D3SearchBarState extends State<D3SearchBar> {
         : colors.onSurface.withValues(alpha: 0.05);
 
     final bar = AnimatedContainer(
+      constraints: const BoxConstraints(
+        // Reserve the focused border too, so focus and clear visibility
+        // never change the height at the default text scale.
+        minHeight: kMinInteractiveDimension + 2 * focusedBorderWidth,
+      ),
       duration: D3Motion.fast,
       curve: D3Motion.standard,
       decoration: BoxDecoration(
@@ -156,7 +164,7 @@ class _D3SearchBarState extends State<D3SearchBar> {
         borderRadius: BorderRadius.circular(D3Radius.lg),
         border: Border.all(
           color: borderColor,
-          width: effectivelyFocused ? 1.5 : 1.0,
+          width: effectivelyFocused ? focusedBorderWidth : 1.0,
         ),
       ),
       child: Row(
@@ -175,32 +183,37 @@ class _D3SearchBarState extends State<D3SearchBar> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: TextField(
-              controller: _controller,
-              focusNode: _focusNode,
-              readOnly: widget.readOnly,
-              autofocus: widget.autofocus,
-              textInputAction: widget.textInputAction,
-              style: TextStyle(
-                fontSize: 14,
-                color: colors.onSurface,
-                height: 1.2,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: kMinInteractiveDimension,
               ),
-              decoration: InputDecoration(
-                hintText: widget.hint,
-                hintStyle: TextStyle(
+              child: TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                readOnly: widget.readOnly,
+                autofocus: widget.autofocus,
+                textInputAction: widget.textInputAction,
+                style: TextStyle(
                   fontSize: 14,
-                  color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                  color: colors.onSurface,
                   height: 1.2,
                 ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                decoration: InputDecoration(
+                  hintText: widget.hint,
+                  hintStyle: TextStyle(
+                    fontSize: 14,
+                    color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                    height: 1.2,
+                  ),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                ),
+                cursorColor: colors.primary,
+                onChanged: widget.onChanged,
+                onSubmitted: widget.onSubmitted,
+                onTap: widget.onTap,
               ),
-              cursorColor: colors.primary,
-              onChanged: widget.onChanged,
-              onSubmitted: widget.onSubmitted,
-              onTap: widget.onTap,
             ),
           ),
 
@@ -212,11 +225,7 @@ class _D3SearchBarState extends State<D3SearchBar> {
                     key: const ValueKey('clear'),
                     behavior: HitTestBehavior.opaque,
                     onTap: _clear,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
+                    child: D3TapTarget(
                       child: Container(
                         width: 17,
                         height: 17,

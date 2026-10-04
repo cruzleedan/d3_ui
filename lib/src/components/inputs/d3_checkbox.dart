@@ -2,6 +2,8 @@ import 'package:d3_ui/d3_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
+import 'helpers/d3_tap_target.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // D3Checkbox
 // ─────────────────────────────────────────────────────────────────────────────
@@ -128,26 +130,22 @@ class _D3CheckboxState extends State<D3Checkbox>
       checked: widget.value == true,
       enabled: !widget._isDisabled,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget._isDisabled ? null : _handleTap,
-        // 44×44dp minimum tap area per HIG / Material.
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Center(
-            child: AnimatedOpacity(
-              opacity: widget._isDisabled ? 0.35 : 1.0,
-              duration: D3Motion.base,
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (context, _) => CustomPaint(
-                  size: const Size(22, 22),
-                  painter: _CheckboxPainter(
-                    fillProgress: _fillAnim.value,
-                    iconProgress: _iconAnim.value,
-                    isIndeterminate: widget.value == null,
-                    primaryColor: colors.primary,
-                    borderColor: colors.onSurfaceVariant,
-                  ),
+        child: D3TapTarget(
+          child: AnimatedOpacity(
+            opacity: widget._isDisabled ? 0.35 : 1.0,
+            duration: D3Motion.base,
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, _) => CustomPaint(
+                size: const Size(22, 22),
+                painter: _CheckboxPainter(
+                  fillProgress: _fillAnim.value,
+                  iconProgress: _iconAnim.value,
+                  isIndeterminate: widget.value == null,
+                  primaryColor: colors.primary,
+                  borderColor: colors.onSurfaceVariant,
                 ),
               ),
             ),
@@ -159,20 +157,23 @@ class _D3CheckboxState extends State<D3Checkbox>
     if (widget.label == null) return box;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: widget._isDisabled ? null : _handleTap,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           box,
-          // The box already has 44dp tap area; close the gap visually.
+          // The box already has a 48dp tap area; close the gap visually.
           const SizedBox(width: 2),
-          Text(
-            widget.label!,
-            style: TextStyle(
-              fontSize: D3TypeScale.bodyMdSize,
-              color: widget._isDisabled
-                  ? colors.onSurface.withValues(alpha: 0.35)
-                  : colors.onSurface,
+          Flexible(
+            child: Text(
+              widget.label!,
+              style: TextStyle(
+                fontSize: D3TypeScale.bodyMdSize,
+                color: widget._isDisabled
+                    ? colors.onSurface.withValues(alpha: 0.35)
+                    : colors.onSurface,
+              ),
             ),
           ),
         ],

@@ -193,7 +193,11 @@ class _D3DateFieldState extends State<D3DateField> with D3FieldStylingMixin {
             onHighlightChanged: (v) => setState(() => _isFocused = v),
             borderRadius: BorderRadius.circular(tokens.radius),
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: tokens.minHeight),
+              constraints: BoxConstraints(
+                minHeight: tokens.minHeight < kMinInteractiveDimension
+                    ? kMinInteractiveDimension
+                    : tokens.minHeight,
+              ),
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: tokens.paddingH,

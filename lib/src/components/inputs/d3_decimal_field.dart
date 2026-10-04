@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import 'helpers/d3_field_status.dart';
+import 'helpers/d3_field_slot.dart';
 import 'helpers/d3_field_styling_mixin.dart';
 
 /// Decimal number input styled to match [D3TextField].
@@ -18,6 +19,10 @@ class D3DecimalField extends StatefulWidget {
     this.helperText,
     this.errorText,
     this.prefixIcon,
+    this.suffixIcon,
+    this.prefixText,
+    this.prefixWidget,
+    this.suffixWidget,
     this.suffixText,
     this.isRequired = false,
     this.isEnabled = true,
@@ -33,8 +38,31 @@ class D3DecimalField extends StatefulWidget {
   final String? hintText;
   final String? helperText;
   final String? errorText;
+
+  /// The decorative prefix icon, overridden by [prefixWidget].
   final IconData? prefixIcon;
+
+  /// The decorative suffix icon, overridden by [suffixWidget].
+  final IconData? suffixIcon;
+
+  /// The prefix text, overridden by [prefixWidget] or [prefixIcon].
+  final String? prefixText;
+
+  /// The suffix text, overridden by [suffixWidget] or [suffixIcon].
   final String? suffixText;
+
+  /// The custom prefix, taking precedence over [prefixIcon] and [prefixText].
+  ///
+  /// Interactive widgets should provide an accessible label and a minimum
+  /// 48 × 48 logical-pixel tap target. Pass [isEnabled] to custom controls
+  /// to keep their disabled appearance and behavior consistent with the field.
+  final Widget? prefixWidget;
+
+  /// The custom suffix, taking precedence over [suffixIcon] and [suffixText].
+  ///
+  /// Interactive widgets have the same sizing and labeling requirements as
+  /// [prefixWidget]. Disabled fields block slot pointer and keyboard focus.
+  final Widget? suffixWidget;
   final bool isRequired;
   final bool isEnabled;
   final int decimalPlaces;
@@ -101,6 +129,14 @@ class _D3DecimalFieldState extends State<D3DecimalField>
     setState(() => _isFocused = _focusNode.hasFocus);
   }
 
+  Widget _slot(Widget child) => ExcludeFocus(
+    excluding: !widget.isEnabled,
+    child: IgnorePointer(
+      ignoring: !widget.isEnabled,
+      child: Semantics(enabled: widget.isEnabled, child: child),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.d3InputTokens;
@@ -108,6 +144,21 @@ class _D3DecimalFieldState extends State<D3DecimalField>
 
     final status = _status;
     final style = resolveFieldStyle(status, colors, tokens);
+
+    final prefix = buildD3FieldSlot(
+      tokens: tokens,
+      colors: colors,
+      child: widget.prefixWidget,
+      icon: widget.prefixIcon,
+      text: widget.prefixText,
+    );
+    final suffix = buildD3FieldSlot(
+      tokens: tokens,
+      colors: colors,
+      child: widget.suffixWidget,
+      icon: widget.suffixIcon,
+      text: widget.suffixText,
+    );
 
     Widget field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,13 +170,15 @@ class _D3DecimalFieldState extends State<D3DecimalField>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                widget.label,
-                style: TextStyle(
-                  fontSize: tokens.labelSize,
-                  fontWeight: FontWeight.w600,
-                  color: colors.onSurfaceVariant,
-                  letterSpacing: -0.1,
+              Flexible(
+                child: Text(
+                  widget.label,
+                  style: TextStyle(
+                    fontSize: tokens.labelSize,
+                    fontWeight: FontWeight.w600,
+                    color: colors.onSurfaceVariant,
+                    letterSpacing: -0.1,
+                  ),
                 ),
               ),
               if (widget.isRequired) ...[
@@ -160,21 +213,17 @@ class _D3DecimalFieldState extends State<D3DecimalField>
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (widget.prefixIcon != null)
+              if (prefix != null)
                 Padding(
                   padding: EdgeInsets.only(left: tokens.paddingH),
-                  child: Icon(
-                    widget.prefixIcon,
-                    size: tokens.iconSize,
-                    color: colors.onSurfaceVariant,
-                  ),
+                  child: _slot(prefix),
                 ),
               Expanded(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: tokens.minHeight),
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: widget.prefixIcon != null
+                      horizontal: prefix != null
                           ? D3Spacing.s8
                           : tokens.paddingH,
                       vertical: tokens.paddingV,
@@ -224,17 +273,10 @@ class _D3DecimalFieldState extends State<D3DecimalField>
                   ),
                 ),
               ),
-              if (widget.suffixText != null)
+              if (suffix != null)
                 Padding(
                   padding: EdgeInsets.only(right: tokens.paddingH),
-                  child: Text(
-                    widget.suffixText!,
-                    style: TextStyle(
-                      fontSize: tokens.textSize,
-                      fontWeight: FontWeight.w600,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
+                  child: _slot(suffix),
                 ),
             ],
           ),

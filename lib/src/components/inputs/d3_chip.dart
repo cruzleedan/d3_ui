@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
+import 'helpers/d3_tap_target.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // D3WatchStatus
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,13 +57,11 @@ class D3StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return D3Chip(
+      label: status.label,
+      leadingIcon: status.icon,
+      variant: D3ChipVariant.tonal,
       onTap: onTap,
-      child: D3Chip(
-        label: status.label,
-        leadingIcon: status.icon,
-        variant: D3ChipVariant.tonal,
-      ),
     );
   }
 }
@@ -236,7 +236,10 @@ class D3Chip extends StatelessWidget {
     );
 
     if (!enabled) {
-      return Opacity(opacity: 0.35, child: chip);
+      return Opacity(
+        opacity: 0.35,
+        child: onTap == null ? chip : D3TapTarget(child: chip),
+      );
     }
 
     if (!_interactive) return chip;
@@ -251,7 +254,7 @@ class D3Chip extends StatelessWidget {
           onTap!();
         },
         borderRadius: D3Radius.circularFull,
-        child: chip,
+        child: D3TapTarget(child: chip),
       ),
     );
   }

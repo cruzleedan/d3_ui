@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
+import 'helpers/d3_tap_target.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // D3SearchController
 // ─────────────────────────────────────────────────────────────────────────────
@@ -535,11 +537,7 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () => Navigator.of(context).pop(),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
+                      child: D3TapTarget(
                         child: Icon(
                           Icons.arrow_back_rounded,
                           size: 22,

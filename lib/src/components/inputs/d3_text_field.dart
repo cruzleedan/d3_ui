@@ -5,6 +5,8 @@ import 'package:d3_ui/d3_ui.dart';
 import 'helpers/d3_clear_button_mixin.dart';
 import 'helpers/d3_field_lifecycle_mixin.dart';
 import 'helpers/d3_field_status.dart';
+import 'helpers/d3_field_slot.dart';
+import 'helpers/d3_tap_target.dart';
 import 'helpers/d3_field_styling_mixin.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -364,6 +366,14 @@ class D3TextFieldState extends State<D3TextField>
 
     final style = resolveFieldStyle(status, colors, tokens);
 
+    final prefix = buildD3FieldSlot(
+      tokens: tokens,
+      colors: colors,
+      child: widget.prefixWidget,
+      icon: widget.prefixIcon,
+      text: widget.prefixText,
+    );
+
     Widget field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -400,31 +410,10 @@ class D3TextFieldState extends State<D3TextField>
                 : CrossAxisAlignment.center,
             children: [
               // Prefix
-              if (widget.prefixWidget != null)
+              if (prefix != null)
                 Padding(
                   padding: EdgeInsets.only(left: tokens.paddingH),
-                  child: widget.prefixWidget!,
-                )
-              else if (widget.prefixIcon != null)
-                Padding(
-                  padding: EdgeInsets.only(left: tokens.paddingH),
-                  child: Icon(
-                    widget.prefixIcon,
-                    size: tokens.iconSize,
-                    color: colors.onSurfaceVariant,
-                  ),
-                )
-              else if (widget.prefixText != null)
-                Padding(
-                  padding: EdgeInsets.only(left: tokens.paddingH),
-                  child: Text(
-                    widget.prefixText!,
-                    style: TextStyle(
-                      fontSize: tokens.textSize,
-                      fontWeight: FontWeight.w600,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
+                  child: prefix,
                 ),
 
               // Input
@@ -433,7 +422,9 @@ class D3TextFieldState extends State<D3TextField>
                   constraints: BoxConstraints(minHeight: tokens.minHeight),
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: _hasPrefix ? D3Spacing.s8 : tokens.paddingH,
+                      horizontal: prefix != null
+                          ? D3Spacing.s8
+                          : tokens.paddingH,
                       vertical: tokens.paddingV,
                     ),
                     child: TextField(
@@ -523,11 +514,6 @@ class D3TextFieldState extends State<D3TextField>
       child: field,
     );
   }
-
-  bool get _hasPrefix =>
-      widget.prefixWidget != null ||
-      widget.prefixIcon != null ||
-      widget.prefixText != null;
 
   // ── Suffix builder ─────────────────────────────────────────────────────────
 
@@ -636,28 +622,14 @@ class D3TextFieldState extends State<D3TextField>
     }
 
     // ── Custom suffix ──────────────────────────────────────────────────────
-    if (widget.suffixWidget != null) {
-      parts.add(widget.suffixWidget!);
-    } else if (widget.suffixIcon != null) {
-      parts.add(
-        Icon(
-          widget.suffixIcon,
-          size: tokens.iconSize,
-          color: colors.onSurfaceVariant,
-        ),
-      );
-    } else if (widget.suffixText != null) {
-      parts.add(
-        Text(
-          widget.suffixText!,
-          style: TextStyle(
-            fontSize: tokens.textSize,
-            fontWeight: FontWeight.w600,
-            color: colors.onSurfaceVariant,
-          ),
-        ),
-      );
-    }
+    final suffix = buildD3FieldSlot(
+      tokens: tokens,
+      colors: colors,
+      child: widget.suffixWidget,
+      icon: widget.suffixIcon,
+      text: widget.suffixText,
+    );
+    if (suffix != null) parts.add(suffix);
 
     if (parts.isEmpty) return const SizedBox.shrink();
 
@@ -739,10 +711,11 @@ class _LabelRow extends StatelessWidget {
       content = Semantics(
         button: true,
         label: '$label, more info',
+        enabled: isEnabled,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: onTooltipTap,
-          child: content,
+          onTap: isEnabled ? onTooltipTap : null,
+          child: D3TapTarget(child: content),
         ),
       );
     }

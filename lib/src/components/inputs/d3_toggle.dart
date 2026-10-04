@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
+import 'helpers/d3_tap_target.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // D3Toggle
 // ─────────────────────────────────────────────────────────────────────────────
@@ -157,75 +159,78 @@ class _D3ToggleState extends State<D3Toggle> with TickerProviderStateMixin {
       enabled: !widget._isDisabled,
       toggled: widget.value,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTapDown: _onTapDown,
         onTapUp: _onTapUp,
         onTapCancel: _onTapCancel,
-        child: AnimatedOpacity(
-          opacity: widget._isDisabled ? 0.35 : 1.0,
-          duration: D3Motion.base,
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_travelAnim, _squishController]),
-            builder: (context, _) {
-              final travel = _travelAnim.value;
-              final squish = _squishController.value;
+        child: D3TapTarget(
+          child: AnimatedOpacity(
+            opacity: widget._isDisabled ? 0.35 : 1.0,
+            duration: D3Motion.base,
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_travelAnim, _squishController]),
+              builder: (context, _) {
+                final travel = _travelAnim.value;
+                final squish = _squishController.value;
 
-              // Track color interpolates between off and on.
-              final trackColor = Color.lerp(
-                colors.onSurface.withValues(alpha: 0.15),
-                colors.primary,
-                travel,
-              )!;
+                // Track color interpolates between off and on.
+                final trackColor = Color.lerp(
+                  colors.onSurface.withValues(alpha: 0.15),
+                  colors.primary,
+                  travel,
+                )!;
 
-              // Thumb width grows on press.
-              final thumbW =
-                  _thumbNormal + (_thumbSquished - _thumbNormal) * squish;
+                // Thumb width grows on press.
+                final thumbW =
+                    _thumbNormal + (_thumbSquished - _thumbNormal) * squish;
 
-              // Thumb left position: when squished on the on→off press, anchor
-              // the squish to the right so the thumb appears to stretch leftward.
-              final baseLeft =
-                  _thumbOffLeft + (_thumbOnLeft - _thumbOffLeft) * travel;
-              // When pressing while ON, shift left by the extra width so the
-              // right edge of the thumb stays pinned.
-              final thumbLeft = widget.value
-                  ? baseLeft - (thumbW - _thumbNormal)
-                  : baseLeft;
+                // Thumb left position: when squished on the on→off press, anchor
+                // the squish to the right so the thumb appears to stretch leftward.
+                final baseLeft =
+                    _thumbOffLeft + (_thumbOnLeft - _thumbOffLeft) * travel;
+                // When pressing while ON, shift left by the extra width so the
+                // right edge of the thumb stays pinned.
+                final thumbLeft = widget.value
+                    ? baseLeft - (thumbW - _thumbNormal)
+                    : baseLeft;
 
-              return SizedBox(
-                width: _trackW,
-                height: _trackH,
-                child: Stack(
-                  children: [
-                    // Track
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: trackColor,
-                          borderRadius: BorderRadius.circular(_trackRadius),
-                        ),
-                      ),
-                    ),
-
-                    // Thumb
-                    Positioned(
-                      top: _thumbInset,
-                      left: thumbLeft,
-                      child: SizedBox(
-                        width: thumbW,
-                        height: _thumbNormal,
+                return SizedBox(
+                  width: _trackW,
+                  height: _trackH,
+                  child: Stack(
+                    children: [
+                      // Track
+                      Positioned.fill(
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(
-                              _thumbNormal / 2,
+                            color: trackColor,
+                            borderRadius: BorderRadius.circular(_trackRadius),
+                          ),
+                        ),
+                      ),
+
+                      // Thumb
+                      Positioned(
+                        top: _thumbInset,
+                        left: thumbLeft,
+                        child: SizedBox(
+                          width: thumbW,
+                          height: _thumbNormal,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(
+                                _thumbNormal / 2,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -235,19 +240,22 @@ class _D3ToggleState extends State<D3Toggle> with TickerProviderStateMixin {
     if (widget.label == null) return toggle;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: widget._isDisabled ? null : _commit,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           toggle,
           const SizedBox(width: 10),
-          Text(
-            widget.label!,
-            style: TextStyle(
-              fontSize: D3TypeScale.bodyMdSize,
-              color: widget._isDisabled
-                  ? colors.onSurfaceVariant.withValues(alpha: 0.35)
-                  : colors.onSurface,
+          Flexible(
+            child: Text(
+              widget.label!,
+              style: TextStyle(
+                fontSize: D3TypeScale.bodyMdSize,
+                color: widget._isDisabled
+                    ? colors.onSurfaceVariant.withValues(alpha: 0.35)
+                    : colors.onSurface,
+              ),
             ),
           ),
         ],

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 import '../shared/gallery_section.dart';
+import '../../previews/d3_input_previews.dart' show InputExamples;
 
 class TextFieldGallery extends StatefulWidget {
   const TextFieldGallery({
@@ -168,6 +169,10 @@ class _TextFieldGalleryState extends State<TextFieldGallery> {
                     ),
                   ],
                 ),
+              ),
+              const GallerySection(
+                title: 'Decimal slots and input targets',
+                child: InputExamples(),
               ),
               GallerySection(
                 title: 'Password',

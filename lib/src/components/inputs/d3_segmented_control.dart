@@ -213,69 +213,89 @@ class _SegmentTrack extends StatelessWidget {
   Widget build(BuildContext context) {
     final count = segments.length;
 
-    return Container(
-      padding: const EdgeInsets.all(_trackPadding),
-      decoration: BoxDecoration(
-        color: colors.onSurface.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(D3Radius.sm + _trackPadding),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final totalWidth = constraints.maxWidth;
-          // Each segment gets equal space minus the shared padding.
-          final segWidth =
-              (totalWidth - _trackPadding * 2) / count -
-              _trackPadding * (count - 1) / count;
-          // Pill x offset interpolated from animated position.
-          final pillLeft = animatedPosition * (segWidth + _trackPadding);
-
-          return SizedBox(
-            height: 34,
-            child: Stack(
-              children: [
-                // ── Animated pill (hidden when nothing is selected) ───────────
-                if (selectedIndex >= 0 && animatedPosition >= 0)
-                  Positioned(
-                    left: pillLeft,
-                    top: 0,
-                    bottom: 0,
-                    width: segWidth,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: colors.surface,
-                        borderRadius: BorderRadius.circular(_pillRadius),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.10),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                // ── Segment tap targets ────────────────────────────────────────
-                Row(
-                  children: [
-                    for (int i = 0; i < count; i++) ...[
-                      if (i > 0) const SizedBox(width: _trackPadding),
-                      Expanded(
-                        child: _SegmentItem(
-                          segment: segments[i],
-                          isSelected: i == selectedIndex,
-                          colors: colors,
-                          onTap: () => onTap(i),
-                        ),
-                      ),
-                    ],
-                  ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final minWidth =
+            count * kMinInteractiveDimension + _trackPadding * (count + 1);
+        final width =
+            constraints.hasBoundedWidth && constraints.maxWidth > minWidth
+            ? constraints.maxWidth
+            : minWidth;
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: width,
+            child: Container(
+              padding: const EdgeInsets.all(_trackPadding),
+              decoration: BoxDecoration(
+                color: colors.onSurface.withValues(alpha: 0.07),
+                borderRadius: BorderRadius.circular(
+                  D3Radius.sm + _trackPadding,
                 ),
-              ],
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final totalWidth = constraints.maxWidth;
+                  // Each segment gets equal space minus the shared padding.
+                  final segWidth =
+                      totalWidth / count - _trackPadding * (count - 1) / count;
+                  // Pill x offset interpolated from animated position.
+                  final pillLeft =
+                      animatedPosition * (segWidth + _trackPadding);
+
+                  return SizedBox(
+                    height: kMinInteractiveDimension,
+                    child: Stack(
+                      children: [
+                        // ── Animated pill (hidden when nothing is selected) ───────────
+                        if (selectedIndex >= 0 && animatedPosition >= 0)
+                          Positioned(
+                            left: pillLeft,
+                            top: 0,
+                            bottom: 0,
+                            width: segWidth,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: colors.surface,
+                                borderRadius: BorderRadius.circular(
+                                  _pillRadius,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.10),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        // ── Segment tap targets ────────────────────────────────────────
+                        Row(
+                          children: [
+                            for (int i = 0; i < count; i++) ...[
+                              if (i > 0) const SizedBox(width: _trackPadding),
+                              Expanded(
+                                child: _SegmentItem(
+                                  segment: segments[i],
+                                  isSelected: i == selectedIndex,
+                                  colors: colors,
+                                  onTap: () => onTap(i),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -310,13 +330,17 @@ class _SegmentItem extends StatelessWidget {
         if (segment.icon != null && segment.label != null)
           const SizedBox(width: 5),
         if (segment.label != null)
-          Text(
-            segment.label!,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: labelColor,
-              height: 1,
+          Flexible(
+            child: Text(
+              segment.label!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: labelColor,
+                height: 1,
+              ),
             ),
           ),
       ],
