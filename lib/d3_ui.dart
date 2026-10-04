@@ -59,6 +59,7 @@ export 'src/components/display/d3_skeleton.dart';
 export 'src/components/display/d3_skeleton_placeholders.dart';
 export 'src/components/display/d3_image.dart';
 export 'src/components/display/d3_image_viewer.dart';
+export 'src/components/display/d3_photo_carousel.dart';
 export 'src/components/display/d3_photo_gallery.dart';
 export 'src/components/display/d3_poster_card.dart';
 export 'src/components/display/d3_section_header.dart';
