@@ -118,4 +118,72 @@ void main() {
     await _open(tester, style: const D3BottomSheetStyle(showHeader: false));
     expect(_handle(), findsOneWidget);
   });
+
+  testWidgets('sizeToContent opens at the content height, not the snap point', (
+    tester,
+  ) async {
+    final fixed = await _sheetHeight(
+      tester,
+      style: const D3BottomSheetStyle(),
+      contentHeight: 120,
+    );
+    await tester.pumpWidget(const SizedBox());
+    final fitted = await _sheetHeight(
+      tester,
+      style: const D3BottomSheetStyle(sizeToContent: true),
+      contentHeight: 120,
+    );
+
+    // 1000 logical px tall (half of 1000dp-high test screen) vs ~ content
+    // plus the 68dp header.
+    expect(fitted, lessThan(fixed));
+    expect(fitted, closeTo(120 + 68, 12));
+  });
+
+  testWidgets('sizeToContent never exceeds the largest snap point', (
+    tester,
+  ) async {
+    final fitted = await _sheetHeight(
+      tester,
+      style: const D3BottomSheetStyle(sizeToContent: true),
+      contentHeight: 5000,
+      snapPoints: const [D3SnapPoint.half, D3SnapPoint(0.8)],
+    );
+    expect(fitted, closeTo(1000 * 0.8, 12));
+  });
+}
+
+Future<double> _sheetHeight(
+  WidgetTester tester, {
+  required D3BottomSheetStyle style,
+  required double contentHeight,
+  List<D3SnapPoint> snapPoints = const [D3SnapPoint.half, D3SnapPoint.expanded],
+}) async {
+  tester.view.physicalSize = const Size(900, 2000);
+  tester.view.devicePixelRatio = 2;
+  addTearDown(tester.view.reset);
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: D3AppTheme.light(),
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: TextButton(
+            onPressed: () => D3BottomSheet.show<void>(
+              context,
+              title: 'T',
+              style: style,
+              snapPoints: snapPoints,
+              child: SingleChildScrollView(
+                child: SizedBox(height: contentHeight, child: const Text('X')),
+              ),
+            ),
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
+  return tester.getSize(find.byType(DraggableScrollableSheet)).height;
 }

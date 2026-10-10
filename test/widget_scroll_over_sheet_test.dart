@@ -184,6 +184,36 @@ void main() {
       }
     });
 
+    testWidgets('D3ThumbnailCard without an image is text-only unless asked '
+        'to keep the placeholder', (tester) async {
+      await tester.pumpWidget(_host(const D3ThumbnailCard(title: 'Shoyu')));
+      expect(find.byType(D3Image), findsNothing);
+
+      await tester.pumpWidget(
+        _host(
+          const D3ThumbnailCard(
+            title: 'Shoyu',
+            showThumbnailWithoutImage: true,
+          ),
+        ),
+      );
+      expect(find.byType(D3Image), findsOneWidget);
+    });
+
+    testWidgets('D3ThumbnailCard with an image shows the thumbnail', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const D3ThumbnailCard(
+            title: 'Shoyu',
+            imageUrl: 'https://example.test/a.png',
+          ),
+        ),
+      );
+      expect(find.byType(D3Image), findsOneWidget);
+    });
+
     testWidgets('D3InfoCard lays out rows', (tester) async {
       await tester.pumpWidget(
         _host(

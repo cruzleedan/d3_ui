@@ -11,9 +11,11 @@ class D3ThumbnailCard extends StatelessWidget {
     this.imageUrl,
     this.description,
     this.badge,
+    this.footer,
     this.trailing,
     this.onTap,
     this.thumbnailSize = 64,
+    this.showThumbnailWithoutImage = false,
   });
 
   final String title;
@@ -24,9 +26,19 @@ class D3ThumbnailCard extends StatelessWidget {
 
   /// Short highlighted line under the description (e.g. a promotion).
   final String? badge;
+
+  /// Optional last line under the badge (e.g. an allergen warning).
+  final Widget? footer;
   final Widget? trailing;
   final VoidCallback? onTap;
   final double thumbnailSize;
+
+  /// By default a card with no [imageUrl] is text-only — no placeholder tile
+  /// is reserved. Set true to keep [D3Image]'s own placeholder.
+  final bool showThumbnailWithoutImage;
+
+  bool get _hasThumbnail =>
+      showThumbnailWithoutImage || (imageUrl != null && imageUrl!.isNotEmpty);
 
   @override
   Widget build(BuildContext context) {
@@ -40,16 +52,18 @@ class D3ThumbnailCard extends StatelessWidget {
           padding: const EdgeInsets.all(D3Spacing.s8),
           child: Row(
             children: [
-              ClipRRect(
-                borderRadius: D3Radius.circularXs,
-                child: D3Image(
-                  url: imageUrl,
-                  width: thumbnailSize,
-                  height: thumbnailSize,
-                  semanticsLabel: title,
+              if (_hasThumbnail) ...[
+                ClipRRect(
+                  borderRadius: D3Radius.circularXs,
+                  child: D3Image(
+                    url: imageUrl,
+                    width: thumbnailSize,
+                    height: thumbnailSize,
+                    semanticsLabel: title,
+                  ),
                 ),
-              ),
-              const SizedBox(width: D3Spacing.s12),
+                const SizedBox(width: D3Spacing.s12),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,6 +78,11 @@ class D3ThumbnailCard extends StatelessWidget {
                           fontSize: D3TypeScale.labelSmSize,
                           color: colors.onSurfaceVariant,
                         ),
+                      ),
+                    if (footer != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: D3Spacing.s4),
+                        child: footer!,
                       ),
                     if (badge != null)
                       Padding(

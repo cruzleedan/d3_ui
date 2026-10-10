@@ -57,6 +57,7 @@ class D3BottomSheetStyle {
     this.showDragHandle = true,
     this.showHeader = true,
     this.floatingCloseButton = false,
+    this.sizeToContent = false,
   });
 
   /// Defaults to `surfaceContainerLow`.
@@ -77,6 +78,16 @@ class D3BottomSheetStyle {
   /// Only used when [showHeader] is false: a round close button floating at
   /// the top-right.
   final bool floatingCloseButton;
+
+  /// Open at the child's own height instead of the first snap point.
+  ///
+  /// The child is measured once with unbounded height (so a scroll view
+  /// child reports its content height), then the sheet opens at that height
+  /// — never taller than the last snap point, never shorter than 20% of the
+  /// screen. Larger snap points still let the user drag taller. Costs one
+  /// extra frame before the sheet appears, and the child is built twice
+  /// briefly (once off-stage), so keep it free of side effects in `build`.
+  final bool sizeToContent;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -250,6 +261,10 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
   late double _minSnapFraction;
   late double _maxSnapFraction;
 
+  // sizeToContent: the child's measured fraction of the available height.
+  double? _measuredFraction;
+  final _measureKey = GlobalKey();
+
   double _lastKeyboardInset = 0;
 
   @override
@@ -342,10 +357,54 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
     WidgetsBinding.instance.addPostFrameCallback((_) => navigator.pop(result));
   }
 
+  Widget _buildMeasurement() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || _measuredFraction != null) return;
+          final height = _measureKey.currentContext?.size?.height;
+          if (height == null || constraints.maxHeight <= 0) return;
+          final header = widget.style.showHeader
+              ? (widget.style.showDragHandle
+                    ? _kStickyHeaderHeight
+                    : _kStickyHeaderHeight - 20)
+              : 0.0;
+          final total =
+              height + header + MediaQuery.viewPaddingOf(context).bottom;
+          setState(() {
+            _measuredFraction = (total / constraints.maxHeight).clamp(
+              0.2,
+              _maxSnapFraction,
+            );
+          });
+        });
+        return Offstage(
+          child: OverflowBox(
+            alignment: Alignment.topCenter,
+            minHeight: 0,
+            maxHeight: double.infinity,
+            child: KeyedSubtree(key: _measureKey, child: widget.child),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.style.sizeToContent && _measuredFraction == null) {
+      return _buildMeasurement();
+    }
     final colors = context.d3Colors;
-    final fractions = widget.snapPoints.map((s) => s.fraction).toList();
+    final measured = _measuredFraction;
+    final fractions = measured == null
+        ? widget.snapPoints.map((s) => s.fraction).toList()
+        : [
+            measured,
+            ...widget.snapPoints
+                .map((s) => s.fraction)
+                .where((f) => f > measured + 0.02),
+          ];
     final maxFraction = fractions.last;
     // Always allow dragging to 0.0 — guarded sheets bounce back via the
     // listener instead of being locked at their minimum snap.
@@ -355,10 +414,9 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
     final snapSizes = fractions
         .where((f) => f > minFraction && f < 1.0)
         .toList();
-    final initialFraction = widget.initialSnap.fraction.clamp(
-      fractions.first,
-      maxFraction,
-    );
+    final initialFraction =
+        measured ??
+        widget.initialSnap.fraction.clamp(fractions.first, maxFraction);
 
     return _D3BottomSheetScope(
       state: this,
