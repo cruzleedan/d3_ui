@@ -16,6 +16,7 @@ class D3ThumbnailCard extends StatelessWidget {
     this.onTap,
     this.thumbnailSize = 64,
     this.showThumbnailWithoutImage = false,
+    this.highlightQuery,
   });
 
   final String title;
@@ -36,6 +37,23 @@ class D3ThumbnailCard extends StatelessWidget {
   /// By default a card with no [imageUrl] is text-only — no placeholder tile
   /// is reserved. Set true to keep [D3Image]'s own placeholder.
   final bool showThumbnailWithoutImage;
+
+  /// When non-empty, matches of this text in [title] are emphasised (for
+  /// search results), using [D3SearchAnchor.highlight].
+  final String? highlightQuery;
+
+  Widget _title(BuildContext context) {
+    final query = highlightQuery;
+    if (query == null || query.trim().isEmpty) return Text(title);
+    return Text.rich(
+      D3SearchAnchor.highlight(
+        text: title,
+        query: query.trim(),
+        style: DefaultTextStyle.of(context).style,
+        highlightColor: context.d3Colors.primary,
+      ),
+    );
+  }
 
   bool get _hasThumbnail =>
       showThumbnailWithoutImage || (imageUrl != null && imageUrl!.isNotEmpty);
@@ -68,7 +86,7 @@ class D3ThumbnailCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title),
+                    _title(context),
                     if (description != null)
                       Text(
                         description!,
