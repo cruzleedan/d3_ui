@@ -91,6 +91,9 @@ class D3SearchBar extends StatefulWidget {
   State<D3SearchBar> createState() => _D3SearchBarState();
 }
 
+/// Visible height of the field; the touch target is [kMinInteractiveDimension].
+const double _visibleHeight = 40;
+
 class _D3SearchBarState extends State<D3SearchBar> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
@@ -142,32 +145,33 @@ class _D3SearchBarState extends State<D3SearchBar> {
     // readOnly bars are pure tap targets — never render focus state.
     final effectivelyFocused = _isFocused && !widget.readOnly;
 
-    const focusedBorderWidth = 1.5;
-    final borderColor = effectivelyFocused
-        ? colors.primary
-        : colors.outline.withValues(alpha: 0.30);
+    // No outline: messaging and social apps (Telegram, X, Facebook) show a
+    // plain filled field and let the caret and keyboard say "focused". The
+    // fill deepens on focus, and the leading icon turns primary, so the state
+    // is still visible without a border.
+    final bgColor = colors.onSurface.withValues(
+      alpha: effectivelyFocused ? 0.10 : 0.06,
+    );
 
-    final bgColor = effectivelyFocused
-        ? colors.surface
-        : colors.onSurface.withValues(alpha: 0.05);
-
-    final bar = AnimatedContainer(
-      constraints: const BoxConstraints(
-        // Reserve the focused border too, so focus and clear visibility
-        // never change the height at the default text scale.
-        minHeight: kMinInteractiveDimension + 2 * focusedBorderWidth,
-      ),
-      duration: D3Motion.fast,
-      curve: D3Motion.standard,
-      decoration: BoxDecoration(
-        color: bgColor,
-        // A pill: at ~52dp tall, the 14dp card radius read as squarish.
-        borderRadius: BorderRadius.circular(D3Radius.full),
-        border: Border.all(
-          color: borderColor,
-          width: effectivelyFocused ? focusedBorderWidth : 1.0,
+    // The visible pill is a 40dp background; the contents sit in a 48dp strip
+    // on top of it so every control inside keeps a 48dp touch target.
+    final pill = Positioned(
+      left: 0,
+      right: 0,
+      top: (kMinInteractiveDimension - _visibleHeight) / 2,
+      bottom: (kMinInteractiveDimension - _visibleHeight) / 2,
+      child: AnimatedContainer(
+        duration: D3Motion.fast,
+        curve: D3Motion.standard,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(D3Radius.full),
         ),
       ),
+    );
+
+    final content = ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: kMinInteractiveDimension),
       child: Row(
         children: [
           const SizedBox(width: 12),
@@ -184,53 +188,32 @@ class _D3SearchBarState extends State<D3SearchBar> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            // The whole 48dp strip is the tap target, but the field inside is
-            // only as tall as its text and centred in it: a TextField forced
-            // to 48dp keeps its text at the top (contentPadding), which is
-            // what made the value look off-centre. Taps above/below the
-            // field itself land here instead.
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () {
-                if (!widget.readOnly) _focusNode.requestFocus();
-                widget.onTap?.call();
-              },
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  minHeight: kMinInteractiveDimension,
-                ),
-                // heightFactor: shrink-wrap, don't expand to the Row's max.
-                child: Center(
-                  heightFactor: 1,
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    readOnly: widget.readOnly,
-                    autofocus: widget.autofocus,
-                    textInputAction: widget.textInputAction,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colors.onSurface,
-                      height: 1.2,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: widget.hint,
-                      hintStyle: TextStyle(
-                        fontSize: 14,
-                        color: colors.onSurfaceVariant.withValues(alpha: 0.6),
-                        height: 1.2,
-                      ),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 11),
-                    ),
-                    cursorColor: colors.primary,
-                    onChanged: widget.onChanged,
-                    onSubmitted: widget.onSubmitted,
-                    onTap: widget.onTap,
-                  ),
-                ),
+            child: TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              readOnly: widget.readOnly,
+              autofocus: widget.autofocus,
+              textInputAction: widget.textInputAction,
+              style: TextStyle(
+                fontSize: 14,
+                color: colors.onSurface,
+                height: 1.2,
               ),
+              decoration: InputDecoration(
+                hintText: widget.hint,
+                hintStyle: TextStyle(
+                  fontSize: 14,
+                  color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                  height: 1.2,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+              cursorColor: colors.primary,
+              onChanged: widget.onChanged,
+              onSubmitted: widget.onSubmitted,
+              onTap: widget.onTap,
             ),
           ),
 
@@ -267,6 +250,18 @@ class _D3SearchBarState extends State<D3SearchBar> {
           if (widget.trailingWidget != null) widget.trailingWidget!,
         ],
       ),
+    );
+
+    // Taps in the strip outside the field (and outside any button) focus it,
+    // or call onTap for a read-only bar. Taps on the TextField itself are
+    // handled by the TextField, which wins the gesture arena.
+    final bar = GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        if (!widget.readOnly) _focusNode.requestFocus();
+        widget.onTap?.call();
+      },
+      child: Stack(children: [pill, content]),
     );
 
     if (widget.padding != null) {
