@@ -39,6 +39,47 @@ class D3SnapPoint {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// D3BottomSheetStyle
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Optional visual overrides for [D3BottomSheet.show]. Every default matches
+/// the sheet's original look, so omitting the style changes nothing.
+///
+/// A sheet that opens on a full-bleed picture (an item or place detail) sets
+/// [showHeader] to false: the title bar goes away, the child draws its own
+/// top edge, and the drag handle (and, with [floatingCloseButton], a close
+/// button) float over it on a translucent scrim.
+class D3BottomSheetStyle {
+  const D3BottomSheetStyle({
+    this.backgroundColor,
+    this.borderRadius,
+    this.barrierColor,
+    this.showDragHandle = true,
+    this.showHeader = true,
+    this.floatingCloseButton = false,
+  });
+
+  /// Defaults to `surfaceContainerLow`.
+  final Color? backgroundColor;
+
+  /// Top corners. Defaults to a 20dp radius.
+  final BorderRadius? borderRadius;
+
+  /// The scrim behind the sheet. Defaults to `Colors.black54`.
+  final Color? barrierColor;
+
+  final bool showDragHandle;
+
+  /// When false the title/subtitle/close header is not drawn (so `title`,
+  /// `subtitle` and `headerAction` are ignored).
+  final bool showHeader;
+
+  /// Only used when [showHeader] is false: a round close button floating at
+  /// the top-right.
+  final bool floatingCloseButton;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // D3BottomSheet
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -109,6 +150,7 @@ class D3BottomSheet {
     D3SnapPoint? initialSnap,
     Future<bool> Function()? onConfirmDiscard,
     bool useRootNavigator = true,
+    D3BottomSheetStyle style = const D3BottomSheetStyle(),
   }) {
     assert(snapPoints.isNotEmpty, 'snapPoints must not be empty');
 
@@ -130,7 +172,7 @@ class D3BottomSheet {
       // route to compete with it.
       enableDrag: false,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black54,
+      barrierColor: style.barrierColor ?? Colors.black54,
       useRootNavigator: useRootNavigator,
       builder: (ctx) => _D3BottomSheetContent<T>(
         title: title,
@@ -140,6 +182,7 @@ class D3BottomSheet {
         initialSnap: resolvedInitial,
         onConfirmDiscard: onConfirmDiscard,
         statusBarHeight: statusBarHeight,
+        style: style,
         child: child,
       ),
     );
@@ -175,9 +218,11 @@ class _D3BottomSheetContent<T> extends StatefulWidget {
     required this.initialSnap,
     this.onConfirmDiscard,
     required this.statusBarHeight,
+    required this.style,
     required this.child,
   });
 
+  final D3BottomSheetStyle style;
   final String? title;
   final String? subtitle;
   final Widget? headerAction;
@@ -352,6 +397,7 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
                 scrollController: scrollController,
                 onClose: _tryClose,
                 statusBarHeight: atTop ? widget.statusBarHeight : 0,
+                style: widget.style,
                 child: widget.child,
               );
             },
@@ -375,9 +421,11 @@ class _SheetSurface extends StatelessWidget {
     required this.scrollController,
     required this.onClose,
     required this.statusBarHeight,
+    required this.style,
     required this.child,
   });
 
+  final D3BottomSheetStyle style;
   final D3ColorTokens colors;
   final String? title;
   final String? subtitle;
@@ -396,14 +444,43 @@ class _SheetSurface extends StatelessWidget {
     //
     // The drag handle + header are pinned via SliverPersistentHeader so they
     // remain visible at the top while the body content scrolls beneath them.
+    final radius =
+        style.borderRadius ??
+        const BorderRadius.vertical(top: Radius.circular(20));
+    final background = style.backgroundColor ?? colors.surfaceContainerLow;
+
+    final scroll = CustomScrollView(
+      controller: scrollController,
+      slivers: [
+        if (style.showHeader)
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _StickySheetHeaderDelegate(
+              colors: colors,
+              background: background,
+              showDragHandle: style.showDragHandle,
+              topPadding: statusBarHeight,
+              title: title,
+              subtitle: subtitle,
+              headerAction: headerAction,
+              onClose: onClose,
+            ),
+          ),
+        SliverFillRemaining(child: child),
+        SliverToBoxAdapter(
+          child: SizedBox(height: MediaQuery.viewPaddingOf(context).bottom),
+        ),
+      ],
+    );
+
     return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: radius,
       child: Material(
         // Tonal elevation, not colors.surface — a sheet painted the same
         // color as the scaffold behind it reads as flat, especially in
         // dark mode. See root context/work/0007-d3-ui-tonal-elevation-
         // surface-ladder.md.
-        color: colors.surfaceContainerLow,
+        color: background,
         // Tap-to-dismiss-keyboard: a real drag/scroll gesture never
         // triggers onTap (Flutter's gesture arena only resolves it as a
         // tap once the pointer stays within the tap slop), so this
@@ -412,29 +489,56 @@ class _SheetSurface extends StatelessWidget {
         // both the tap recognizer and any interactive descendant (fields,
         // buttons) see the same pointer event rather than one stealing it
         // from the other.
+        //
+        // The entire surface must be a single CustomScrollView using the
+        // scrollController provided by DraggableScrollableSheet, so drag
+        // detection works across the whole sheet. With a header it is
+        // pinned via SliverPersistentHeader; without one, the handle (and
+        // optional close button) float above the child in a Stack.
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: () => FocusScope.of(context).unfocus(),
-          child: CustomScrollView(
-            controller: scrollController,
-            slivers: [
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _StickySheetHeaderDelegate(
-                  colors: colors,
-                  topPadding: statusBarHeight,
-                  title: title,
-                  subtitle: subtitle,
-                  headerAction: headerAction,
-                  onClose: onClose,
+          child: style.showHeader
+              ? scroll
+              : Stack(
+                  children: [
+                    scroll,
+                    if (style.showDragHandle)
+                      Positioned(
+                        top: 8 + statusBarHeight,
+                        left: 0,
+                        right: 0,
+                        child: IgnorePointer(
+                          child: Center(
+                            child: Container(
+                              width: 36,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(2),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black38,
+                                    blurRadius: 3,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (style.floatingCloseButton)
+                      Positioned(
+                        top: 12 + statusBarHeight,
+                        right: 12,
+                        child: D3ScrimIconButton(
+                          icon: Icons.close,
+                          semanticsLabel: 'Close',
+                          onTap: onClose,
+                        ),
+                      ),
+                  ],
                 ),
-              ),
-              SliverFillRemaining(child: child),
-              SliverToBoxAdapter(
-                child: SizedBox(height: MediaQuery.viewPaddingOf(context).bottom),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -452,6 +556,8 @@ const double _kStickyHeaderHeight = 68.0;
 class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   const _StickySheetHeaderDelegate({
     required this.colors,
+    required this.background,
+    required this.showDragHandle,
     required this.topPadding,
     this.title,
     this.subtitle,
@@ -460,6 +566,8 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   final D3ColorTokens colors;
+  final Color background;
+  final bool showDragHandle;
   final double topPadding;
   final String? title;
   final String? subtitle;
@@ -467,10 +575,15 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   final VoidCallback onClose;
 
   @override
-  double get minExtent => _kStickyHeaderHeight + topPadding;
+  double get minExtent => _extent;
 
   @override
-  double get maxExtent => _kStickyHeaderHeight + topPadding;
+  double get maxExtent => _extent;
+
+  // Handle (20) + header (48), or just the header without a handle.
+  double get _extent =>
+      (showDragHandle ? _kStickyHeaderHeight : _kStickyHeaderHeight - 20) +
+      topPadding;
 
   @override
   Widget build(
@@ -482,12 +595,12 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
       // Matches the sheet body's tonal elevation (see above) so the
       // pinned header doesn't visually seam against the scrollable
       // content beneath it.
-      color: colors.surfaceContainerLow,
+      color: background,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(height: topPadding),
-          _DragHandle(colors: colors),
+          if (showDragHandle) _DragHandle(colors: colors),
           _SheetHeader(
             title: title,
             subtitle: subtitle,
@@ -502,6 +615,8 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(_StickySheetHeaderDelegate old) =>
+      old.background != background ||
+      old.showDragHandle != showDragHandle ||
       old.title != title ||
       old.subtitle != subtitle ||
       old.topPadding != topPadding ||
