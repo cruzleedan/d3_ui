@@ -84,6 +84,12 @@ class D3SectionTabsController {
     }
   }
 
+  /// [scrollTo] for the section with this id; does nothing if it is not shown.
+  Future<void> scrollToId(String id) {
+    final index = _ids.indexOf(id);
+    return index < 0 ? Future.value() : scrollTo(index);
+  }
+
   /// Scrolls section [index] to just under the pinned area, then selects its
   /// tab. A section that cannot reach the top (end of content) scrolls as far
   /// as it can.
