@@ -9,6 +9,11 @@ abstract final class D3ColorPrimitives {
   static const blue500 = Color(0xFF5B73E8);
   static const blue600 = Color(0xFF4F6EE0);
 
+  /// The light theme's `primary`: 5.4:1 on white and 4.7:1 on `neutral75`, so
+  /// primary-coloured text and white button labels both clear WCAG AA (4.5:1).
+  /// [blue500] is 4.15:1 on white and 3.56:1 on `neutral75`.
+  static const blue700 = Color(0xFF4D62C5);
+
   // Greens
   static const green400 = Color(0xFF34D399);
   static const green500 = Color(0xFF10B981);
@@ -112,10 +117,10 @@ class D3ColorTokens {
   // ── Predefined light ──────────────────────────────────────────────────────
 
   static const light = D3ColorTokens(
-    primary: D3ColorPrimitives.blue500,
+    primary: D3ColorPrimitives.blue700,
     onPrimary: D3ColorPrimitives.white,
-    primaryContainer: Color(0x1F5B73E8), // blue500 @ 12%
-    onPrimaryContainer: D3ColorPrimitives.blue500,
+    primaryContainer: Color(0x1F4D62C5), // blue700 @ 12%
+    onPrimaryContainer: D3ColorPrimitives.blue700,
     secondary: D3ColorPrimitives.neutral400,
     onSecondary: D3ColorPrimitives.white,
     surface: D3ColorPrimitives.white,

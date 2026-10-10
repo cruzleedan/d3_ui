@@ -351,11 +351,12 @@ class _ToastStyle {
     required IconData icon,
     required D3ColorTokens colors,
   }) {
+    final background = Color.alphaBlend(
+      accent.withValues(alpha: 0.16),
+      colors.surface,
+    );
     return _ToastStyle(
-      background: Color.alphaBlend(
-        accent.withValues(alpha: 0.16),
-        colors.surface,
-      ),
+      background: background,
       border: Color.alphaBlend(accent.withValues(alpha: 0.40), colors.surface),
       icon: icon,
       iconForeground: accent,
@@ -365,7 +366,9 @@ class _ToastStyle {
       ),
       titleColor: colors.onSurface,
       messageColor: colors.onSurfaceVariant,
-      actionColor: accent,
+      // The action is text, so it must read on the tinted background even
+      // when the accent (amber) is too pale to.
+      actionColor: d3EnsureContrast(accent, background),
     );
   }
 

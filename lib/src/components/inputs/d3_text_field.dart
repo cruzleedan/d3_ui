@@ -928,7 +928,8 @@ class _BottomRow extends StatelessWidget {
       if (ratio >= 1.0) {
         counterColor = colors.error;
       } else if (ratio >= warnThreshold) {
-        counterColor = colors.warning;
+        // Amber is ~2:1 on white; keep its hue but make the digits readable.
+        counterColor = d3EnsureContrast(colors.warning, colors.surface);
       }
     }
 

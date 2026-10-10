@@ -5,6 +5,7 @@ library d3_ui;
 export 'src/layout/d3_adaptive_layout.dart';
 
 // Utils
+export 'src/utils/d3_contrast.dart';
 export 'src/utils/d3_debouncer.dart';
 
 // Tokens
