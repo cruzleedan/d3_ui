@@ -12,6 +12,7 @@ class D3ScrimIconButton extends StatelessWidget {
     required this.semanticsLabel,
     required this.onTap,
     this.iconColor = Colors.white,
+    this.scrimColor,
     this.size = 36,
   });
 
@@ -19,6 +20,11 @@ class D3ScrimIconButton extends StatelessWidget {
   final String semanticsLabel;
   final VoidCallback onTap;
   final Color iconColor;
+
+  /// The circle behind the icon. Defaults to black at 35% — right over a
+  /// photo, but a muddy grey on a light surface, where callers should pass a
+  /// subtle tint (and a dark [iconColor]).
+  final Color? scrimColor;
 
   /// Diameter of the scrim circle.
   final double size;
@@ -35,7 +41,7 @@ class D3ScrimIconButton extends StatelessWidget {
           width: size,
           height: size,
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.35),
+            color: scrimColor ?? Colors.black.withValues(alpha: 0.35),
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
