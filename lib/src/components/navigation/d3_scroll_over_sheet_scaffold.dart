@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart' show Drag;
 import 'package:material_ui/material_ui.dart';
 
 /// What a [D3ScrollOverSheetScaffold.topBar] builder needs to know about the
@@ -216,7 +217,10 @@ class _D3ScrollOverSheetScaffoldState extends State<D3ScrollOverSheetScaffold> {
                     left: 0,
                     right: 0,
                     height: widget.stickyHeight,
-                    child: child!,
+                    child: _ScrollForwarder(
+                      controller: _controller,
+                      child: child!,
+                    ),
                   );
                 },
                 child: widget.sticky!,
@@ -226,35 +230,80 @@ class _D3ScrollOverSheetScaffoldState extends State<D3ScrollOverSheetScaffold> {
               left: 0,
               right: 0,
               height: barHeight,
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (context, _) {
-                  final offset = _controller.hasClients
-                      ? _controller.offset
-                      : 0.0;
-                  final fadeRange = _pageHeight - barHeight;
-                  final progress = fadeRange <= 0
-                      ? 0.0
-                      : (offset / fadeRange).clamp(0.0, 1.0);
-                  final anchorHidden =
-                      widget.anchorKey != null &&
-                      _pageHeight > 0 &&
-                      _pageHeight - offset + _anchorBottom <= barHeight;
-                  return widget.topBar(
-                    context,
-                    D3ScrollOverSheetState(
-                      progress: progress,
-                      anchorHidden: anchorHidden,
-                      barHeight: barHeight,
-                      scrollOffset: offset,
-                    ),
-                  );
-                },
+              child: _ScrollForwarder(
+                controller: _controller,
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, _) {
+                    final offset = _controller.hasClients
+                        ? _controller.offset
+                        : 0.0;
+                    final fadeRange = _pageHeight - barHeight;
+                    final progress = fadeRange <= 0
+                        ? 0.0
+                        : (offset / fadeRange).clamp(0.0, 1.0);
+                    final anchorHidden =
+                        widget.anchorKey != null &&
+                        _pageHeight > 0 &&
+                        _pageHeight - offset + _anchorBottom <= barHeight;
+                    return widget.topBar(
+                      context,
+                      D3ScrollOverSheetState(
+                        progress: progress,
+                        anchorHidden: anchorHidden,
+                        barHeight: barHeight,
+                        scrollOffset: offset,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
         );
       },
+    );
+  }
+}
+
+/// Hands vertical drags that start on an overlay (the top bar, the sticky
+/// widget) to the page's scroll position. The overlays sit above the scroll
+/// view, so without this a swipe that begins on them scrolls nothing.
+///
+/// Uses [ScrollPosition.drag], so the scroll gets the platform's own physics,
+/// including the fling when the finger lifts. Horizontal drags are untouched —
+/// a horizontally scrolling child (a tab strip) still scrolls sideways.
+class _ScrollForwarder extends StatefulWidget {
+  const _ScrollForwarder({required this.controller, required this.child});
+
+  final ScrollController controller;
+  final Widget child;
+
+  @override
+  State<_ScrollForwarder> createState() => _ScrollForwarderState();
+}
+
+class _ScrollForwarderState extends State<_ScrollForwarder> {
+  Drag? _drag;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onVerticalDragStart: (details) {
+        if (!widget.controller.hasClients) return;
+        _drag = widget.controller.position.drag(details, () => _drag = null);
+      },
+      onVerticalDragUpdate: (details) => _drag?.update(details),
+      onVerticalDragEnd: (details) {
+        _drag?.end(details);
+        _drag = null;
+      },
+      onVerticalDragCancel: () {
+        _drag?.cancel();
+        _drag = null;
+      },
+      child: widget.child,
     );
   }
 }

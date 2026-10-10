@@ -54,6 +54,27 @@ void main() {
       );
     });
 
+    testWidgets('a vertical swipe that starts on the sticky widget or the top '
+        'bar still scrolls the page', (tester) async {
+      await tester.pumpWidget(scaffold());
+      await tester.pumpAndSettle();
+      final before = tester.getTopLeft(find.text('SHEET BODY')).dy;
+
+      // Starts on the sticky overlay, not on the scroll view beneath it.
+      await tester.drag(find.text('STICKY'), const Offset(0, -150));
+      await tester.pumpAndSettle();
+      final afterSticky = tester.getTopLeft(find.text('SHEET BODY')).dy;
+      expect(afterSticky, lessThan(before - 50));
+
+      // And a drag on the (empty) top bar region.
+      await tester.dragFrom(const Offset(200, 20), const Offset(0, 150));
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(find.text('SHEET BODY')).dy,
+        greaterThan(afterSticky + 50),
+      );
+    });
+
     testWidgets('scrolled fully up: anchor is behind the bar, progress is 1, '
         'sticky pins under the bar', (tester) async {
       await tester.pumpWidget(scaffold());
