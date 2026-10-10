@@ -58,7 +58,11 @@ class _D3StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => extent;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final colors = context.d3Colors;
     // Flat by design (no drop shadows in this design system, see
     // D3ColorTokens' surfaceContainer* docs) — a bottom border stands in
@@ -81,7 +85,11 @@ class _D3StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
         decoration: BoxDecoration(
           color: colors.surfaceContainerLow,
           border: overlapsContent
-              ? Border(bottom: BorderSide(color: colors.outline.withValues(alpha: 0.4)))
+              ? Border(
+                  bottom: BorderSide(
+                    color: colors.outline.withValues(alpha: 0.4),
+                  ),
+                )
               : null,
         ),
         child: child,

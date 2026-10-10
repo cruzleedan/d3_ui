@@ -46,6 +46,7 @@ export 'src/components/navigation/d3_nav_bar.dart';
 export 'src/components/navigation/d3_screen.dart';
 export 'src/components/navigation/d3_list_screen.dart';
 export 'src/components/navigation/d3_sticky_header.dart';
+export 'src/components/navigation/d3_tab_bar.dart';
 export 'src/components/surfaces/d3_card.dart';
 export 'src/components/surfaces/d3_list_tile.dart';
 export 'src/components/surfaces/d3_slidable_row.dart';
