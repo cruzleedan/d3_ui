@@ -58,13 +58,16 @@ class D3TicketCard extends StatelessWidget {
                     Icon(leading, size: 16),
                     const SizedBox(width: 4),
                     Expanded(
+                      // Two lines: a long headline ("₱199 · Latte and a slice of
+                      // cake") should read in full on the card, not as "…".
                       child: Text(
                         title,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
+                          height: 1.15,
                         ),
                       ),
                     ),
