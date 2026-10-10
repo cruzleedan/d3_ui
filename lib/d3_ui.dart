@@ -20,6 +20,7 @@ export 'src/themes/d3_app_theme.dart';
 
 // Components
 export 'src/components/actions/d3_button.dart';
+export 'src/components/actions/d3_scrim_icon_button.dart';
 export 'src/components/actions/d3_split_button.dart';
 export 'src/components/actions/d3_hyperlink_button.dart';
 export 'src/components/actions/d3_expanding_fab.dart';
@@ -47,7 +48,12 @@ export 'src/components/navigation/d3_screen.dart';
 export 'src/components/navigation/d3_list_screen.dart';
 export 'src/components/navigation/d3_sticky_header.dart';
 export 'src/components/navigation/d3_tab_bar.dart';
+export 'src/components/navigation/d3_scroll_over_sheet_scaffold.dart';
+export 'src/components/navigation/d3_section_tabs_controller.dart';
 export 'src/components/surfaces/d3_card.dart';
+export 'src/components/surfaces/d3_info_card.dart';
+export 'src/components/surfaces/d3_thumbnail_card.dart';
+export 'src/components/surfaces/d3_ticket_card.dart';
 export 'src/components/surfaces/d3_list_tile.dart';
 export 'src/components/surfaces/d3_slidable_row.dart';
 export 'src/components/dialogs/d3_dialog.dart';

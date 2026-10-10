@@ -43,17 +43,33 @@ class D3SectionHeader extends StatelessWidget {
   const D3SectionHeader({
     super.key,
     required this.label,
-    required this.count,
+    required int this.count,
     this.trailingIcon,
     this.trailingIconColor,
     this.trailingSemanticsLabel,
     this.onTrailingTap,
     this.padding = const EdgeInsets.symmetric(vertical: D3Spacing.s8),
-  });
+  }) : _labelOnly = false;
+
+  /// A small, muted, upper-case-style caption with no count or action —
+  /// for labelling a block of content ("TERMS", "OPENING HOURS"), as
+  /// opposed to the list-section header above.
+  const D3SectionHeader.label({
+    super.key,
+    required this.label,
+    this.padding = const EdgeInsets.only(bottom: D3Spacing.s8),
+  }) : count = null,
+       trailingIcon = null,
+       trailingIconColor = null,
+       trailingSemanticsLabel = null,
+       onTrailingTap = null,
+       _labelOnly = true;
+
+  final bool _labelOnly;
 
   /// Section name, e.g. "Visits" — rendered as "Visits ($count)".
   final String label;
-  final int count;
+  final int? count;
 
   /// Icon for the single trailing action. Omit (with [onTrailingTap]
   /// also null) for a label-only header with no action.
@@ -79,6 +95,21 @@ class D3SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
+
+    if (_labelOnly) {
+      return Padding(
+        padding: padding,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: D3TypeScale.labelSmSize,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
+            color: colors.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
 
     return Semantics(
       label: trailingSemanticsLabel ?? label,
