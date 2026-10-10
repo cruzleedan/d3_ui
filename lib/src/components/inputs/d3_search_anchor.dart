@@ -39,6 +39,19 @@ abstract interface class _D3SearchAnchorActions {
   void search(String query);
 }
 
+/// How an active [D3SearchAnchor] is presented.
+enum D3SearchPresentation {
+  /// A full-screen page with its own search row and results (the default).
+  fullScreen,
+
+  /// A search row pinned to the top of the screen — covering any header
+  /// beneath it — over the page that opened it. While nothing has been typed
+  /// the area below the row is a translucent mask and tapping it dismisses
+  /// the search; once the user types, it becomes a solid surface showing
+  /// the results.
+  overlay,
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // D3SearchAnchor
 // ─────────────────────────────────────────────────────────────────────────────
@@ -119,6 +132,7 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
     this.defaultFilters,
     this.onFiltersChanged,
     this.multiSelectFilters = false,
+    this.presentation = D3SearchPresentation.fullScreen,
   }) : _initialItems = items,
        _filterItems = filterItems,
        _onSearch = null,
@@ -148,6 +162,7 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
     this.defaultFilters,
     this.onFiltersChanged,
     this.multiSelectFilters = false,
+    this.presentation = D3SearchPresentation.fullScreen,
   }) : _initialItems = initialItems,
        _filterItems = null,
        _onSearch = onSearch,
@@ -178,6 +193,9 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
 
   /// When true, multiple filter chips can be active at once.
   final bool multiSelectFilters;
+
+  /// See [D3SearchPresentation].
+  final D3SearchPresentation presentation;
 
   // Internal
   final List<T> _initialItems;
@@ -290,7 +308,9 @@ class _D3SearchAnchorState<T, F> extends State<D3SearchAnchor<T, F>>
     Navigator.of(context, rootNavigator: true)
         .push<void>(
           _SearchPageRoute(
+            overlay: widget.presentation == D3SearchPresentation.overlay,
             child: _D3SearchPage<T, F>(
+              presentation: widget.presentation,
               hint: widget.hint,
               initialItems: widget._initialItems,
               filterItems: widget._filterItems,
@@ -354,8 +374,9 @@ class _D3SearchAnchorState<T, F> extends State<D3SearchAnchor<T, F>>
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SearchPageRoute extends PageRouteBuilder<void> {
-  _SearchPageRoute({required Widget child})
+  _SearchPageRoute({required Widget child, bool overlay = false})
     : super(
+        opaque: !overlay,
         pageBuilder: (_, __, ___) => child,
         transitionDuration: D3Motion.base,
         reverseTransitionDuration: D3Motion.fast,
@@ -364,6 +385,7 @@ class _SearchPageRoute extends PageRouteBuilder<void> {
             parent: animation,
             curve: D3Motion.enter,
           );
+          if (overlay) return FadeTransition(opacity: curve, child: child);
           return FadeTransition(
             opacity: curve,
             child: SlideTransition(
@@ -384,6 +406,7 @@ class _SearchPageRoute extends PageRouteBuilder<void> {
 
 class _D3SearchPage<T, F> extends StatefulWidget {
   const _D3SearchPage({
+    required this.presentation,
     required this.hint,
     required this.initialItems,
     required this.filterItems,
@@ -399,6 +422,7 @@ class _D3SearchPage<T, F> extends StatefulWidget {
     required this.multiSelectFilters,
   });
 
+  final D3SearchPresentation presentation;
   final String hint;
   final List<T> initialItems;
   final List<T> Function(List<T>, String, Set<F>)? filterItems;
@@ -473,7 +497,10 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
     final q = _textController.text.trim();
     if (q == _query) return;
     _query = q;
-    if (widget.isLocal) {
+    // The overlay swaps its mask for the results on the first character, so
+    // local filtering must keep up at once rather than flash stale results.
+    final immediate = widget.presentation == D3SearchPresentation.overlay;
+    if (widget.isLocal && !immediate) {
       _localDebouncer.run(() => _applyQuery(q));
     } else {
       _applyQuery(q);
@@ -517,6 +544,10 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
 
+    if (widget.presentation == D3SearchPresentation.overlay) {
+      return _buildOverlay(colors);
+    }
+
     return Scaffold(
       // Tonal elevation, not colors.surface — a full-screen overlay
       // painted the same color as the scaffold behind it reads as flat.
@@ -526,60 +557,7 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Search bar row ──────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 8, 16, 8),
-              child: Row(
-                children: [
-                  Semantics(
-                    button: true,
-                    label: 'Back',
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => Navigator.of(context).pop(),
-                      child: D3TapTarget(
-                        child: Icon(
-                          Icons.arrow_back_rounded,
-                          size: 22,
-                          color: colors.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: D3SearchBar(
-                      controller: _textController,
-                      focusNode: _focusNode,
-                      hint: widget.hint,
-                      autofocus: true,
-                      onSubmitted: (_) {
-                        if (!widget.isLocal) _remoteSearch(_query);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Filter chips (optional) ─────────────────────────────────
-            if (widget.hasFilters) ...[
-              D3FilterChipRow<F>(
-                options: widget.filterOptions,
-                selected: _activeFilters,
-                onChanged: (next) {
-                  _activeFilters = next;
-                  widget.onFiltersChanged?.call(next);
-                  _applyQuery(_query);
-                },
-                multiSelect: widget.multiSelectFilters,
-                padding: const EdgeInsets.fromLTRB(
-                  D3Spacing.s16,
-                  0,
-                  D3Spacing.s16,
-                  D3Spacing.s10,
-                ),
-              ),
-            ],
+            ..._header(colors),
 
             const Divider(height: 0, thickness: 0.5),
 
@@ -589,6 +567,107 @@ class _D3SearchPageState<T, F> extends State<_D3SearchPage<T, F>> {
         ),
       ),
     );
+  }
+
+  /// [D3SearchPresentation.overlay]: the search row sits at the top over the
+  /// opening page; below it is a tap-to-dismiss mask until the user types,
+  /// then a solid surface with the results.
+  Widget _buildOverlay(D3ColorTokens colors) {
+    final showMask = _query.isEmpty;
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Column(
+        children: [
+          Material(
+            color: colors.surfaceContainer,
+            child: SafeArea(
+              bottom: false,
+              child: Column(children: _header(colors)),
+            ),
+          ),
+          const Divider(height: 0, thickness: 0.5),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: D3Motion.fast,
+              child: showMask
+                  ? GestureDetector(
+                      key: const ValueKey('d3-search-mask'),
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => Navigator.of(context).pop(),
+                      child: ColoredBox(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        child: const SizedBox.expand(),
+                      ),
+                    )
+                  : Material(
+                      key: const ValueKey('d3-search-results'),
+                      color: colors.surfaceContainer,
+                      child: _buildContent(colors),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The search row (back arrow + field) and optional filter chips.
+  List<Widget> _header(D3ColorTokens colors) {
+    return [
+      // ── Search bar row ──────────────────────────────────────────
+      Padding(
+        padding: const EdgeInsets.fromLTRB(4, 8, 16, 8),
+        child: Row(
+          children: [
+            Semantics(
+              button: true,
+              label: 'Back',
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.of(context).pop(),
+                child: D3TapTarget(
+                  child: Icon(
+                    Icons.arrow_back_rounded,
+                    size: 22,
+                    color: colors.onSurface,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: D3SearchBar(
+                controller: _textController,
+                focusNode: _focusNode,
+                hint: widget.hint,
+                autofocus: true,
+                onSubmitted: (_) {
+                  if (!widget.isLocal) _remoteSearch(_query);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      // ── Filter chips (optional) ─────────────────────────────────
+      if (widget.hasFilters)
+        D3FilterChipRow<F>(
+          options: widget.filterOptions,
+          selected: _activeFilters,
+          onChanged: (next) {
+            _activeFilters = next;
+            widget.onFiltersChanged?.call(next);
+            _applyQuery(_query);
+          },
+          multiSelect: widget.multiSelectFilters,
+          padding: const EdgeInsets.fromLTRB(
+            D3Spacing.s16,
+            0,
+            D3Spacing.s16,
+            D3Spacing.s10,
+          ),
+        ),
+    ];
   }
 
   Widget _buildContent(D3ColorTokens colors) {
