@@ -44,4 +44,17 @@ void main() {
       greaterThanOrEqualTo(4.5),
     );
   });
+
+  test('the dark theme button label clears AA on primary, and primary text '
+      'clears AA on the dark surface', () {
+    final colors = D3ColorTokens.dark;
+    expect(
+      d3ContrastRatio(colors.onPrimary, colors.primary),
+      greaterThanOrEqualTo(4.5),
+    );
+    expect(
+      d3ContrastRatio(colors.primary, colors.surface),
+      greaterThanOrEqualTo(4.5),
+    );
+  });
 }

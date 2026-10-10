@@ -147,7 +147,8 @@ class D3ColorTokens {
 
   static const dark = D3ColorTokens(
     primary: D3ColorPrimitives.blue400,
-    onPrimary: D3ColorPrimitives.white,
+    // Dark text on the light blue: 6.3:1. White was 3.0:1.
+    onPrimary: D3ColorPrimitives.neutral900,
     primaryContainer: Color(0x266C8FFF), // blue400 @ 15%
     onPrimaryContainer: D3ColorPrimitives.blue400,
     secondary: D3ColorPrimitives.neutral300,

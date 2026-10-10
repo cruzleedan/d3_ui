@@ -161,7 +161,8 @@ class _D3SearchBarState extends State<D3SearchBar> {
       curve: D3Motion.standard,
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(D3Radius.lg),
+        // A pill: at ~52dp tall, the 14dp card radius read as squarish.
+        borderRadius: BorderRadius.circular(D3Radius.full),
         border: Border.all(
           color: borderColor,
           width: effectivelyFocused ? focusedBorderWidth : 1.0,
@@ -183,36 +184,52 @@ class _D3SearchBarState extends State<D3SearchBar> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: kMinInteractiveDimension,
-              ),
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                readOnly: widget.readOnly,
-                autofocus: widget.autofocus,
-                textInputAction: widget.textInputAction,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colors.onSurface,
-                  height: 1.2,
+            // The whole 48dp strip is the tap target, but the field inside is
+            // only as tall as its text and centred in it: a TextField forced
+            // to 48dp keeps its text at the top (contentPadding), which is
+            // what made the value look off-centre. Taps above/below the
+            // field itself land here instead.
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                if (!widget.readOnly) _focusNode.requestFocus();
+                widget.onTap?.call();
+              },
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: kMinInteractiveDimension,
                 ),
-                decoration: InputDecoration(
-                  hintText: widget.hint,
-                  hintStyle: TextStyle(
-                    fontSize: 14,
-                    color: colors.onSurfaceVariant.withValues(alpha: 0.6),
-                    height: 1.2,
+                // heightFactor: shrink-wrap, don't expand to the Row's max.
+                child: Center(
+                  heightFactor: 1,
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    readOnly: widget.readOnly,
+                    autofocus: widget.autofocus,
+                    textInputAction: widget.textInputAction,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colors.onSurface,
+                      height: 1.2,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: widget.hint,
+                      hintStyle: TextStyle(
+                        fontSize: 14,
+                        color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                        height: 1.2,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                    ),
+                    cursorColor: colors.primary,
+                    onChanged: widget.onChanged,
+                    onSubmitted: widget.onSubmitted,
+                    onTap: widget.onTap,
                   ),
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 11),
                 ),
-                cursorColor: colors.primary,
-                onChanged: widget.onChanged,
-                onSubmitted: widget.onSubmitted,
-                onTap: widget.onTap,
               ),
             ),
           ),
