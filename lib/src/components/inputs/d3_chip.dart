@@ -93,9 +93,10 @@ enum D3ChipVariant {
 /// Pass `enabled: false` to disable. `onTap: null` also makes the chip
 /// non-interactive but keeps full opacity (read-only badge use case).
 ///
-/// For [D3ChipVariant.filled] (and `selected`), [backgroundColor] and
-/// [foregroundColor] override the default `colors.primary`/`colors.onPrimary`
-/// fill — e.g. to render a status-colored badge (success, warning, error).
+/// [backgroundColor] and [foregroundColor] override the variant's default
+/// colours on every variant — e.g. to render a status-colored badge (success,
+/// warning, error), or to fix a chip's contrast. An overridden
+/// [foregroundColor] also colours the `outlined` border.
 ///
 /// ```dart
 /// D3Chip(
@@ -157,14 +158,14 @@ class D3Chip extends StatelessWidget {
   final VoidCallback? onTap;
   final String? semanticsLabel;
 
-  /// Overrides the background fill for [D3ChipVariant.filled] (including the
-  /// `selected` state). Ignored for `tonal`/`outlined`. Falls back to
-  /// `colors.primary` when null.
+  /// Overrides the background fill. Falls back to `colors.primary` (filled,
+  /// including `selected`), `colors.primaryContainer` (tonal) or transparent
+  /// (outlined).
   final Color? backgroundColor;
 
-  /// Overrides the label/icon color for [D3ChipVariant.filled] (including the
-  /// `selected` state). Ignored for `tonal`/`outlined`. Falls back to
-  /// `colors.onPrimary` when null.
+  /// Overrides the label/icon colour. Falls back to `colors.onPrimary`
+  /// (filled), `colors.onPrimaryContainer` lifted to 4.5:1 (tonal) or
+  /// `colors.onSurfaceVariant` (outlined).
   final Color? foregroundColor;
 
   bool get _interactive => onTap != null && enabled;
@@ -184,13 +185,22 @@ class D3Chip extends StatelessWidget {
         fg = foregroundColor ?? colors.onPrimary;
         border = null;
       case D3ChipVariant.tonal:
-        bg = colors.primaryContainer;
-        fg = colors.onPrimaryContainer;
+        bg = backgroundColor ?? colors.primaryContainer;
+        // The default fill is translucent: judge contrast on what shows.
+        fg =
+            foregroundColor ??
+            d3EnsureContrast(
+              colors.onPrimaryContainer,
+              Color.alphaBlend(bg, colors.surface),
+            );
         border = null;
       case D3ChipVariant.outlined:
-        bg = Colors.transparent;
-        fg = colors.onSurfaceVariant;
-        border = Border.all(color: colors.outline, width: 0.5);
+        bg = backgroundColor ?? Colors.transparent;
+        fg = foregroundColor ?? colors.onSurfaceVariant;
+        border = Border.all(
+          color: foregroundColor ?? colors.outline,
+          width: 0.5,
+        );
     }
 
     final chip = DecoratedBox(
