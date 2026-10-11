@@ -14,6 +14,8 @@ class D3TicketCard extends StatelessWidget {
     super.key,
     required this.title,
     this.leading = Icons.sell,
+    this.leadingColor,
+    this.leadingSemanticsLabel,
     this.primaryLine,
     this.secondaryLine,
     this.onTap,
@@ -24,6 +26,12 @@ class D3TicketCard extends StatelessWidget {
 
   final String title;
   final IconData leading;
+
+  /// Tints the [leading] icon, e.g. a warning colour.
+  final Color? leadingColor;
+
+  /// Spoken label for the [leading] icon; without it the icon is decorative.
+  final String? leadingSemanticsLabel;
   final String? primaryLine;
   final String? secondaryLine;
   final VoidCallback? onTap;
@@ -55,7 +63,12 @@ class D3TicketCard extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    Icon(leading, size: 16),
+                    Icon(
+                      leading,
+                      size: 16,
+                      color: leadingColor,
+                      semanticLabel: leadingSemanticsLabel,
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       // Two lines: a long headline ("₱199 · Latte and a slice of
