@@ -63,7 +63,8 @@ class D3BottomSheetStyle {
   /// Defaults to `surfaceContainerLow`.
   final Color? backgroundColor;
 
-  /// Top corners. Defaults to a 20dp radius.
+  /// Top corners. Defaults to the theme's `xl` radius (20dp unless the app's
+  /// [D3ShapeTokens] changes it).
   final BorderRadius? borderRadius;
 
   /// The scrim behind the sheet. Defaults to `Colors.black54`.
@@ -504,7 +505,7 @@ class _SheetSurface extends StatelessWidget {
     // remain visible at the top while the body content scrolls beneath them.
     final radius =
         style.borderRadius ??
-        const BorderRadius.vertical(top: Radius.circular(20));
+        BorderRadius.vertical(top: Radius.circular(context.d3Shape.xl));
     final background = style.backgroundColor ?? colors.surfaceContainerLow;
 
     final scroll = CustomScrollView(

@@ -43,15 +43,16 @@ class D3ListTileGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
+    final shape = context.d3Shape;
     final effectiveBorder =
         border ?? BorderSide(color: colors.outline, width: 0.5);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(D3Radius.lg),
+      borderRadius: shape.circularLg,
       child: DecoratedBox(
         decoration: BoxDecoration(
           border: Border.fromBorderSide(effectiveBorder),
-          borderRadius: BorderRadius.circular(D3Radius.lg),
+          borderRadius: shape.circularLg,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -62,7 +63,7 @@ class D3ListTileGroup extends StatelessWidget {
                   height: 0,
                   thickness: 0.5,
                   indent: _dividerIndent(children[i - 1]),
-                  color: colors.outline,
+                  color: colors.outlineVariant,
                 ),
               children[i],
             ],

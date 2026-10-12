@@ -24,7 +24,7 @@ class D3InfoCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         border: Border.all(color: context.d3Colors.outline),
-        borderRadius: BorderRadius.circular(D3Radius.lg),
+        borderRadius: context.d3Shape.circularLg,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

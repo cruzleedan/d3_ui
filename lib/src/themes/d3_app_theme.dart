@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/src/tokens/d3_colors.dart';
+import 'package:d3_ui/src/tokens/d3_shape.dart';
+import 'package:d3_ui/src/tokens/d3_status.dart';
 import 'package:d3_ui/src/themes/d3_theme_extension.dart';
 
 /// Factory that builds [ThemeData] from design system tokens.
@@ -24,6 +26,8 @@ abstract final class D3AppTheme {
     D3InputTokens? inputTokens,
     D3ButtonTokens? buttonTokens,
     D3PhotoGalleryTokens? photoGalleryTokens,
+    D3ShapeTokens? shapeTokens,
+    D3StatusTokens? statusTokens,
     D3TokensExtension? overrides,
     List<ThemeExtension<dynamic>> extraExtensions = const [],
   }) {
@@ -35,6 +39,8 @@ abstract final class D3AppTheme {
           inputTokens: inputTokens,
           buttonTokens: buttonTokens,
           photoGalleryTokens: photoGalleryTokens,
+          shapeTokens: shapeTokens,
+          statusTokens: statusTokens,
         );
     return _build(
       brightness: Brightness.light,
@@ -56,6 +62,8 @@ abstract final class D3AppTheme {
     D3InputTokens? inputTokens,
     D3ButtonTokens? buttonTokens,
     D3PhotoGalleryTokens? photoGalleryTokens,
+    D3ShapeTokens? shapeTokens,
+    D3StatusTokens? statusTokens,
     D3TokensExtension? overrides,
     List<ThemeExtension<dynamic>> extraExtensions = const [],
   }) {
@@ -67,6 +75,8 @@ abstract final class D3AppTheme {
           inputTokens: inputTokens,
           buttonTokens: buttonTokens,
           photoGalleryTokens: photoGalleryTokens,
+          shapeTokens: shapeTokens,
+          statusTokens: statusTokens,
         );
     return _build(
       brightness: Brightness.dark,

@@ -1,5 +1,7 @@
 import 'package:d3_ui/src/tokens/d3_colors.dart';
 import 'package:d3_ui/src/tokens/d3_radius.dart';
+import 'package:d3_ui/src/tokens/d3_shape.dart';
+import 'package:d3_ui/src/tokens/d3_status.dart';
 import 'package:d3_ui/src/tokens/d3_spacing.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -11,6 +13,8 @@ class D3TokensExtension extends ThemeExtension<D3TokensExtension> {
     required this.buttonTokens,
     required this.inputTokens,
     required this.photoGalleryTokens,
+    this.shapeTokens = D3ShapeTokens.defaults,
+    this.statusTokens,
   });
 
   final D3ColorTokens colors;
@@ -18,18 +22,31 @@ class D3TokensExtension extends ThemeExtension<D3TokensExtension> {
   final D3InputTokens inputTokens;
   final D3PhotoGalleryTokens photoGalleryTokens;
 
+  /// Corner radii and the card outline; defaults equal [D3Radius].
+  final D3ShapeTokens shapeTokens;
+
+  /// Status colours; `null` derives them from [colors].
+  final D3StatusTokens? statusTokens;
+
+  D3StatusTokens get status =>
+      statusTokens ?? D3StatusTokens.fromColors(colors);
+
   @override
   D3TokensExtension copyWith({
     D3ColorTokens? colors,
     D3ButtonTokens? buttonTokens,
     D3InputTokens? inputTokens,
     D3PhotoGalleryTokens? photoGalleryTokens,
+    D3ShapeTokens? shapeTokens,
+    D3StatusTokens? statusTokens,
   }) {
     return D3TokensExtension(
       colors: colors ?? this.colors,
       buttonTokens: buttonTokens ?? this.buttonTokens,
       inputTokens: inputTokens ?? this.inputTokens,
       photoGalleryTokens: photoGalleryTokens ?? this.photoGalleryTokens,
+      shapeTokens: shapeTokens ?? this.shapeTokens,
+      statusTokens: statusTokens ?? this.statusTokens,
     );
   }
 
@@ -368,4 +385,6 @@ extension D3ThemeExtensions on BuildContext {
   D3ButtonTokens get d3ButtonTokens => d3Tokens.buttonTokens;
   D3InputTokens get d3InputTokens => d3Tokens.inputTokens;
   D3PhotoGalleryTokens get d3PhotoGalleryTokens => d3Tokens.photoGalleryTokens;
+  D3ShapeTokens get d3Shape => d3Tokens.shapeTokens;
+  D3StatusTokens get d3Status => d3Tokens.status;
 }

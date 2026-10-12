@@ -12,12 +12,15 @@ export 'src/utils/d3_debouncer.dart';
 export 'src/tokens/d3_colors.dart';
 export 'src/tokens/d3_spacing.dart';
 export 'src/tokens/d3_radius.dart';
+export 'src/tokens/d3_shape.dart';
+export 'src/tokens/d3_status.dart';
 export 'src/tokens/d3_motion.dart';
 export 'src/tokens/d3_typography.dart';
 
 // Themes
 export 'src/themes/d3_theme_extension.dart';
 export 'src/themes/d3_app_theme.dart';
+export 'src/themes/d3_theme_spec.dart';
 
 // Components
 export 'src/components/actions/d3_button.dart';
