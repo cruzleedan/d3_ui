@@ -56,12 +56,18 @@ class D3StatusTokens {
     required this.warning,
     required this.destructive,
     required this.neutral,
+    this.star,
   });
 
   final D3StatusColor success;
   final D3StatusColor warning;
   final D3StatusColor destructive;
   final D3StatusColor neutral;
+
+  /// The filled rating star. `null` uses the warning text colour.
+  final Color? star;
+
+  Color get ratingStar => star ?? warning.text;
 
   /// Derives the four statuses from [colors]: text is the status colour, tint
   /// and border are that colour at low opacity.
