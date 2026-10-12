@@ -32,3 +32,7 @@ lcov.info
 # Showcase build output (scripts/build_showcase.sh)
 dist/
 __pycache__/
+
+# The showcase code snippets are generated from the examples and committed, so a
+# clean checkout builds (a test keeps them current).
+!example/lib/showcase/generated/*.g.dart

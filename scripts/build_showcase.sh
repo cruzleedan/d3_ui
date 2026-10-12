@@ -17,7 +17,7 @@ cd "$(dirname "$0")/.."
 OUT=dist
 NAME=d3-ui-showcase-web.tar.gz
 
-(cd example && flutter pub get && flutter build web --release --no-web-resources-cdn --base-href /)
+(cd example && flutter pub get && dart run tool/gen_example_sources.dart && flutter build web --release --no-web-resources-cdn --base-href /)
 
 BUILD=example/build/web
 [ -f "$BUILD/index.html" ] || { echo "No index.html in $BUILD"; exit 1; }
