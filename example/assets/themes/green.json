@@ -1,0 +1,94 @@
+{
+  "kit": "d3_ui showcase green",
+  "colors": {
+    "light": {
+      "background": {
+        "hex": "#F4F7F4"
+      },
+      "foreground": {
+        "hex": "#17211A"
+      },
+      "card": {
+        "hex": "#FFFFFF"
+      },
+      "primary": {
+        "hex": "#1B6B3A"
+      },
+      "primary-foreground": {
+        "hex": "#FFFFFF"
+      },
+      "secondary": {
+        "hex": "#E3EBE5"
+      },
+      "secondary-foreground": {
+        "hex": "#17211A"
+      },
+      "muted": {
+        "hex": "#E3EBE5"
+      },
+      "muted-foreground": {
+        "hex": "#566A5C"
+      },
+      "accent": {
+        "hex": "#E3EBE5"
+      },
+      "destructive": {
+        "hex": "#B3261E"
+      },
+      "border": {
+        "hex": "#CFDAD2"
+      },
+      "input": {
+        "hex": "#CFDAD2"
+      }
+    },
+    "dark": {
+      "background": {
+        "hex": "#101512"
+      },
+      "foreground": {
+        "hex": "#E6EEE8"
+      },
+      "card": {
+        "hex": "#19201B"
+      },
+      "primary": {
+        "hex": "#7BD59B"
+      },
+      "primary-foreground": {
+        "hex": "#0E1A12"
+      },
+      "secondary": {
+        "hex": "#26302A"
+      },
+      "secondary-foreground": {
+        "hex": "#E6EEE8"
+      },
+      "muted": {
+        "hex": "#26302A"
+      },
+      "muted-foreground": {
+        "hex": "#9DB0A3"
+      },
+      "accent": {
+        "hex": "#26302A"
+      },
+      "destructive": {
+        "hex": "#F07A70"
+      },
+      "border": {
+        "hex": "#34403A"
+      },
+      "input": {
+        "hex": "#34403A"
+      }
+    }
+  },
+  "radius": {
+    "sm": 6,
+    "md": 8,
+    "lg": 12,
+    "xl": 16,
+    "2xl": 20
+  }
+}

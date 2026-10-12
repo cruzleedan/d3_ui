@@ -1,0 +1,384 @@
+{
+  "generatedBy": "scripts/design-tokens.mjs",
+  "kit": {
+    "tag": "v0.5.1",
+    "version": "0.5.1"
+  },
+  "colors": {
+    "light": {
+      "background": {
+        "hex": "#F6F5F2",
+        "oklch": "oklch(0.970 0.004 91.4)"
+      },
+      "foreground": {
+        "hex": "#1D1D1B",
+        "oklch": "oklch(0.230 0.004 106.7)"
+      },
+      "card": {
+        "hex": "#FFFFFF",
+        "oklch": "oklch(1 0 0)"
+      },
+      "card-foreground": {
+        "hex": "#1D1D1B",
+        "oklch": "oklch(0.230 0.004 106.7)"
+      },
+      "primary": {
+        "hex": "#B4441F",
+        "oklch": "oklch(0.535 0.154 37.8)"
+      },
+      "primary-foreground": {
+        "hex": "#FFFFFF",
+        "oklch": "oklch(1 0 0)"
+      },
+      "secondary": {
+        "hex": "#ECEBE7",
+        "oklch": "oklch(0.940 0.006 91.4)"
+      },
+      "secondary-foreground": {
+        "hex": "#1D1D1B",
+        "oklch": "oklch(0.230 0.004 106.7)"
+      },
+      "muted": {
+        "hex": "#ECEBE7",
+        "oklch": "oklch(0.940 0.006 91.4)"
+      },
+      "muted-foreground": {
+        "hex": "#6B6A66",
+        "oklch": "oklch(0.524 0.006 95.2)"
+      },
+      "accent": {
+        "hex": "#ECEBE7",
+        "oklch": "oklch(0.940 0.006 91.4)"
+      },
+      "accent-foreground": {
+        "hex": "#1D1D1B",
+        "oklch": "oklch(0.230 0.004 106.7)"
+      },
+      "destructive": {
+        "hex": "#B3261E",
+        "oklch": "oklch(0.501 0.178 28.7)"
+      },
+      "border": {
+        "hex": "#DEDCD6",
+        "oklch": "oklch(0.894 0.008 91.5)"
+      },
+      "input": {
+        "hex": "#DEDCD6",
+        "oklch": "oklch(0.894 0.008 91.5)"
+      },
+      "ring": {
+        "hex": "#D0603D",
+        "oklch": "oklch(0.620 0.150 37.8)"
+      }
+    },
+    "dark": {
+      "background": {
+        "hex": "#171716",
+        "oklch": "oklch(0.204 0.002 106.6)"
+      },
+      "foreground": {
+        "hex": "#EFEDE8",
+        "oklch": "oklch(0.946 0.007 88.6)"
+      },
+      "card": {
+        "hex": "#222220",
+        "oklch": "oklch(0.251 0.004 106.7)"
+      },
+      "card-foreground": {
+        "hex": "#EFEDE8",
+        "oklch": "oklch(0.946 0.007 88.6)"
+      },
+      "primary": {
+        "hex": "#E0714A",
+        "oklch": "oklch(0.671 0.149 39.7)"
+      },
+      "primary-foreground": {
+        "hex": "#171716",
+        "oklch": "oklch(0.204 0.002 106.6)"
+      },
+      "secondary": {
+        "hex": "#2E2E2B",
+        "oklch": "oklch(0.300 0.005 106.7)"
+      },
+      "secondary-foreground": {
+        "hex": "#EFEDE8",
+        "oklch": "oklch(0.946 0.007 88.6)"
+      },
+      "muted": {
+        "hex": "#2E2E2B",
+        "oklch": "oklch(0.300 0.005 106.7)"
+      },
+      "muted-foreground": {
+        "hex": "#A3A19B",
+        "oklch": "oklch(0.709 0.009 91.5)"
+      },
+      "accent": {
+        "hex": "#2E2E2B",
+        "oklch": "oklch(0.300 0.005 106.7)"
+      },
+      "accent-foreground": {
+        "hex": "#EFEDE8",
+        "oklch": "oklch(0.946 0.007 88.6)"
+      },
+      "destructive": {
+        "hex": "#F07A70",
+        "oklch": "oklch(0.712 0.147 26.4)"
+      },
+      "border": {
+        "hex": "#3A3935",
+        "oklch": "oklch(0.344 0.007 95.3)"
+      },
+      "input": {
+        "hex": "#3A3935",
+        "oklch": "oklch(0.344 0.007 95.3)"
+      },
+      "ring": {
+        "hex": "#E0714A",
+        "oklch": "oklch(0.671 0.149 39.7)"
+      }
+    }
+  },
+  "status": {
+    "success": {
+      "use": "Published, Active, Resolved, alerts On, Redeemed",
+      "light": {
+        "text": {
+          "hex": "#016630",
+          "from": "green-800"
+        },
+        "tint": {
+          "hex": "#00A63E",
+          "alpha": 0.15,
+          "onCard": "#D9F2E2",
+          "from": "green-600"
+        },
+        "contrast": {
+          "onCard": 6.03,
+          "onPage": 5.55
+        },
+        "border": {
+          "hex": "#00A63E",
+          "alpha": 0.6,
+          "onCard": "#66CA8B",
+          "from": "green-600"
+        }
+      },
+      "dark": {
+        "text": {
+          "hex": "#05DF72",
+          "from": "green-400"
+        },
+        "tint": {
+          "hex": "#00A63E",
+          "alpha": 0.15,
+          "onCard": "#1D3625",
+          "from": "green-600"
+        },
+        "contrast": {
+          "onCard": 7.35,
+          "onPage": 8.39
+        },
+        "border": {
+          "hex": "#00C950",
+          "alpha": 0.6,
+          "onCard": "#0E863D",
+          "from": "green-500"
+        }
+      }
+    },
+    "warning": {
+      "use": "Paused, Waiting for you, Reported, Already redeemed; star ratings",
+      "light": {
+        "text": {
+          "hex": "#973C00",
+          "from": "amber-800"
+        },
+        "tint": {
+          "hex": "#FE9A00",
+          "alpha": 0.15,
+          "onCard": "#FFF0D9",
+          "from": "amber-500"
+        },
+        "contrast": {
+          "onCard": 6.32,
+          "onPage": 5.83
+        },
+        "border": {
+          "hex": "#FE9A00",
+          "alpha": 0.7,
+          "onCard": "#FEB84D",
+          "from": "amber-500"
+        },
+        "star": {
+          "hex": "#FFB900",
+          "from": "amber-400"
+        }
+      },
+      "dark": {
+        "text": {
+          "hex": "#FFB900",
+          "from": "amber-400"
+        },
+        "tint": {
+          "hex": "#FE9A00",
+          "alpha": 0.15,
+          "onCard": "#43341B",
+          "from": "amber-500"
+        },
+        "contrast": {
+          "onCard": 6.98,
+          "onPage": 7.94
+        },
+        "border": {
+          "hex": "#FE9A00",
+          "alpha": 0.7,
+          "onCard": "#BC760A",
+          "from": "amber-500"
+        },
+        "star": {
+          "hex": "#FFB900",
+          "from": "amber-400"
+        }
+      }
+    },
+    "destructive": {
+      "use": "Cancelled, Revoked, Overdue, Hidden by Food Finder, Not redeemed",
+      "light": {
+        "text": {
+          "hex": "#B3261E",
+          "from": "destructive"
+        },
+        "tint": {
+          "hex": "#B3261E",
+          "alpha": 0.1,
+          "onCard": "#F7E9E9",
+          "from": "destructive"
+        },
+        "contrast": {
+          "onCard": 5.54,
+          "onPage": 5.1
+        },
+        "border": {
+          "hex": "#B3261E",
+          "alpha": 0.5,
+          "onCard": "#D9938F",
+          "from": "destructive"
+        }
+      },
+      "dark": {
+        "text": {
+          "hex": "#F07A70",
+          "from": "destructive"
+        },
+        "tint": {
+          "hex": "#F07A70",
+          "alpha": 0.1,
+          "onCard": "#372B28",
+          "from": "destructive"
+        },
+        "contrast": {
+          "onCard": 5.02,
+          "onPage": 5.73
+        },
+        "border": {
+          "hex": "#F07A70",
+          "alpha": 0.5,
+          "onCard": "#894E48",
+          "from": "destructive"
+        }
+      }
+    },
+    "neutral": {
+      "use": "Draft, Ended, Used, Expired, Dismissed, alerts Off",
+      "light": {
+        "text": {
+          "hex": "#6B6A66",
+          "from": "muted-foreground"
+        },
+        "tint": {
+          "hex": "#ECEBE7",
+          "alpha": 1,
+          "onCard": "#ECEBE7",
+          "from": "muted"
+        },
+        "contrast": {
+          "onCard": 4.54,
+          "onPage": 4.54
+        },
+        "border": {
+          "hex": "#DEDCD6",
+          "alpha": 1,
+          "onCard": "#DEDCD6",
+          "from": "border"
+        }
+      },
+      "dark": {
+        "text": {
+          "hex": "#A3A19B",
+          "from": "muted-foreground"
+        },
+        "tint": {
+          "hex": "#2E2E2B",
+          "alpha": 1,
+          "onCard": "#2E2E2B",
+          "from": "muted"
+        },
+        "contrast": {
+          "onCard": 5.27,
+          "onPage": 5.27
+        },
+        "border": {
+          "hex": "#3A3935",
+          "alpha": 1,
+          "onCard": "#3A3935",
+          "from": "border"
+        }
+      }
+    }
+  },
+  "radius": {
+    "sm": 6,
+    "md": 8,
+    "lg": 10,
+    "xl": 14,
+    "2xl": 18
+  },
+  "type": {
+    "Page title": {
+      "size": 24,
+      "weight": 600,
+      "letterSpacing": "-0.025em (tracking-tight)"
+    },
+    "Section / panel title": {
+      "size": 18,
+      "weight": 500,
+      "letterSpacing": "normal"
+    },
+    "Card title": {
+      "size": 16,
+      "weight": 500,
+      "letterSpacing": "normal"
+    },
+    "Body": {
+      "size": 14,
+      "weight": 400,
+      "letterSpacing": "normal"
+    },
+    "Small": {
+      "size": 12,
+      "weight": 400,
+      "letterSpacing": "normal"
+    },
+    "Big number": {
+      "size": 36,
+      "weight": 600,
+      "letterSpacing": "normal"
+    }
+  },
+  "font": {
+    "family": "Geist",
+    "weights": "100\u2013900 (variable)",
+    "fallback": "system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
+  },
+  "icons": "Lucide"
+}
