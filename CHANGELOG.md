@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- **Custom themes** — `D3ThemeSpec` builds a whole light and dark theme from a
+  design-token JSON file; `D3ColorTokens.outlineVariant`, `D3StatusTokens`
+  (`context.d3Status`) and `D3ShapeTokens` (`context.d3Shape`) let a brand
+  restyle status colours, corner radii and the card outline. All optional; the
+  defaults equal the previous fixed values.
+- **Web** — `D3Avatar`, `D3PhotoCarousel`, `D3PhotoGallery` and `D3ImageViewer`
+  no longer call `Image.file` in a browser (a local path that is really a URL
+  shows via `Image.network`; anything else shows the error fallback).
+- **Showcase** — the `example/` app builds for the web; `scripts/build_showcase.sh`
+  produces a tarball for hosting.
+
 ## 0.2.0
 
 - **New components**

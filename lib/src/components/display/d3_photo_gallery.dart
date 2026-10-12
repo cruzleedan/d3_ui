@@ -1,6 +1,6 @@
-import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:d3_ui/src/components/display/helpers/d3_local_image.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -344,8 +344,8 @@ class _D3PhotoThumbnailState extends State<_D3PhotoThumbnail> {
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: widget.onTap,
-                child: Image.file(
-                  File(_displayPath),
+                child: d3LocalImage(
+                  _displayPath,
                   width: widget.tokens.thumbnailSize,
                   height: widget.tokens.thumbnailSize,
                   fit: BoxFit.cover,

@@ -1,6 +1,6 @@
-import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:d3_ui/src/components/display/helpers/d3_local_image.dart';
 import 'package:d3_ui/src/tokens/d3_spacing.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -837,8 +837,8 @@ class _D3ViewerImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (source.isLocal) {
-      return Image.file(
-        File(source.path),
+      return d3LocalImage(
+        source.path,
         fit: BoxFit.contain,
         errorBuilder: (ctx, err, st) => const _ErrorPlaceholder(),
       );

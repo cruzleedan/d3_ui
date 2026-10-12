@@ -1,4 +1,6 @@
-import 'dart:io';
+import 'dart:io' show File;
+
+import 'package:d3_ui/src/components/display/helpers/d3_local_image.dart';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
@@ -207,8 +209,8 @@ class _AvatarImage extends StatelessWidget {
   }
 
   Widget _buildFileImage() {
-    return Image.file(
-      imageFile!,
+    return d3LocalImage(
+      imageFile!.path,
       width: size.dimension,
       height: size.dimension,
       fit: BoxFit.cover,
