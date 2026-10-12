@@ -22,8 +22,14 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  assets:
+    - assets/themes/
+
   # Roboto is bundled so the web showcase never asks a font CDN for it.
   fonts:
+    - family: RobotoMono
+      fonts:
+        - asset: assets/fonts/RobotoMono-Regular.ttf
     - family: Roboto
       fonts:
         - asset: assets/fonts/Roboto-Light.ttf
