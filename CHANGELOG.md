@@ -6,6 +6,8 @@
   optional leading and trailing widgets, `extended` mode) and
   `D3WindowSizeClass` / `D3WindowSizeBuilder` (the Material 3 compact, medium and
   expanded classes, from the window or from the width a widget is given).
+- **New** `D3SearchAnchor.useRootNavigator` (default true, as before): pass
+  false in an app nested inside another so the search page stays inside it.
 - **Fix** `D3BottomSheet` can be dragged with a mouse, trackpad or stylus (the
   handle was dead on desktop and the web).
 - **Fix** tap feedback: `D3NavBar` items and centre action, `D3Screen` icon and

@@ -255,6 +255,7 @@ class _PlacesHomeState extends State<_PlacesHome> {
     final colors = context.d3Colors;
     return D3SearchAnchor<Place, String>.local(
       hint: 'Search places',
+      useRootNavigator: false,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       items: _places,
       filterOptions: [
