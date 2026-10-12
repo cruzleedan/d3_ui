@@ -5,6 +5,7 @@ import '../../examples/avatar/variants.dart';
 import '../../examples/empty_state/variants.dart';
 import '../../examples/expandable_section/variants.dart';
 import '../../examples/image/variants.dart';
+import '../../examples/list/select_circle.dart';
 import '../../examples/list/variants.dart';
 import '../../examples/photos/carousel.dart';
 import '../../examples/photos/gallery.dart';
@@ -165,6 +166,9 @@ class ListPage extends StatelessWidget {
           exampleCard('Sections and selection', 'list/variants.dart',
               const ListExample(),
               description: 'Long-press a row to start selecting.'),
+          exampleCard('D3SelectCircle', 'list/select_circle.dart',
+              const SelectCircleExample(),
+              description: 'The circle on its own, at two sizes.'),
         ],
       );
 }

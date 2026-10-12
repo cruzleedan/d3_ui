@@ -31,3 +31,4 @@ lcov.info
 
 # Showcase build output (scripts/build_showcase.sh)
 dist/
+__pycache__/
