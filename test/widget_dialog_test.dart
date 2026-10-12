@@ -204,4 +204,54 @@ void main() {
       );
     });
   });
+
+  group('D3Dialog width', () {
+    Future<double> openAndMeasure(WidgetTester tester, Size size) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) => D3Button(
+              label: 'Open',
+              onPressed: () => D3Dialog.show<void>(
+                context,
+                title: 'Remove place?',
+                actions: [
+                  D3DialogAction(
+                    label: 'Cancel',
+                    onPressedWithContext: (ctx) => D3Dialog.pop(ctx),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      return tester
+          .getSize(
+            find
+                .descendant(
+                  of: find.byType(Dialog),
+                  matching: find.byType(Material),
+                )
+                .first,
+          )
+          .width;
+    }
+
+    testWidgets('stays at most 480 wide on a wide screen', (tester) async {
+      expect(
+        await openAndMeasure(tester, const Size(1280, 800)),
+        lessThanOrEqualTo(D3Dialog.maxWidth),
+      );
+    });
+
+    testWidgets('still fills a phone, less the side insets', (tester) async {
+      expect(await openAndMeasure(tester, const Size(360, 800)), 360 - 64);
+    });
+  });
 }

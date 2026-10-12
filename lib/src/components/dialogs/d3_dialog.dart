@@ -154,6 +154,11 @@ class D3DialogAction {
 /// Navigator actually hosts it — the same guarantee `D3BottomSheet.pop`/
 /// `D3FormSheet.pop` already give their own content.
 class D3Dialog extends StatelessWidget {
+  /// The widest the dialog gets, so on a tablet or in a browser it stays a
+  /// readable column instead of filling the window. Phones are narrower than
+  /// this and are unaffected.
+  static const double maxWidth = 480;
+
   const D3Dialog({
     super.key,
     this.icon,
@@ -256,6 +261,7 @@ class D3Dialog extends StatelessWidget {
         ),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      constraints: const BoxConstraints(minWidth: 280, maxWidth: maxWidth),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
