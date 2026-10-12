@@ -40,9 +40,13 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
           brand: _brand,
           themeMode: _themeMode,
           brandThemes: widget.brandThemes,
+          embed: widget.params.embed,
           onBrandChanged: (b) => setState(() => _brand = b),
           onThemeModeChanged: (m) => setState(() => _themeMode = m),
-          child: ShowcaseShell(initialPageId: widget.params.page),
+          child: ShowcaseShell(
+            initialPageId: widget.params.page,
+            embed: widget.params.embed,
+          ),
         ),
       ),
     );

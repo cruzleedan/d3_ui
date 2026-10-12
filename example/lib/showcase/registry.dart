@@ -6,6 +6,7 @@ import 'pages/controls_overlay_pages.dart';
 import 'pages/example_pages.dart';
 import 'pages/inputs_text_pages.dart';
 import 'pages/nav_surface_pages.dart';
+import 'pages/patterns_page.dart';
 import 'pages/overview_page.dart';
 import 'pages/theme_page.dart';
 
@@ -362,5 +363,13 @@ final List<ShowcasePage> showcasePages = [
     icon: Icons.confirmation_number_outlined,
     summary: 'A coupon-like card with a tear line.',
     builder: (_) => const TicketCardPage(),
+  ),
+  ShowcasePage(
+    id: 'patterns',
+    title: 'Places',
+    group: ShowcaseGroup.patterns,
+    icon: Icons.explore_outlined,
+    summary: 'A small app built only from d3_ui parts.',
+    builder: (_) => const PatternsPage(),
   ),
 ];
