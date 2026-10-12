@@ -13,9 +13,12 @@ const double wideBreakpoint = 900;
 /// The showcase's chrome: navigation, the brand and theme controls, and the
 /// current page. A side panel on wide screens, a drawer on narrow ones.
 class ShowcaseShell extends StatefulWidget {
-  const ShowcaseShell({super.key, this.initialPageId});
+  const ShowcaseShell({super.key, this.initialPageId, this.embed = false});
 
   final String? initialPageId;
+
+  /// Only the page, no navigation (for a frame in another site).
+  final bool embed;
 
   @override
   State<ShowcaseShell> createState() => _ShowcaseShellState();
@@ -41,6 +44,10 @@ class _ShowcaseShellState extends State<ShowcaseShell> {
         child: Builder(builder: _page.builder),
       ),
     );
+
+    if (widget.embed) {
+      return Scaffold(backgroundColor: colors.surface, body: body);
+    }
 
     if (wide) {
       return Scaffold(

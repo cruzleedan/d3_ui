@@ -7,11 +7,15 @@ import 'package:material_ui/material_ui.dart';
 /// Missing or unknown values never break the page: the theme falls back to the
 /// device setting, the brand to the first brand, the page to the overview.
 class ShowcaseParams {
-  const ShowcaseParams({this.page, this.themeMode, this.brand});
+  const ShowcaseParams(
+      {this.page, this.themeMode, this.brand, this.embed = false});
 
   final String? page;
   final ThemeMode? themeMode;
   final String? brand;
+
+  /// `?embed=1`: show only the page, with none of the navigation, for a frame.
+  final bool embed;
 
   factory ShowcaseParams.fromQuery(Map<String, String> query) {
     ThemeMode? mode;
@@ -27,6 +31,7 @@ class ShowcaseParams {
       page: query['page'],
       themeMode: mode,
       brand: query['brand']?.toLowerCase(),
+      embed: query['embed'] == '1' || query['embed'] == 'true',
     );
   }
 
