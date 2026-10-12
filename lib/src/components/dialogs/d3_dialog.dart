@@ -249,7 +249,7 @@ class D3Dialog extends StatelessWidget {
       backgroundColor: colors.surfaceVariant,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(D3Radius.xl),
+        borderRadius: context.d3Shape.circularXl,
         side: BorderSide(
           color: colors.outline.withValues(alpha: 0.2),
           width: 0.5,

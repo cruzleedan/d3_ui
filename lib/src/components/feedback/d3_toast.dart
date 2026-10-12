@@ -205,11 +205,11 @@ class _D3ToastContent extends StatelessWidget {
 
     return Material(
       color: style.background,
-      borderRadius: BorderRadius.circular(D3Radius.lg),
+      borderRadius: context.d3Shape.circularLg,
       elevation: 0,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(D3Radius.lg),
+          borderRadius: context.d3Shape.circularLg,
           border: Border.all(color: style.border, width: 1.0),
         ),
         padding: const EdgeInsets.fromLTRB(

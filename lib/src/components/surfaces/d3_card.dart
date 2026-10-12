@@ -171,13 +171,14 @@ class D3Card extends StatelessWidget {
       D3CardVariant.tonal => colors.primaryContainer,
     };
 
+    final shape = context.d3Shape;
     final defaultBorder = BorderSide(
-      color: colors.outline.withValues(alpha: 0.4),
-      width: 1.0,
+      color: shape.cardBorder ?? colors.outline.withValues(alpha: 0.4),
+      width: shape.cardBorderWidth,
     );
     final borderSide = border ?? defaultBorder;
 
-    final radius = BorderRadius.circular(D3Radius.lg);
+    final radius = shape.circularLg;
 
     // Build the visual content stack.
     // mediaFill mode uses mainAxisSize.max + Expanded so the card fills its

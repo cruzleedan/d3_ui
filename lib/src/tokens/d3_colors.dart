@@ -75,7 +75,8 @@ class D3ColorTokens {
     required this.errorContainer,
     required this.onErrorContainer,
     required this.scrim,
-  });
+    Color? outlineVariant,
+  }) : outlineVariant = outlineVariant ?? outline;
 
   final Color primary;
   final Color onPrimary;
@@ -102,6 +103,10 @@ class D3ColorTokens {
   final Color onSurface;
   final Color onSurfaceVariant;
   final Color outline;
+
+  /// A quieter line than [outline]: dividers inside cards and lists, card
+  /// outlines. Defaults to [outline] when a palette does not set one.
+  final Color outlineVariant;
 
   final Color success;
   final Color onSuccess;
