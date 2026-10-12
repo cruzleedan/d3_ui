@@ -133,6 +133,7 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
     this.onFiltersChanged,
     this.multiSelectFilters = false,
     this.presentation = D3SearchPresentation.fullScreen,
+    this.useRootNavigator = true,
   }) : _initialItems = items,
        _filterItems = filterItems,
        _onSearch = null,
@@ -163,6 +164,7 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
     this.onFiltersChanged,
     this.multiSelectFilters = false,
     this.presentation = D3SearchPresentation.fullScreen,
+    this.useRootNavigator = true,
   }) : _initialItems = initialItems,
        _filterItems = null,
        _onSearch = onSearch,
@@ -196,6 +198,12 @@ class D3SearchAnchor<T, F> extends StatefulWidget {
 
   /// See [D3SearchPresentation].
   final D3SearchPresentation presentation;
+
+  /// Whether the search page is pushed on the root [Navigator] (the default,
+  /// so it covers a shell's bottom bar) or on the nearest one. Pass false when
+  /// the anchor lives in an app nested inside another (a framed preview), so
+  /// the page stays inside it.
+  final bool useRootNavigator;
 
   // Internal
   final List<T> _initialItems;
@@ -290,7 +298,9 @@ class _D3SearchAnchorState<T, F> extends State<D3SearchAnchor<T, F>>
   void close() {
     // Matches the rootNavigator: true used in _push() — this context is
     // still inside the shell, so a plain pop() would target the wrong stack.
-    if (_isOpen) Navigator.of(context, rootNavigator: true).pop();
+    if (_isOpen) {
+      Navigator.of(context, rootNavigator: widget.useRootNavigator).pop();
+    }
   }
 
   @override
@@ -305,7 +315,7 @@ class _D3SearchAnchorState<T, F> extends State<D3SearchAnchor<T, F>>
     // ShellRoute branch screen (bottom nav bar). Without it, push() targets
     // the shell's nested Navigator and the search page renders on top of
     // the still-mounted shell Scaffold, leaving the bottom nav bar visible.
-    Navigator.of(context, rootNavigator: true)
+    Navigator.of(context, rootNavigator: widget.useRootNavigator)
         .push<void>(
           _SearchPageRoute(
             overlay: widget.presentation == D3SearchPresentation.overlay,
