@@ -54,6 +54,19 @@ void main() {
 
   test('records the kit', () => expect(spec.kit, 'd3-ui-kit v0.5.0'));
 
+  test('the kit may be an object with a tag', () {
+    final s = D3ThemeSpec.parse('{"kit":{"tag":"v0.5.0","version":"0.5.0"}}');
+    expect(s.kit, 'v0.5.0');
+  });
+
+  test('a status star colour is kept, else the warning text is used', () {
+    final s = D3ThemeSpec.parse(
+      '{"status":{"warning":{"light":{"text":"#BB4D00","tint":"#FFF0D9","border":"#FEB84D","star":{"hex":"#FFB900"}}}}}',
+    );
+    expect(s.light.status.ratingStar, const Color(0xFFFFB900));
+    expect(s.dark.status.ratingStar, s.dark.status.warning.text);
+  });
+
   test('maps the colour roles onto the d3 tokens (light)', () {
     final c = spec.light.colors;
     expect(c.surface, const Color(0xFFF6F5F2));

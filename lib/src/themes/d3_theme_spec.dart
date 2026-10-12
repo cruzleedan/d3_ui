@@ -76,7 +76,7 @@ class D3ThemeSpec {
     final status = _map(json['status']);
     final radius = json['radius'];
     return D3ThemeSpec(
-      kit: json['kit'] is String ? json['kit'] as String : null,
+      kit: _kit(json['kit']),
       light: _variant(
         Brightness.light,
         _map(colors['light']),
@@ -94,7 +94,8 @@ class D3ThemeSpec {
     );
   }
 
-  /// The design-token kit the file was generated from (for the record).
+  /// The design-token kit the file was generated from (for the record), for
+  /// example `v0.5.0`.
   final String? kit;
 
   final D3ThemeVariant light;
@@ -192,6 +193,7 @@ class D3ThemeSpec {
       ),
     );
     final statuses = D3StatusTokens(
+      star: _color(_map(_map(status['warning'])[mode])['star']),
       success: statusOf('success') ?? derived.success,
       warning: statusOf('warning') ?? derived.warning,
       destructive: statusOf('destructive') ?? derived.destructive,
@@ -271,6 +273,14 @@ class D3ThemeSpec {
       xl: named(m, '2xl') ?? named(m, 'xl2') ?? d.xl,
       cardBorder: cardBorder,
     );
+  }
+
+  /// `"d3-ui-kit v0.5.0"`, or an object with a `tag` (and `version`).
+  static String? _kit(Object? v) {
+    if (v is String) return v;
+    final m = _map(v);
+    final tag = m['tag'] ?? m['version'];
+    return tag is String ? tag : null;
   }
 
   static Map<String, dynamic> _map(Object? v) =>
