@@ -13,7 +13,9 @@ import 'places_data.dart';
 /// - expanded: a rail, and list and detail side by side.
 ///
 /// It runs in its own MaterialApp, so it has its own Navigator and
-/// ScaffoldMessenger: its sheets, search page and toasts stay inside the frame.
+/// ScaffoldMessenger: its search page and toasts stay inside the frame, and
+/// its sheets and dialogs are shown with `useRootNavigator: false` so they open
+/// in this Navigator too instead of over the whole page.
 class PlacesApp extends StatelessWidget {
   const PlacesApp({super.key});
 
@@ -93,6 +95,7 @@ class _PlacesHomeState extends State<_PlacesHome> {
     }
     await D3BottomSheet.show<void>(
       context,
+      useRootNavigator: false,
       title: p.name,
       subtitle: '${p.cuisine} · ${p.area}',
       snapPoints: const [D3SnapPoint(0.62)],
@@ -119,6 +122,7 @@ class _PlacesHomeState extends State<_PlacesHome> {
 
     final added = await D3FormSheet.show<Place>(
       context,
+      useRootNavigator: false,
       title: 'Add a place',
       primaryAction: D3FormSheetAction(
         label: 'Add',
@@ -174,6 +178,7 @@ class _PlacesHomeState extends State<_PlacesHome> {
   Future<void> _remove(Place p) async {
     final ok = await D3Dialog.show<bool>(
       context,
+      useRootNavigator: false,
       icon: Icons.delete_outline_rounded,
       iconColor: context.d3Colors.error,
       title: 'Remove ${p.name}?',
