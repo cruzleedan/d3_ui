@@ -127,6 +127,8 @@ class _Navigation extends StatelessWidget {
               for (final brand in showcaseBrands)
                 _BrandChip(
                   brand: brand,
+                  swatch:
+                      scope.brandThemes[brand.id]!.light.colorScheme.primary,
                   selected: brand.id == scope.brand.id,
                   onTap: () => scope.onBrandChanged(brand),
                 ),
@@ -251,11 +253,15 @@ class _NavItem extends StatelessWidget {
 class _BrandChip extends StatelessWidget {
   const _BrandChip({
     required this.brand,
+    required this.swatch,
     required this.selected,
     required this.onTap,
   });
 
   final ShowcaseBrand brand;
+
+  /// The brand's primary colour, taken from its theme.
+  final Color swatch;
   final bool selected;
   final VoidCallback onTap;
 
@@ -281,7 +287,7 @@ class _BrandChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircleAvatar(radius: 7, backgroundColor: brand.swatch),
+              CircleAvatar(radius: 7, backgroundColor: swatch),
               const SizedBox(width: 6),
               Text(
                 brand.label,

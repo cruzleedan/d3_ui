@@ -9,7 +9,6 @@ class ShowcaseBrand {
     required this.id,
     required this.label,
     required this.summary,
-    required this.swatch,
     this.asset,
   });
 
@@ -20,14 +19,21 @@ class ShowcaseBrand {
   /// One line on what the brand shows off.
   final String summary;
 
-  /// The brand's primary colour, for the picker.
-  final Color swatch;
-
   /// A design-token JSON asset; `null` is d3_ui's own default theme.
   final String? asset;
 }
 
-/// The brands, default first. `blue` is d3_ui with nothing set; `green` is a
+/// The brands, default first.
+///
+/// To add a brand: drop a design-token JSON into `assets/themes/` (the same
+/// format as the others; `D3ThemeSpec` documents it) and add one entry here
+/// with a new `id`, a label, a one-line summary and the asset path. The picker
+/// chip colour is the file's own primary. `test/brands_test.dart` then checks
+/// that the file parses, the text colours read (4.5:1) in light and dark, and
+/// the brand differs from the others. Never rename an `id`: they are in links
+/// (`?brand=`) and in the portfolio's embed.
+///
+/// Brands in use: `blue` is d3_ui with nothing set; `green` is a
 /// small hand-written token file (a different primary, softer corners);
 /// `terracotta` is a real brand's tokens (the Food Finder merchant app).
 const showcaseBrands = [
@@ -35,20 +41,17 @@ const showcaseBrands = [
     id: 'blue',
     label: 'd3 blue',
     summary: 'The defaults: nothing set.',
-    swatch: Color(0xFF4D62C5),
   ),
   ShowcaseBrand(
     id: 'green',
     label: 'Green',
     summary: 'A token file with a different primary and rounder corners.',
-    swatch: Color(0xFF1B6B3A),
     asset: 'assets/themes/green.json',
   ),
   ShowcaseBrand(
     id: 'terracotta',
     label: 'Terracotta',
     summary: 'A real brand: terracotta on warm neutrals (Food Finder).',
-    swatch: Color(0xFFB4441F),
     asset: 'assets/themes/terracotta.json',
   ),
 ];
