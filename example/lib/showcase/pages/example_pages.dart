@@ -9,10 +9,12 @@ import '../../examples/chip/filters.dart';
 import '../../examples/chip/status.dart';
 import '../../examples/chip/variants.dart';
 import '../../examples/chip/watch_status.dart';
+import '../../examples/expanding_fab/basic.dart';
+import '../../examples/scrim_button/basic.dart';
+import '../../examples/split_button/sizes_disabled.dart';
+import '../../examples/split_button/variants.dart';
 import '../example_card.dart';
-import '../generated/example_sources.g.dart';
-
-String? _src(String path) => exampleSources[path];
+import 'page_helpers.dart';
 
 /// D3Button and D3HyperlinkButton.
 class ButtonPage extends StatelessWidget {
@@ -26,35 +28,105 @@ class ButtonPage extends StatelessWidget {
           'The one button: five variants, five sizes, icons, and a built-in loading '
           'and success state. Use it for every action; use D3HyperlinkButton inline in text.',
       examples: [
-        ExampleCard(
-          title: 'Variants',
+        exampleCard(
+          'Variants',
+          'button/variants.dart',
+          const ButtonVariantsExample(),
           description:
               'Filled for the main action, tonal and outlined for secondary ones, ghost for the quietest, danger for destructive.',
-          source: _src('button/variants.dart'),
-          child: const ButtonVariantsExample(),
         ),
-        ExampleCard(
-          title: 'Sizes',
-          source: _src('button/sizes.dart'),
-          child: const ButtonSizesExample(),
-        ),
-        ExampleCard(
-          title: 'With icons',
+        exampleCard('Sizes', 'button/sizes.dart', const ButtonSizesExample()),
+        exampleCard(
+          'With icons',
+          'button/icons.dart',
+          const ButtonIconsExample(),
           description: 'Leading or trailing icons, and icon-only buttons.',
-          source: _src('button/icons.dart'),
-          child: const ButtonIconsExample(),
         ),
-        ExampleCard(
-          title: 'Loading, success and disabled',
+        exampleCard(
+          'Loading, success and disabled',
+          'button/states.dart',
+          const ButtonStatesExample(),
           description: 'Tap Save: the button runs the state machine itself.',
-          source: _src('button/states.dart'),
-          child: const ButtonStatesExample(),
         ),
-        ExampleCard(
-          title: 'D3HyperlinkButton',
+        exampleCard(
+          'D3HyperlinkButton',
+          'button/links.dart',
+          const ButtonLinksExample(),
           description: 'A link inside a sentence.',
-          source: _src('button/links.dart'),
-          child: const ButtonLinksExample(),
+        ),
+      ],
+    );
+  }
+}
+
+/// D3SplitButton.
+class SplitButtonPage extends StatelessWidget {
+  const SplitButtonPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ExamplePage(
+      title: 'D3SplitButton',
+      summary:
+          'A main action plus a menu of related ones. Use it when one action is '
+          'the usual choice and a few others are close by.',
+      examples: [
+        exampleCard(
+          'Variants',
+          'split_button/variants.dart',
+          const SplitButtonVariantsExample(),
+          description:
+              'Items can have icons; a destructive item is tinted. Tap the arrow for the menu.',
+        ),
+        exampleCard(
+          'Sizes and disabled',
+          'split_button/sizes_disabled.dart',
+          const SplitButtonSizesExample(),
+        ),
+      ],
+    );
+  }
+}
+
+/// D3ExpandingFab.
+class ExpandingFabPage extends StatelessWidget {
+  const ExpandingFabPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ExamplePage(
+      title: 'D3ExpandingFab',
+      summary:
+          'A floating button that fans out a short list of actions. Put it in a '
+          'Scaffold\'s floatingActionButton slot.',
+      examples: [
+        exampleCard(
+          'Two actions',
+          'expanding_fab/basic.dart',
+          const ExpandingFabExample(),
+          description: 'Tap the plus.',
+        ),
+      ],
+    );
+  }
+}
+
+/// D3ScrimIconButton.
+class ScrimButtonPage extends StatelessWidget {
+  const ScrimButtonPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ExamplePage(
+      title: 'D3ScrimIconButton',
+      summary:
+          'A round icon button on a dark scrim, so it stays readable on top of a '
+          'photo whatever the picture is.',
+      examples: [
+        exampleCard(
+          'On a picture',
+          'scrim_button/basic.dart',
+          const ScrimButtonExample(),
         ),
       ],
     );
@@ -73,28 +145,25 @@ class ChipPage extends StatelessWidget {
           'A compact label for filters, tags and status. A selected chip shows a '
           'check mark, so it never relies on colour alone.',
       examples: [
-        ExampleCard(
-          title: 'Variants',
-          source: _src('chip/variants.dart'),
-          child: const ChipVariantsExample(),
-        ),
-        ExampleCard(
-          title: 'Filter chips',
+        exampleCard(
+            'Variants', 'chip/variants.dart', const ChipVariantsExample()),
+        exampleCard(
+          'Filter chips',
+          'chip/filters.dart',
+          const ChipFiltersExample(),
           description: 'Tap to toggle.',
-          source: _src('chip/filters.dart'),
-          child: const ChipFiltersExample(),
         ),
-        ExampleCard(
-          title: 'Status badges from the theme',
+        exampleCard(
+          'Status badges from the theme',
+          'chip/status.dart',
+          const ChipStatusExample(),
           description:
               'Colours come from context.d3Status, so a brand sets them.',
-          source: _src('chip/status.dart'),
-          child: const ChipStatusExample(),
         ),
-        ExampleCard(
-          title: 'D3StatusChip',
-          source: _src('chip/watch_status.dart'),
-          child: const ChipWatchStatusExample(),
+        exampleCard(
+          'D3StatusChip',
+          'chip/watch_status.dart',
+          const ChipWatchStatusExample(),
         ),
       ],
     );
