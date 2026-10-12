@@ -6,6 +6,8 @@ import '../../examples/info_card/basic.dart';
 import '../../examples/list_screen/basic.dart';
 import '../../examples/list_tile/variants.dart';
 import '../../examples/nav_bar/variants.dart';
+import '../../examples/nav_rail/basic.dart';
+import '../../examples/nav_rail/window_size.dart';
 import '../../examples/screen/box.dart';
 import '../../examples/screen/modal.dart';
 import '../../examples/screen/sliver.dart';
@@ -220,4 +222,35 @@ class TicketCardPage extends StatelessWidget {
                   'Cards grow with the system text size instead of clipping.'),
         ],
       );
+}
+
+/// D3NavRail and D3WindowSizeClass.
+class NavRailPage extends StatelessWidget {
+  const NavRailPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ExamplePage(
+      title: 'D3NavRail',
+      summary:
+          'The same destinations as the nav bar, in a vertical rail for medium and '
+          'expanded windows. Pair it with D3WindowSizeClass: a bottom bar when the '
+          'window is compact, a rail from 600 px up.',
+      examples: [
+        exampleCard(
+          'Collapsed and extended',
+          'nav_rail/basic.dart',
+          const NavRailExample(),
+          description: 'Toggle Extended, or tap the menu button.',
+        ),
+        exampleCard(
+          'Window size classes',
+          'nav_rail/window_size.dart',
+          const WindowSizeExample(),
+          description:
+              'Resize the browser: the highlighted class follows the width of this card.',
+        ),
+      ],
+    );
+  }
 }

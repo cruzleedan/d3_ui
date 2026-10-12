@@ -34,18 +34,22 @@ class D3ScrimIconButton extends StatelessWidget {
     return Semantics(
       label: semanticsLabel,
       button: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: scrimColor ?? Colors.black.withValues(alpha: 0.35),
-            shape: BoxShape.circle,
+      child: Material(
+        color: scrimColor ?? Colors.black.withValues(alpha: 0.35),
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          splashColor: Colors.white.withValues(alpha: 0.24),
+          highlightColor: Colors.white.withValues(alpha: 0.12),
+          onTap: onTap,
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: Center(
+              child: Icon(icon, size: size * 0.55, color: iconColor),
+            ),
           ),
-          alignment: Alignment.center,
-          child: Icon(icon, size: size * 0.55, color: iconColor),
         ),
       ),
     );

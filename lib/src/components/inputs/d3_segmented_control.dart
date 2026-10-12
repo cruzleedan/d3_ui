@@ -350,12 +350,17 @@ class _SegmentItem extends StatelessWidget {
       label: segment.semanticsLabel ?? segment.label,
       button: true,
       selected: isSelected,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: SizedBox(
-          height: double.infinity,
-          child: Center(child: inner),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(D3Radius.sm),
+          splashColor: colors.primary.withValues(alpha: 0.14),
+          highlightColor: colors.primary.withValues(alpha: 0.08),
+          onTap: onTap,
+          child: SizedBox(
+            height: double.infinity,
+            child: Center(child: inner),
+          ),
         ),
       ),
     );

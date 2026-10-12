@@ -653,16 +653,22 @@ class _CancelButton extends StatelessWidget {
     return Semantics(
       button: true,
       label: 'Cancel',
-      child: GestureDetector(
-        onTap: () => Navigator.of(context).pop(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          child: Text(
-            'Cancel',
-            style: TextStyle(
-              fontSize: D3TypeScale.titleMdSize,
-              fontWeight: FontWeight.w400,
-              color: colors.primary,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(D3Radius.full),
+          splashColor: colors.primary.withValues(alpha: 0.14),
+          highlightColor: colors.primary.withValues(alpha: 0.08),
+          onTap: () => Navigator.of(context).pop(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                fontSize: D3TypeScale.titleMdSize,
+                fontWeight: FontWeight.w400,
+                color: colors.primary,
+              ),
             ),
           ),
         ),
@@ -707,16 +713,22 @@ class _ActionWidget extends StatelessWidget {
         ),
       _TextAction(:final label, :final onPressed) => Semantics(
         button: true,
-        child: GestureDetector(
-          onTap: onPressed,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: D3TypeScale.titleMdSize,
-                fontWeight: FontWeight.w500,
-                color: colors.primary,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(D3Radius.full),
+            splashColor: colors.primary.withValues(alpha: 0.14),
+            highlightColor: colors.primary.withValues(alpha: 0.08),
+            onTap: onPressed,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: D3TypeScale.titleMdSize,
+                  fontWeight: FontWeight.w500,
+                  color: colors.primary,
+                ),
               ),
             ),
           ),
@@ -749,15 +761,21 @@ class _BarIconButton extends StatelessWidget {
     return Semantics(
       button: true,
       label: semanticsLabel,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onPressed();
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-          child: Icon(icon, size: 22, color: colors.onSurface),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkResponse(
+          highlightShape: BoxShape.circle,
+          radius: 20,
+          splashColor: colors.primary.withValues(alpha: 0.14),
+          highlightColor: colors.primary.withValues(alpha: 0.08),
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onPressed();
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            child: Icon(icon, size: 22, color: colors.onSurface),
+          ),
         ),
       ),
     );

@@ -160,50 +160,52 @@ class D3NavBar extends StatelessWidget {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surfaceVariant,
-        border: Border(
-          top: BorderSide(
-            color: colors.outline.withValues(alpha: 0.15),
-            width: 0.5,
+    return Material(
+      color: colors.surfaceVariant,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: colors.outline.withValues(alpha: 0.15),
+              width: 0.5,
+            ),
           ),
         ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: 8,
-            bottom: bottomPadding > 0 ? bottomPadding : 12,
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: 8,
+              bottom: bottomPadding > 0 ? bottomPadding : 12,
+            ),
+            child: action == null
+                ? Row(
+                    children: [
+                      for (var i = 0; i < items.length; i++)
+                        buildItem(items[i], i),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            for (var i = 0; i < leftItems.length; i++)
+                              buildItem(leftItems[i], i),
+                          ],
+                        ),
+                      ),
+                      _NavBarCenterActionButton(action: action, colors: colors),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            for (var i = 0; i < rightItems.length; i++)
+                              buildItem(rightItems[i], splitIndex + i),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
           ),
-          child: action == null
-              ? Row(
-                  children: [
-                    for (var i = 0; i < items.length; i++)
-                      buildItem(items[i], i),
-                  ],
-                )
-              : Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < leftItems.length; i++)
-                            buildItem(leftItems[i], i),
-                        ],
-                      ),
-                    ),
-                    _NavBarCenterActionButton(action: action, colors: colors),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < rightItems.length; i++)
-                            buildItem(rightItems[i], splitIndex + i),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
         ),
       ),
     );
@@ -225,29 +227,37 @@ class _NavBarCenterActionButton extends StatelessWidget {
     return Semantics(
       label: action.semanticsLabel ?? 'Action',
       button: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          HapticFeedback.lightImpact();
-          action.onPressed();
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: D3Spacing.s8),
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: colors.primary,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: colors.primary.withValues(alpha: 0.35),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: D3Spacing.s8),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: colors.primary.withValues(alpha: 0.35),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Material(
+            color: colors.primary,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: colors.onPrimary.withValues(alpha: 0.24),
+              highlightColor: colors.onPrimary.withValues(alpha: 0.12),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                action.onPressed();
+              },
+              child: SizedBox(
+                width: 44,
+                height: 44,
+                child: Icon(action.icon, size: 24, color: colors.onPrimary),
+              ),
             ),
-            child: Icon(action.icon, size: 24, color: colors.onPrimary),
           ),
         ),
       ),
@@ -283,8 +293,10 @@ class _NavBarItem extends StatelessWidget {
       label: item.semanticsLabel ?? item.label,
       selected: isSelected,
       button: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        splashColor: colors.primary.withValues(alpha: 0.14),
+        highlightColor: colors.primary.withValues(alpha: 0.08),
         onTap: onTap,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -307,6 +319,20 @@ class _NavBarItem extends StatelessWidget {
                     borderRadius: BorderRadius.circular(D3Radius.full),
                   ),
                   child: Icon(icon, size: 22, color: iconColor),
+                ),
+
+                // Ink over the pill: the selected pill's fill would otherwise
+                // paint over the item's ripple.
+                Positioned.fill(
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      onTap: onTap,
+                      borderRadius: BorderRadius.circular(D3Radius.full),
+                      splashColor: colors.primary.withValues(alpha: 0.14),
+                      highlightColor: colors.primary.withValues(alpha: 0.08),
+                    ),
+                  ),
                 ),
 
                 // Badge
