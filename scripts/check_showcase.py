@@ -143,7 +143,10 @@ def run_flow(browser, port, page_id, steps, width):
                 page.keyboard.press(name)
             page.wait_for_timeout(1200)
             behind = page.get_by_role("button", name=re.compile("^(Overview|Open navigation menu)$"))
-            if (behind.count() == 0) != bool(wants_open):
+            # A modal hides the page behind it, or (inside the Places frame) shows
+            # its own Cancel button while the showcase navigation stays visible.
+            is_open = behind.count() == 0 or page.get_by_role("button", name=re.compile("^Cancel")).count() > 0
+            if is_open != bool(wants_open):
                 return problems + [f"after {action} {name!r}: expected {'an overlay' if wants_open else 'no overlay'}"]
         return problems
     except Exception as e:

@@ -72,8 +72,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: D3AppTheme.light(),
-        home: Center(
-          child: SizedBox(width: 420, height: 800, child: const PlacesApp()),
+        home: const Center(
+          child: SizedBox(width: 420, height: 800, child: PlacesApp()),
         ),
       ),
     );

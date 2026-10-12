@@ -45,6 +45,7 @@ class _PatternsPageState extends State<PatternsPage> {
         : _frame.width.clamp(300.0, available < 300 ? 300.0 : available);
     final frameHeight = (size.height - 330).clamp(520.0, 720.0);
     final shown = D3WindowSizeClass.fromWidth(frameWidth);
+    final bezel = _frame == _Frame.phone ? 26.0 : 10.0;
 
     return ListView(
       padding: EdgeInsets.fromLTRB(onPhone ? 0 : 20, 24, onPhone ? 0 : 20, 40),
@@ -66,41 +67,52 @@ class _PatternsPageState extends State<PatternsPage> {
         if (!onPhone)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
+            child: Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                D3SegmentedControl<_Frame>(
-                  segments: [
-                    for (final f in _Frame.values)
-                      D3Segment(value: f, label: f.label, icon: f.icon),
-                  ],
-                  selected: _frame,
-                  onChanged: (f) => setState(() => _frame = f),
-                ),
-                const SizedBox(width: 12),
-                Flexible(
-                  child: Text(
-                    '${shown.name} layout, ${frameWidth.round()} px wide',
-                    style: TextStyle(color: colors.onSurfaceVariant),
+                // Wide enough for the three labels: left to itself the control
+                // takes only what is left of the row.
+                SizedBox(
+                  width: 360,
+                  child: D3SegmentedControl<_Frame>(
+                    expand: true,
+                    segments: [
+                      for (final f in _Frame.values)
+                        D3Segment(value: f, label: f.label, icon: f.icon),
+                    ],
+                    selected: _frame,
+                    onChanged: (f) => setState(() => _frame = f),
                   ),
+                ),
+                Text(
+                  '${shown.name} layout, ${frameWidth.round()} px wide',
+                  style: TextStyle(color: colors.onSurfaceVariant),
                 ),
               ],
             ),
           ),
         Center(
+          // A bezel around the app, so its edge reads against the page.
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
-            width: frameWidth,
-            height: frameHeight,
-            clipBehavior: Clip.antiAlias,
+            width: frameWidth + (onPhone ? 0 : 20),
+            padding: EdgeInsets.all(onPhone ? 0 : 10),
             decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(
-                onPhone ? 0 : (_frame == _Frame.phone ? 28 : 14),
-              ),
-              border: Border.all(color: colors.outline, width: 2),
+              color: colors.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(onPhone ? 0 : bezel + 10),
+              border: Border.all(color: colors.outline.withValues(alpha: 0.5)),
             ),
-            child: const PlacesApp(),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(onPhone ? 0 : bezel),
+              child: SizedBox(
+                height: frameHeight,
+                child:
+                    ColoredBox(color: colors.surface, child: const PlacesApp()),
+              ),
+            ),
           ),
         ),
       ],
