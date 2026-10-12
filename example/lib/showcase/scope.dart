@@ -12,6 +12,7 @@ class ShowcaseScope extends InheritedWidget {
     required this.onBrandChanged,
     required this.onThemeModeChanged,
     required this.brandThemes,
+    this.embed = false,
     required super.child,
   });
 
@@ -20,6 +21,9 @@ class ShowcaseScope extends InheritedWidget {
   final ValueChanged<ShowcaseBrand> onBrandChanged;
   final ValueChanged<ThemeMode> onThemeModeChanged;
   final Map<String, BrandThemes> brandThemes;
+
+  /// Shown alone in a frame (`?embed=1`): pages drop their own headings.
+  final bool embed;
 
   static ShowcaseScope of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<ShowcaseScope>()!;
