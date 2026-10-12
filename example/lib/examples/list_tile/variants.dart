@@ -1,7 +1,7 @@
 import 'package:d3_ui/d3_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Tiles with icons, trailing text, destructive and disabled states, grouped.
+/// Tiles with icon badges, trailing text, destructive and disabled states, grouped.
 class ListTileExample extends StatelessWidget {
   const ListTileExample({super.key});
 
@@ -13,7 +13,10 @@ class ListTileExample extends StatelessWidget {
         D3ListTileGroup(
           children: [
             D3ListTile(
-              leading: const Icon(Icons.person_outline),
+              leading: D3ListTileIcon(
+                icon: Icons.person_outline,
+                color: context.d3Colors.primary,
+              ),
               title: 'Account',
               subtitle: 'Name, email and password',
               trailing: const Icon(Icons.chevron_right_rounded),
