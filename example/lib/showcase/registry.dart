@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'page_model.dart';
+import 'pages/display_pages.dart';
 import 'pages/example_pages.dart';
 import 'pages/overview_page.dart';
 import 'pages/theme_page.dart';
@@ -32,11 +33,115 @@ final List<ShowcasePage> showcasePages = [
     builder: (_) => const ButtonPage(),
   ),
   ShowcasePage(
+    id: 'split-button',
+    title: 'Split button',
+    group: ShowcaseGroup.actions,
+    icon: Icons.arrow_drop_down_circle_outlined,
+    summary: 'A main action with a menu.',
+    builder: (_) => const SplitButtonPage(),
+  ),
+  ShowcasePage(
+    id: 'expanding-fab',
+    title: 'Expanding FAB',
+    group: ShowcaseGroup.actions,
+    icon: Icons.add_circle_outline,
+    summary: 'A floating button that fans out actions.',
+    builder: (_) => const ExpandingFabPage(),
+  ),
+  ShowcasePage(
+    id: 'scrim-button',
+    title: 'Scrim icon button',
+    group: ShowcaseGroup.actions,
+    icon: Icons.photo_camera_back_outlined,
+    summary: 'An icon button for use over photos.',
+    builder: (_) => const ScrimButtonPage(),
+  ),
+  ShowcasePage(
+    id: 'avatar',
+    title: 'Avatar',
+    group: ShowcaseGroup.display,
+    icon: Icons.account_circle_outlined,
+    summary: 'People and places as pictures or initials.',
+    builder: (_) => const AvatarPage(),
+  ),
+  ShowcasePage(
     id: 'chip',
     title: 'Chip',
     group: ShowcaseGroup.display,
     icon: Icons.label_outline,
     summary: 'Filters, tags and status.',
     builder: (_) => const ChipPage(),
+  ),
+  ShowcasePage(
+    id: 'image',
+    title: 'Image',
+    group: ShowcaseGroup.display,
+    icon: Icons.image_outlined,
+    summary: 'A network image with safe fallbacks.',
+    builder: (_) => const ImagePage(),
+  ),
+  ShowcasePage(
+    id: 'poster-card',
+    title: 'Poster card',
+    group: ShowcaseGroup.display,
+    icon: Icons.view_agenda_outlined,
+    summary: 'A picture-led card for grids.',
+    builder: (_) => const PosterCardPage(),
+  ),
+  ShowcasePage(
+    id: 'photos',
+    title: 'Photos',
+    group: ShowcaseGroup.display,
+    icon: Icons.photo_library_outlined,
+    summary: 'Carousel, gallery and viewer.',
+    builder: (_) => const PhotosPage(),
+  ),
+  ShowcasePage(
+    id: 'list',
+    title: 'List',
+    group: ShowcaseGroup.display,
+    icon: Icons.list_alt_outlined,
+    summary: 'Sections, refresh and selection.',
+    builder: (_) => const ListPage(),
+  ),
+  ShowcasePage(
+    id: 'section-header',
+    title: 'Section header',
+    group: ShowcaseGroup.display,
+    icon: Icons.title_outlined,
+    summary: 'A label for a group of rows.',
+    builder: (_) => const SectionHeaderPage(),
+  ),
+  ShowcasePage(
+    id: 'expandable-section',
+    title: 'Expandable section',
+    group: ShowcaseGroup.display,
+    icon: Icons.unfold_more_outlined,
+    summary: 'A block that opens and closes.',
+    builder: (_) => const ExpandableSectionPage(),
+  ),
+  ShowcasePage(
+    id: 'skeleton',
+    title: 'Skeleton',
+    group: ShowcaseGroup.display,
+    icon: Icons.hourglass_empty_outlined,
+    summary: 'Placeholders while content loads.',
+    builder: (_) => const SkeletonPage(),
+  ),
+  ShowcasePage(
+    id: 'empty-state',
+    title: 'Empty state',
+    group: ShowcaseGroup.display,
+    icon: Icons.inbox_outlined,
+    summary: 'What to show when there is nothing.',
+    builder: (_) => const EmptyStatePage(),
+  ),
+  ShowcasePage(
+    id: 'toast',
+    title: 'Toast',
+    group: ShowcaseGroup.feedback,
+    icon: Icons.chat_bubble_outline,
+    summary: 'A short message that goes away.',
+    builder: (_) => const ToastPage(),
   ),
 ];

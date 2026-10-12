@@ -24,6 +24,7 @@ flutter:
 
   assets:
     - assets/themes/
+    - assets/photos/
 
   # Roboto is bundled so the web showcase never asks a font CDN for it.
   fonts:
