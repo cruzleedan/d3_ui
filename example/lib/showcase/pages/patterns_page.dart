@@ -8,14 +8,19 @@ import '../scope.dart';
 /// The sizes the Places app can be shown at. The app follows the width it is
 /// given, so each one picks a different Material layout.
 enum _Frame {
-  phone('Phone', Icons.smartphone_outlined, 390),
-  tablet('Tablet', Icons.tablet_mac_outlined, 700),
-  desktop('Desktop', Icons.desktop_windows_outlined, 1100);
+  phone('Phone', Icons.smartphone_outlined, 390, 844),
+  tablet('Tablet', Icons.tablet_mac_outlined, 700, 940),
+  desktop('Desktop', Icons.desktop_windows_outlined, 1100, 720);
 
-  const _Frame(this.label, this.icon, this.width);
+  const _Frame(this.label, this.icon, this.width, this.height);
   final String label;
   final IconData icon;
+
+  /// A typical device's size in logical pixels: a 19.5:9 phone, a portrait
+  /// tablet and a landscape window. The page scrolls if it is taller than the
+  /// window.
   final double width;
+  final double height;
 }
 
 /// Patterns: the components working together, as one small app that adapts to
@@ -43,7 +48,9 @@ class _PatternsPageState extends State<PatternsPage> {
     final frameWidth = onPhone
         ? size.width
         : _frame.width.clamp(300.0, available < 300 ? 300.0 : available);
-    final frameHeight = (size.height - 330).clamp(520.0, 720.0);
+    // The device's own proportions; on a phone, whatever is left of the screen.
+    final frameHeight =
+        onPhone ? (size.height - 330).clamp(520.0, 844.0) : _frame.height;
     final shown = D3WindowSizeClass.fromWidth(frameWidth);
     final bezel = _frame == _Frame.phone ? 26.0 : 10.0;
 
