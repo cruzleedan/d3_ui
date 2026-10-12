@@ -1,0 +1,49 @@
+name: Web showcase
+
+# Builds the example app for the web (the d3_ui showcase).
+#   - On pull requests: build only, so the web build cannot break silently.
+#   - On a version tag: also attach d3-ui-showcase-web.tar.gz and its .sha256 to
+#     the GitHub Release, where the host fetches it. No secrets are used.
+
+on:
+  pull_request:
+    paths:
+      - 'example/**'
+      - 'lib/**'
+      - 'scripts/build_showcase.sh'
+      - '.github/workflows/web-showcase.yml'
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # attach the build to the release
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Build the showcase
+        run: scripts/build_showcase.sh
+
+      - name: Keep the build for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: d3-ui-showcase-web
+          path: dist/
+          retention-days: 14
+
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --generate-notes
+          gh release upload "$TAG" dist/d3-ui-showcase-web.tar.gz dist/d3-ui-showcase-web.tar.gz.sha256 --clobber

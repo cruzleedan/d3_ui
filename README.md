@@ -10,6 +10,18 @@ A minimal, flat Flutter design system built for personal mobile apps. Ships with
 
 ---
 
+## Showcase
+
+`example/` is a gallery of the components that also builds for the web:
+
+```bash
+scripts/build_showcase.sh   # dist/d3-ui-showcase-web.tar.gz (+ .sha256)
+cd example && flutter run -d chrome
+```
+
+CI builds it on every pull request and, on a version tag, attaches the archive
+to the GitHub Release.
+
 ## Installation
 
 ```yaml

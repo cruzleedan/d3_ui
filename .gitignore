@@ -28,3 +28,6 @@ lcov.info
 .analyzer_cache/
 # Widget Preview related
 .widget_preview/
+
+# Showcase build output (scripts/build_showcase.sh)
+dist/

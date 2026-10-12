@@ -1,6 +1,6 @@
-import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:d3_ui/src/components/display/helpers/d3_local_image.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -190,8 +190,8 @@ class _D3CarouselImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
-    return Image.file(
-      File(path),
+    return d3LocalImage(
+      path,
       fit: BoxFit.cover,
       errorBuilder: (_, _, _) => ColoredBox(
         color: colors.surfaceContainerHigh,
