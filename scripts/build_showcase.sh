@@ -28,6 +28,15 @@ ls "$BUILD"/main.dart.* >/dev/null 2>&1 || { echo "No main.dart.* in $BUILD"; ex
 # glyphs no bundled font has).
 [ -d "$BUILD/canvaskit" ] || { echo "No canvaskit/ in $BUILD (was --no-web-resources-cdn dropped?)"; exit 1; }
 
+# Poster screenshots for the portfolio, taken from this very build so they never
+# go stale. Needs Playwright (see scripts/make_showcase_assets.py); skipped, with
+# a warning, when it is not installed.
+if python3 -c 'import playwright' 2>/dev/null; then
+  python3 scripts/make_showcase_assets.py posters
+else
+  echo "WARNING: Playwright is not installed: building without posters"
+fi
+
 rm -rf "$OUT" && mkdir -p "$OUT"
 tar -czf "$OUT/$NAME" -C "$BUILD" .
 (cd "$OUT" && sha256sum "$NAME" > "$NAME.sha256")
