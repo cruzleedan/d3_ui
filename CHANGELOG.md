@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **New** `D3NavRail` (a vertical rail with the same `D3NavItem`s as `D3NavBar`,
+  optional leading and trailing widgets, `extended` mode) and
+  `D3WindowSizeClass` / `D3WindowSizeBuilder` (the Material 3 compact, medium and
+  expanded classes, from the window or from the width a widget is given).
+- **Fix** `D3BottomSheet` can be dragged with a mouse, trackpad or stylus (the
+  handle was dead on desktop and the web).
+- **Fix** tap feedback: `D3NavBar` items and centre action, `D3Screen` icon and
+  text actions and Cancel, `D3SegmentedControl`, `D3HyperlinkButton`,
+  `D3ScrimIconButton`, `D3PosterCard`, `D3SearchBar` (read-only) and `D3TabBar`
+  now show an ink splash; `D3ListTile` and `D3Card` splashes are stronger.
 - **Custom themes** — `D3ThemeSpec` builds a whole light and dark theme from a
   design-token JSON file; `D3ColorTokens.outlineVariant`, `D3StatusTokens`
   (`context.d3Status`) and `D3ShapeTokens` (`context.d3Shape`) let a brand

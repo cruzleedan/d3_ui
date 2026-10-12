@@ -261,7 +261,33 @@ class _D3SearchBarState extends State<D3SearchBar> {
         if (!widget.readOnly) _focusNode.requestFocus();
         widget.onTap?.call();
       },
-      child: Stack(children: [pill, content]),
+      child: Stack(
+        children: [
+          pill,
+          // Press feedback over the pill, under the content. Taps in the 4dp
+          // margin above/below the pill fall through to the outer detector.
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: (kMinInteractiveDimension - _visibleHeight) / 2,
+              ),
+              child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(D3Radius.full),
+                  splashColor: colors.primary.withValues(alpha: 0.14),
+                  highlightColor: colors.primary.withValues(alpha: 0.08),
+                  onTap: () {
+                    if (!widget.readOnly) _focusNode.requestFocus();
+                    widget.onTap?.call();
+                  },
+                ),
+              ),
+            ),
+          ),
+          content,
+        ],
+      ),
     );
 
     if (widget.padding != null) {

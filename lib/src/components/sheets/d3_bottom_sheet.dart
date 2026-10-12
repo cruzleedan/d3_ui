@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
 
@@ -508,28 +509,42 @@ class _SheetSurface extends StatelessWidget {
         BorderRadius.vertical(top: Radius.circular(context.d3Shape.xl));
     final background = style.backgroundColor ?? colors.surfaceContainerLow;
 
-    final scroll = CustomScrollView(
-      controller: scrollController,
-      slivers: [
-        if (style.showHeader)
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _StickySheetHeaderDelegate(
-              colors: colors,
-              background: background,
-              showDragHandle: style.showDragHandle,
-              topPadding: statusBarHeight,
-              title: title,
-              subtitle: subtitle,
-              headerAction: headerAction,
-              onClose: onClose,
+    // The sheet is dragged through this scroll view. Flutter's default scroll
+    // behaviour leaves a mouse (and some trackpads and styluses) out of the
+    // drag devices, which made the handle dead on desktop and the web.
+    final scroll = ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(
+        dragDevices: {
+          ...ScrollConfiguration.of(context).dragDevices,
+          PointerDeviceKind.mouse,
+          PointerDeviceKind.trackpad,
+          PointerDeviceKind.stylus,
+          PointerDeviceKind.invertedStylus,
+        },
+      ),
+      child: CustomScrollView(
+        controller: scrollController,
+        slivers: [
+          if (style.showHeader)
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _StickySheetHeaderDelegate(
+                colors: colors,
+                background: background,
+                showDragHandle: style.showDragHandle,
+                topPadding: statusBarHeight,
+                title: title,
+                subtitle: subtitle,
+                headerAction: headerAction,
+                onClose: onClose,
+              ),
             ),
+          SliverFillRemaining(child: child),
+          SliverToBoxAdapter(
+            child: SizedBox(height: MediaQuery.viewPaddingOf(context).bottom),
           ),
-        SliverFillRemaining(child: child),
-        SliverToBoxAdapter(
-          child: SizedBox(height: MediaQuery.viewPaddingOf(context).bottom),
-        ),
-      ],
+        ],
+      ),
     );
 
     return ClipRRect(

@@ -6,6 +6,7 @@ export 'src/layout/d3_adaptive_layout.dart';
 
 // Utils
 export 'src/utils/d3_contrast.dart';
+export 'src/utils/d3_window_size.dart';
 export 'src/utils/d3_debouncer.dart';
 
 // Tokens
@@ -48,6 +49,7 @@ export 'src/components/inputs/schema_form/schema_form.dart';
 export 'src/components/sheets/d3_bottom_sheet.dart';
 export 'src/components/sheets/d3_form_sheet.dart';
 export 'src/components/navigation/d3_nav_bar.dart';
+export 'src/components/navigation/d3_nav_rail.dart';
 export 'src/components/navigation/d3_screen.dart';
 export 'src/components/navigation/d3_list_screen.dart';
 export 'src/components/navigation/d3_sticky_header.dart';

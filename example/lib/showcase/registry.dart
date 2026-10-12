@@ -360,6 +360,17 @@ final List<ShowcasePage> showcasePages = [
     ),
   ),
   ShowcasePage(
+    id: 'nav-rail',
+    title: 'Nav rail',
+    group: ShowcaseGroup.navigation,
+    icon: Icons.view_sidebar_outlined,
+    summary: 'Navigation for medium and expanded windows.',
+    builder: (_) => DeferredPage(
+      load: nav.loadLibrary,
+      builder: (_) => nav.NavRailPage(),
+    ),
+  ),
+  ShowcasePage(
     id: 'tab-bar',
     title: 'Tab bar',
     group: ShowcaseGroup.navigation,

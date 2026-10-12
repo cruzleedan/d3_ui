@@ -260,8 +260,8 @@ class D3Card extends StatelessWidget {
           ? InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
-              splashColor: colors.primary.withValues(alpha: 0.08),
-              highlightColor: colors.primary.withValues(alpha: 0.04),
+              splashColor: colors.primary.withValues(alpha: 0.12),
+              highlightColor: colors.primary.withValues(alpha: 0.06),
               child: cardContent,
             )
           : cardContent,

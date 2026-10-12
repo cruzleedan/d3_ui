@@ -45,22 +45,28 @@ class D3HyperlinkButton extends StatelessWidget {
       button: true,
       enabled: _isInteractive,
       label: semanticsLabel ?? label,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: _isInteractive
-            ? () {
-                HapticFeedback.selectionClick();
-                onPressed!();
-              }
-            : null,
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w600,
-            color: color,
-            decoration: TextDecoration.underline,
-            decorationColor: color,
+      child: Material(
+        type: MaterialType.transparency,
+        textStyle: DefaultTextStyle.of(context).style,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(4),
+          splashColor: colors.primary.withValues(alpha: 0.14),
+          highlightColor: colors.primary.withValues(alpha: 0.08),
+          onTap: _isInteractive
+              ? () {
+                  HapticFeedback.selectionClick();
+                  onPressed!();
+                }
+              : null,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
+              color: color,
+              decoration: TextDecoration.underline,
+              decorationColor: color,
+            ),
           ),
         ),
       ),

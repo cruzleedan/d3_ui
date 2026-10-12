@@ -237,8 +237,8 @@ class D3ListTile extends StatelessWidget {
                 onTap?.call();
               },
               onLongPress: onLongPress,
-              splashColor: colors.primary.withValues(alpha: 0.06),
-              highlightColor: colors.primary.withValues(alpha: 0.03),
+              splashColor: colors.primary.withValues(alpha: 0.12),
+              highlightColor: colors.primary.withValues(alpha: 0.06),
               child: content,
             )
           : content,
