@@ -2,7 +2,12 @@
 # Builds the web showcase (example/) into dist/d3-ui-showcase-web.tar.gz plus its
 # .sha256. The same script runs in CI and locally.
 #
-#   scripts/build_showcase.sh
+#   scripts/build_showcase.sh                 # build only
+#   scripts/build_showcase.sh --publish v0.3.0   # build, then attach to that GitHub Release
+#
+# GitHub Actions is disabled on this repo, so publishing is done here with the
+# `gh` CLI (the host fetches the release asset). The web-showcase workflow does
+# the same on a tag if Actions is ever turned on.
 #
 # Output: dist/d3-ui-showcase-web.tar.gz   (files at the archive root, index.html first level)
 #         dist/d3-ui-showcase-web.tar.gz.sha256
@@ -28,3 +33,11 @@ tar -czf "$OUT/$NAME" -C "$BUILD" .
 (cd "$OUT" && sha256sum "$NAME" > "$NAME.sha256")
 echo "Built $OUT/$NAME ($(du -h "$OUT/$NAME" | cut -f1))"
 cat "$OUT/$NAME.sha256"
+
+if [ "${1:-}" = "--publish" ]; then
+  TAG="${2:?usage: scripts/build_showcase.sh --publish vX.Y.Z}"
+  command -v gh >/dev/null || { echo "gh CLI is required to publish"; exit 1; }
+  gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --generate-notes
+  gh release upload "$TAG" "$OUT/$NAME" "$OUT/$NAME.sha256" --clobber
+  echo "Attached to release $TAG"
+fi

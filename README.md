@@ -15,12 +15,14 @@ A minimal, flat Flutter design system built for personal mobile apps. Ships with
 `example/` is a gallery of the components that also builds for the web:
 
 ```bash
-scripts/build_showcase.sh   # dist/d3-ui-showcase-web.tar.gz (+ .sha256)
+scripts/build_showcase.sh                     # dist/d3-ui-showcase-web.tar.gz (+ .sha256)
+scripts/build_showcase.sh --publish v0.3.0    # ...and attach both to that GitHub Release
 cd example && flutter run -d chrome
 ```
 
-CI builds it on every pull request and, on a version tag, attaches the archive
-to the GitHub Release.
+GitHub Actions is currently disabled on this repository, so the archive is built
+and attached with the script above. `.github/workflows/web-showcase.yml` does the
+same on a pull request and a version tag if Actions is enabled.
 
 ## Installation
 

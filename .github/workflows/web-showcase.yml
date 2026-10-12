@@ -1,6 +1,8 @@
 name: Web showcase
 
 # Builds the example app for the web (the d3_ui showcase).
+# NOTE: GitHub Actions is currently disabled on this repository; until it is
+# enabled, run `scripts/build_showcase.sh --publish vX.Y.Z` locally instead.
 #   - On pull requests: build only, so the web build cannot break silently.
 #   - On a version tag: also attach d3-ui-showcase-web.tar.gz and its .sha256 to
 #     the GitHub Release, where the host fetches it. No secrets are used.
