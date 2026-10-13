@@ -35,3 +35,33 @@ python3 -m http.server 8090 --bind <private-address> --directory build/web
   reboots.
 - For hot reload instead, use
   `flutter run -d web-server --web-hostname <private-address> --web-port 8090`.
+
+## Adding or changing an example
+
+Each example on a showcase page is one small widget in its own file under
+`lib/examples/<component>/`. The "Code" button on its card shows that file's
+text, which comes from `lib/showcase/generated/example_sources.g.dart`: a
+generated map of every example file's source. After you add, rename or edit an
+example, regenerate it (from `example/`):
+
+```bash
+dart run tool/gen_example_sources.dart
+```
+
+- Don't edit the generated file by hand, and don't run `dart format` on it.
+- It is committed, because a clean checkout needs it to build.
+- `scripts/build_showcase.sh` regenerates it before every web build, and
+  `flutter test` (in `example/`) fails if the committed copy is out of date.
+- A new example also needs a page entry: add it to a page in
+  `lib/showcase/pages/` with `exampleCard('Title', 'component/file.dart', const MyExample())`
+  and, for a new page, to `lib/showcase/registry.dart`. A test fails if an
+  exported widget has no example, or an example file is on no page.
+
+## Checking the showcase in a browser
+
+```bash
+scripts/build_showcase.sh                  # build first
+python3 scripts/check_showcase.py          # quick check; --full for every width, theme and brand
+```
+
+It needs `pip install playwright && playwright install chromium`.
