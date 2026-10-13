@@ -7,6 +7,8 @@ import 'brands.dart';
 class ShowcaseScope extends InheritedWidget {
   const ShowcaseScope({
     super.key,
+    required this.pageId,
+    required this.onPageChanged,
     required this.brand,
     required this.themeMode,
     required this.onBrandChanged,
@@ -16,6 +18,9 @@ class ShowcaseScope extends InheritedWidget {
     required super.child,
   });
 
+  /// The page being shown, and a way to open another (which updates the URL).
+  final String pageId;
+  final ValueChanged<String> onPageChanged;
   final ShowcaseBrand brand;
   final ThemeMode themeMode;
   final ValueChanged<ShowcaseBrand> onBrandChanged;
@@ -36,6 +41,7 @@ class ShowcaseScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(ShowcaseScope old) =>
+      pageId != old.pageId ||
       brand != old.brand ||
       themeMode != old.themeMode ||
       brandThemes != old.brandThemes;

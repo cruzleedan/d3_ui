@@ -17,7 +17,9 @@ code, a brand picker (the default blue, a green, and a terracotta theme built fr
 a design-token file with `D3ThemeSpec`), light and dark, and a small Places app
 that uses the parts together.
 
-Links can choose what opens:
+The address follows what you are looking at (`/?page=button&brand=green`), so
+any page can be bookmarked or shared, and the browser's back and forward buttons
+work. Links can also choose what opens:
 
 | Parameter | Values | Example |
 |---|---|---|

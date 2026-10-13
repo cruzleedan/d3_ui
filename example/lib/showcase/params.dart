@@ -39,3 +39,24 @@ class ShowcaseParams {
   factory ShowcaseParams.fromUri(Uri uri) =>
       ShowcaseParams.fromQuery(uri.queryParameters);
 }
+
+/// The address for a showcase state: `/?page=button&theme=dark&brand=green`.
+///
+/// Defaults are left out so a plain address stays plain: the overview, the
+/// device theme and the first brand. `embed` is kept when it is on.
+Uri showcaseLocation({
+  required String page,
+  required ThemeMode themeMode,
+  required String brand,
+  bool embed = false,
+  String defaultPage = 'overview',
+  String defaultBrand = 'blue',
+}) {
+  final query = <String, String>{
+    if (page != defaultPage) 'page': page,
+    if (themeMode != ThemeMode.system) 'theme': themeMode.name,
+    if (brand != defaultBrand) 'brand': brand,
+    if (embed) 'embed': '1',
+  };
+  return Uri(path: '/', queryParameters: query.isEmpty ? null : query);
+}
