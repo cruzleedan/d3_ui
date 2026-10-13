@@ -22,15 +22,14 @@ Build the showcase as a static web app and serve it from any machine you can
 reach, for example over a VPN or private network:
 
 ```bash
-cd example
-flutter build web --release --no-web-resources-cdn
-python3 -m http.server 8090 --bind <private-address> --directory build/web
+scripts/build_showcase.sh                                  # builds example/build/web
+python3 scripts/preview_showcase.py --bind <private-address> --port 8090
 ```
 
-Note: pages have paths (`/button`), and `python3 -m http.server` answers 404 for
-a path that is not a file, so a deep link only works from the home page there.
-The host (and `scripts/check_showcase.py`'s server) serve `index.html` for any
-path.
+Run both from the repository root (the paths are relative to it). The preview
+script serves `index.html` for any path that is not a file, as the real host
+does, so a deep link such as `/button` works on reload; `python3 -m http.server`
+answers 404 for those.
 
 - Bind to a specific private address, not `0.0.0.0`, so the preview isn't
   exposed on every interface.
