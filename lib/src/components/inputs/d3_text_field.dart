@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 import 'helpers/d3_clear_button_mixin.dart';
+import 'helpers/d3_field_clear_button.dart';
 import 'helpers/d3_field_lifecycle_mixin.dart';
 import 'helpers/d3_field_status.dart';
 import 'helpers/d3_field_slot.dart';
@@ -536,41 +537,12 @@ class D3TextFieldState extends State<D3TextField>
 
     if (showClear) {
       parts.add(
-        Semantics(
-          button: true,
-          label: 'Clear',
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              _controller.clear();
-              setState(() => _validationError = null);
-              _focusNode.requestFocus();
-            },
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                minWidth: kMinInteractiveDimension,
-                minHeight: kMinInteractiveDimension,
-              ),
-              child: Center(
-                widthFactor: 1,
-                heightFactor: 1,
-                child: Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: colors.onSurfaceVariant.withValues(alpha: 0.15),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.close_rounded,
-                    size: 12,
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ),
-          ),
+        D3FieldClearButton(
+          onTap: () {
+            _controller.clear();
+            setState(() => _validationError = null);
+            _focusNode.requestFocus();
+          },
         ),
       );
     }

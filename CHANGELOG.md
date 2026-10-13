@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Fix** `D3DecimalField`: `decimalPlaces` is now applied when the field loses
+  focus (`5` becomes `5.00`, `5.` becomes `5.00`, a lone `.` is cleared); it only
+  limited typing before. It also has the clear (✕) button the text field has,
+  shown while focused with text (`showClearButton`, default true; clearing keeps
+  the focus and reports 0.0). The button is shared as an internal
+  `D3FieldClearButton`.
 - **Fix** the clear (✕) button of `D3TextField` and `D3SearchBar` on desktop and the
   web: pressing it unfocused the field first, so on `D3TextField` the button
   vanished before the release and nothing was cleared. A press on the button now
