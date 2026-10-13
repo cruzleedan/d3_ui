@@ -37,9 +37,32 @@ class _ShowcaseShellState extends State<ShowcaseShell> {
     final wide = MediaQuery.sizeOf(context).width >= wideBreakpoint;
     final body = ShowcaseNav(
       open: (id) => _open(pageForId(id), closeDrawer: false),
-      child: KeyedSubtree(
-        key: ValueKey(_page.id),
-        child: Builder(builder: _page.builder),
+      // A short fade and rise when the page changes; none when the user prefers
+      // reduced motion.
+      child: AnimatedSwitcher(
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 220),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeIn,
+        layoutBuilder: (current, previous) => Stack(
+          fit: StackFit.expand,
+          children: [...previous, if (current != null) current],
+        ),
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.012),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        ),
+        child: KeyedSubtree(
+          key: ValueKey(_page.id),
+          child: Builder(builder: _page.builder),
+        ),
       ),
     );
 
