@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Fix** the search field in `D3DropdownField`'s bottom sheet (`D3DropdownMode.sheet`,
+  `searchable`) was barely visible: its fill matched the sheet colour. It is now a
+  `D3SearchBar`, which tints with `onSurface`, so it shows in light and dark (and
+  gets the clear button).
 - **Fix** `D3DecimalField`: `decimalPlaces` is now applied when the field loses
   focus (`5` becomes `5.00`, `5.` becomes `5.00`, a lone `.` is cleared); it only
   limited typing before. It also has the clear (✕) button the text field has,

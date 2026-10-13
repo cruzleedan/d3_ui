@@ -409,30 +409,15 @@ class _DropdownSheetBodyState<T> extends State<_DropdownSheetBody<T>> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Row(
               children: [
+                // D3SearchBar tints with onSurface, so the field reads on the
+                // sheet (a fill from the surface tokens equals the sheet colour).
                 Expanded(
-                  child: TextField(
+                  child: D3SearchBar(
                     controller: _searchController,
                     autofocus: true,
+                    hint: widget.searchHint,
                     onChanged: _onSearch,
-                    style: TextStyle(
-                      fontSize: tokens.textSize,
-                      color: colors.onSurface,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: widget.searchHint,
-                      hintStyle: TextStyle(color: colors.onSurfaceVariant),
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: colors.onSurfaceVariant,
-                      ),
-                      filled: true,
-                      fillColor: colors.surfaceVariant,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(tokens.radius),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                    padding: EdgeInsets.zero,
                   ),
                 ),
                 if (widget.searchAction != null) ...[
