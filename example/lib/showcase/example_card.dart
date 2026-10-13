@@ -45,6 +45,11 @@ class _ExampleCardState extends State<ExampleCard> {
   }
 
   bool _showCode = false;
+
+  /// Long code is collapsed to [_collapsedHeight] with a fade and a button.
+  bool _expanded = false;
+  static const double _collapsedHeight = 300;
+  static const double _lineHeight = 12.5 * 1.55;
   bool _copied = false;
 
   Future<void> _copy() async {
@@ -78,6 +83,97 @@ class _ExampleCardState extends State<ExampleCard> {
       highlighted == null
           ? TextSpan(text: widget.source, style: base)
           : TextSpan(style: base, children: [highlighted]),
+    );
+  }
+
+  /// The code as an inset, rounded editor panel: a file tab, the code, and for
+  /// long code a fade and a "Show all" button instead of a hard cut-off.
+  Widget _codePanel() {
+    final code = _codeColors;
+    final lines = '\n'.allMatches(widget.source!).length + 1;
+    final collapsible = lines * _lineHeight + 26 > _collapsedHeight + 40;
+    final collapsed = collapsible && !_expanded;
+
+    Widget body = SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      child: _codeText(code),
+    );
+    if (collapsed) {
+      body = SizedBox(
+        height: _collapsedHeight,
+        child: Stack(
+          children: [
+            Positioned.fill(
+                child: ClipRect(
+                    child: OverflowBox(
+              alignment: Alignment.topLeft,
+              maxHeight: double.infinity,
+              child: body,
+            ))),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 72,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        code.background.withValues(alpha: 0),
+                        code.background,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: code.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: code.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _codeHeader(code),
+          body,
+          if (collapsible)
+            Container(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: code.border)),
+              ),
+              child: TextButton.icon(
+                onPressed: () => setState(() => _expanded = !_expanded),
+                style: TextButton.styleFrom(
+                  foregroundColor: code.text,
+                  minimumSize: const Size.fromHeight(40),
+                  shape: const RoundedRectangleBorder(),
+                ),
+                icon: Icon(
+                  _expanded
+                      ? Icons.unfold_less_rounded
+                      : Icons.unfold_more_rounded,
+                  size: 18,
+                ),
+                label: Text(
+                  _expanded ? 'Show less' : 'Show all $lines lines',
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -189,26 +285,9 @@ class _ExampleCardState extends State<ExampleCard> {
                   ),
                 ),
                 if (_showCode && hasCode)
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: _codeColors.background,
-                      border:
-                          Border(top: BorderSide(color: _codeColors.border)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _codeHeader(_codeColors),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: _codeText(_codeColors),
-                          ),
-                        ),
-                      ],
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    child: _codePanel(),
                   ),
               ],
             ],
@@ -232,35 +311,9 @@ class _ExampleCardState extends State<ExampleCard> {
         ),
         Expanded(
           flex: 9,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: _codeColors.background,
-              border: Border(
-                left: BorderSide(color: _codeColors.border),
-                top: BorderSide(color: _codeColors.border),
-              ),
-            ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 480),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _codeHeader(_codeColors),
-                  Flexible(
-                    child: Scrollbar(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: _codeText(_codeColors),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 4, 12, 12),
+            child: _codePanel(),
           ),
         ),
       ],
