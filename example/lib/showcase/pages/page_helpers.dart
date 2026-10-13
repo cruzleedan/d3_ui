@@ -19,6 +19,7 @@ ExampleCard exampleCard(
     title: title,
     description: description,
     source: exampleSources[path],
+    sourcePath: path,
     child: child,
   );
 }
