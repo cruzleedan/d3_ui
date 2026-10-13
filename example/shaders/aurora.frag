@@ -55,7 +55,7 @@ void main() {
   vec2 frag = FlutterFragCoord().xy;
   float aspect = uSize.x / uSize.y;
   vec2 uv = vec2(frag.x / uSize.y, frag.y / uSize.y);   // y: 0 top, 1 bottom
-  float t = uTime * 2.4;
+  float t = uTime * 3.6;
 
   float a = curtain(uv, 0.50, 0.0, t);
   float b = curtain(uv, 0.68, 1.0, t * 1.1);
