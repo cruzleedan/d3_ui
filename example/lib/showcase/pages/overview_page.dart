@@ -12,8 +12,11 @@ class OverviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.d3Colors;
     final scope = ShowcaseScope.of(context);
+    // The hero is a night sky in every theme: its content uses the brand's dark
+    // theme (light text, light-on-dark buttons).
+    final nightTheme = scope.brandThemes[scope.brand.id]!.dark;
+    final night = nightTheme.extension<D3TokensExtension>()!.colors;
     final components =
         showcasePages.where((p) => p.group != ShowcaseGroup.start).length;
     return Center(
@@ -25,53 +28,57 @@ class OverviewPage extends StatelessWidget {
             ClipRRect(
               borderRadius: context.d3Shape.circularXl,
               child: AuroraHero(
+                night: night,
                 shaded: !scope.embed,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 36, 28, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'd3_ui',
-                        style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -1,
-                          color: colors.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'A Flutter design system: tokens, themes and components '
-                        'that share one look, and a whole brand theme built from '
-                        'a design-token file. The background is a GPU shader '
-                        'coloured from the brand you pick.',
-                        style: TextStyle(
-                          fontSize: 17,
-                          height: 1.45,
-                          color: colors.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: [
-                          D3Button(
-                            label: 'Try the components',
-                            trailingIcon: Icons.arrow_forward_rounded,
-                            onPressed: () =>
-                                ShowcaseNav.of(context).open('button'),
+                child: Theme(
+                  data: nightTheme,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 36, 28, 32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'd3_ui',
+                          style: TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -1,
+                            color: night.onSurface,
                           ),
-                          D3Button(
-                            label: 'See the theme',
-                            variant: D3ButtonVariant.outlined,
-                            onPressed: () =>
-                                ShowcaseNav.of(context).open('theme'),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'A Flutter design system: tokens, themes and components '
+                          'that share one look, and a whole brand theme built from '
+                          'a design-token file. The background is a GPU shader '
+                          'coloured from the brand you pick.',
+                          style: TextStyle(
+                            fontSize: 17,
+                            height: 1.45,
+                            color: night.onSurface,
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(height: 24),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: [
+                            D3Button(
+                              label: 'Try the components',
+                              trailingIcon: Icons.arrow_forward_rounded,
+                              onPressed: () =>
+                                  ShowcaseNav.of(context).open('button'),
+                            ),
+                            D3Button(
+                              label: 'See the theme',
+                              variant: D3ButtonVariant.outlined,
+                              onPressed: () =>
+                                  ShowcaseNav.of(context).open('theme'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
