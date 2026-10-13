@@ -12,19 +12,23 @@ import 'places_data.dart';
 /// - medium: a [D3NavRail] and one pane; a place opens in a sheet.
 /// - expanded: a rail, and list and detail side by side.
 ///
-/// It runs in its own MaterialApp, so it has its own Navigator and
-/// ScaffoldMessenger: its search page and toasts stay inside the frame, and
-/// its sheets and dialogs are shown with `useRootNavigator: false` so they open
-/// in this Navigator too instead of over the whole page.
+/// It has its own Navigator and ScaffoldMessenger, so its search page, sheets,
+/// dialogs and toasts stay inside the frame (they are opened with
+/// `useRootNavigator: false`). It is deliberately not a MaterialApp: an app of
+/// its own would report its own route to the browser and overwrite the page's
+/// address.
 class PlacesApp extends StatelessWidget {
   const PlacesApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: Theme.of(context),
-      home: const _PlacesHome(),
+    return ScaffoldMessenger(
+      child: Navigator(
+        onGenerateRoute: (settings) => MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => const _PlacesHome(),
+        ),
+      ),
     );
   }
 }

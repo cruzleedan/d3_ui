@@ -27,6 +27,11 @@ flutter build web --release --no-web-resources-cdn
 python3 -m http.server 8090 --bind <private-address> --directory build/web
 ```
 
+Note: pages have paths (`/button`), and `python3 -m http.server` answers 404 for
+a path that is not a file, so a deep link only works from the home page there.
+The host (and `scripts/check_showcase.py`'s server) serve `index.html` for any
+path.
+
 - Bind to a specific private address, not `0.0.0.0`, so the preview isn't
   exposed on every interface.
 - The build is static: rebuild after each change you want to see. The server
