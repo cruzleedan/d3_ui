@@ -73,11 +73,16 @@ class _AuroraHeroState extends State<AuroraHero>
   late final Ticker _ticker;
   final _time = ValueNotifier<double>(0);
 
+  /// Where the pointer is (in the shader's units) and how strongly it is felt,
+  /// eased towards its target every frame so it glides.
+  final _pointer = _PointerState();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _ticker = createTicker((elapsed) {
+      _pointer.ease();
       _time.value = elapsed.inMicroseconds / 1e6;
     });
     if (widget.shaded) _load();
@@ -168,6 +173,7 @@ class _AuroraHeroState extends State<AuroraHero>
           painter: _AuroraPainter(
             shader: _shader!,
             time: _time,
+            pointer: _pointer,
             sky: palette.sky,
             curtains: palette.curtains,
           ),
@@ -176,15 +182,67 @@ class _AuroraHeroState extends State<AuroraHero>
       );
     }
 
+    final content = _reduceMotion || _shader == null
+        ? Stack(
+            children: [
+              Positioned.fill(child: ExcludeSemantics(child: background)),
+              widget.child,
+            ],
+          )
+        : _withPointer(background);
+    return widget.height == null
+        ? content
+        : SizedBox(height: widget.height, child: content);
+  }
+
+  /// The aurora follows a mouse over it, or a finger on it, and leans towards it.
+  Widget _withPointer(Widget background) {
+    void aim(Offset p, Size size) =>
+        _pointer.aim(Offset(p.dx / size.height, p.dy / size.height));
     final content = Stack(
       children: [
         Positioned.fill(child: ExcludeSemantics(child: background)),
         widget.child,
       ],
     );
-    return widget.height == null
-        ? content
-        : SizedBox(height: widget.height, child: content);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        return MouseRegion(
+          onHover: (e) => aim(e.localPosition, size),
+          onExit: (_) => _pointer.release(),
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (e) => aim(e.localPosition, size),
+            onPointerMove: (e) => aim(e.localPosition, size),
+            onPointerUp: (_) => _pointer.release(),
+            onPointerCancel: (_) => _pointer.release(),
+            child: content,
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// The pointer's eased position and strength, shared with the painter.
+class _PointerState {
+  Offset position = const Offset(0.8, 0.4);
+  double strength = 0;
+  Offset _targetPosition = const Offset(0.8, 0.4);
+  double _targetStrength = 0;
+
+  void aim(Offset p) {
+    _targetPosition = p;
+    _targetStrength = 1;
+  }
+
+  void release() => _targetStrength = 0;
+
+  /// One frame of easing.
+  void ease() {
+    position = Offset.lerp(position, _targetPosition, 0.12)!;
+    strength += (_targetStrength - strength) * 0.07;
   }
 }
 
@@ -192,12 +250,14 @@ class _AuroraPainter extends CustomPainter {
   _AuroraPainter({
     required this.shader,
     required this.time,
+    required this.pointer,
     required this.sky,
     required this.curtains,
   }) : super(repaint: time);
 
   final ui.FragmentShader shader;
   final ValueListenable<double> time;
+  final _PointerState pointer;
   final Color sky;
   final List<Color> curtains;
 
@@ -219,6 +279,10 @@ class _AuroraPainter extends CustomPainter {
     _color(7, curtains[0]);
     _color(10, curtains[1]);
     _color(13, curtains[2]);
+    shader
+      ..setFloat(16, pointer.position.dx)
+      ..setFloat(17, pointer.position.dy)
+      ..setFloat(18, pointer.strength);
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }
 
