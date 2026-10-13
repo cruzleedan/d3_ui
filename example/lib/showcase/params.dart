@@ -1,14 +1,20 @@
 import 'package:material_ui/material_ui.dart';
 
-/// What the page's URL asks for, so a link (or the portfolio's embed) can open
-/// the showcase on a page, in a theme and in a brand:
-/// `?page=patterns&theme=dark&brand=terracotta`.
+/// What the address asks for, so a link (or the portfolio's embed) can open the
+/// showcase on a page, in a theme and in a brand:
+/// `/patterns?theme=dark&brand=terracotta&embed=1`.
 ///
-/// Missing or unknown values never break the page: the theme falls back to the
-/// device setting, the brand to the first brand, the page to the overview.
+/// The page is the first path segment (`/button`); the older form
+/// `/?page=button` still reads the same. Missing or unknown values never break
+/// the page: the theme falls back to the device setting, the brand to the first
+/// brand, the page to the overview.
 class ShowcaseParams {
-  const ShowcaseParams(
-      {this.page, this.themeMode, this.brand, this.embed = false});
+  const ShowcaseParams({
+    this.page,
+    this.themeMode,
+    this.brand,
+    this.embed = false,
+  });
 
   final String? page;
   final ThemeMode? themeMode;
@@ -35,12 +41,34 @@ class ShowcaseParams {
     );
   }
 
-  /// From the page's own address.
-  factory ShowcaseParams.fromUri(Uri uri) =>
-      ShowcaseParams.fromQuery(uri.queryParameters);
+  /// From an address: the page from the path, else from `?page=`.
+  factory ShowcaseParams.fromUri(Uri uri) {
+    final fromQuery = ShowcaseParams.fromQuery(uri.queryParameters);
+    final segments = uri.pathSegments.where((s) => s.isNotEmpty);
+    return ShowcaseParams(
+      page: segments.isNotEmpty ? segments.first : fromQuery.page,
+      themeMode: fromQuery.themeMode,
+      brand: fromQuery.brand,
+      embed: fromQuery.embed,
+    );
+  }
 }
 
-/// The address for a showcase state: `/?page=button&theme=dark&brand=green`.
+/// The address an old-style link (`/?page=button&brand=green`) now has
+/// (`/button?brand=green`), or null when it is not one.
+Uri? legacyLocation(Uri uri) {
+  final page = uri.queryParameters['page'];
+  if (uri.pathSegments.where((s) => s.isNotEmpty).isNotEmpty || page == null) {
+    return null;
+  }
+  final rest = {...uri.queryParameters}..remove('page');
+  return Uri(
+    path: page.isEmpty ? '/' : '/$page',
+    queryParameters: rest.isEmpty ? null : rest,
+  );
+}
+
+/// The address for a showcase state: `/button?theme=dark&brand=green`.
 ///
 /// Defaults are left out so a plain address stays plain: the overview, the
 /// device theme and the first brand. `embed` is kept when it is on.
@@ -53,10 +81,12 @@ Uri showcaseLocation({
   String defaultBrand = 'blue',
 }) {
   final query = <String, String>{
-    if (page != defaultPage) 'page': page,
     if (themeMode != ThemeMode.system) 'theme': themeMode.name,
     if (brand != defaultBrand) 'brand': brand,
     if (embed) 'embed': '1',
   };
-  return Uri(path: '/', queryParameters: query.isEmpty ? null : query);
+  return Uri(
+    path: page == defaultPage ? '/' : '/$page',
+    queryParameters: query.isEmpty ? null : query,
+  );
 }

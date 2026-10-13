@@ -17,16 +17,19 @@ code, a brand picker (the default blue, a green, and a terracotta theme built fr
 a design-token file with `D3ThemeSpec`), light and dark, and a small Places app
 that uses the parts together.
 
-The address follows what you are looking at (`/?page=button&brand=green`), so
-any page can be bookmarked or shared, and the browser's back and forward buttons
-work. Links can also choose what opens:
+The address follows what you are looking at, so any page can be bookmarked or
+shared, and the browser's back, forward and reload work (the app uses
+[go_router](https://pub.dev/packages/go_router)):
 
-| Parameter | Values | Example |
+| Part | Values | Example |
 |---|---|---|
-| `page` | a page id, such as `button`, `dialog`, `theme`, `patterns` | `?page=dialog` |
-| `theme` | `light`, `dark`, `system` | `?theme=dark` |
-| `brand` | `blue`, `green`, `terracotta` | `?brand=terracotta` |
-| `embed` | `1` shows only the page, with no navigation, for a frame | `?page=patterns&embed=1` |
+| path | a page id: `button`, `dialog`, `theme`, `patterns`, ... (none is the overview) | `/dialog` |
+| `theme` | `light`, `dark`, `system` | `/button?theme=dark` |
+| `brand` | `blue`, `green`, `terracotta` | `/button?brand=terracotta` |
+| `embed` | `1` shows only the page, with no navigation, for a frame | `/patterns?embed=1` |
+
+Older links of the form `/?page=dialog&brand=green` are redirected to
+`/dialog?brand=green`. The host must serve `index.html` for any path.
 
 `example/` is the app. It also builds for the web:
 

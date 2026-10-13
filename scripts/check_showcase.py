@@ -44,8 +44,17 @@ def brand_ids():
 
 
 class _Quiet(http.server.SimpleHTTPRequestHandler):
+    """Static files, with index.html for any path that is not a file (pages
+    have paths such as /button, as on the real host)."""
+
     def log_message(self, *a):
         pass
+
+    def do_GET(self):
+        path = self.translate_path(self.path.split("?")[0])
+        if not Path(path).exists():
+            self.path = "/index.html"
+        return super().do_GET()
 
 
 def serve(build):
