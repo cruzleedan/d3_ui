@@ -6,23 +6,30 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// How strongly the aurora tints the surface (0 to 1). Capped so text on top
-/// keeps 4.5:1: `test/aurora_contrast_test.dart` checks the worst case.
-const double auroraStrength = 0.34;
+/// The brightest any pixel of the aurora may be, as relative luminance (0 to
+/// 1). Light text on top keeps 4.5:1 against it:
+/// `test/aurora_hero_test.dart` checks this against every brand's text colour.
+const double auroraMaxLuminance = 0.13;
 
-/// The three colours of the aurora, from the theme's own tokens: the brand's
-/// primary, its container, and the primary turned 40 degrees round the hue wheel
-/// for depth. A brand change recolours the shader live.
-List<Color> auroraColors(D3ColorTokens colors) {
-  final hsl = HSLColor.fromColor(colors.primary);
-  return [
-    colors.primary,
-    colors.primaryContainer,
-    hsl.withHue((hsl.hue + 40) % 360).toColor(),
-  ];
+/// The night sky and the three curtains, from a brand's *dark* theme tokens:
+/// the sky is the dark surface with a breath of the brand, the curtains are the
+/// brand's primary, a lighter container tone and the primary turned round the
+/// hue wheel for depth. A brand change recolours the shader live.
+({Color sky, List<Color> curtains}) auroraPalette(D3ColorTokens night) {
+  final hsl = HSLColor.fromColor(night.primary);
+  return (
+    sky: Color.lerp(night.surface, night.primary, 0.10)!,
+    curtains: [
+      night.primary,
+      hsl.withHue((hsl.hue + 38) % 360).toColor(),
+      hsl.withHue((hsl.hue - 32) % 360).toColor(),
+    ],
+  );
 }
 
-/// A slow, GPU-shaded aurora behind [child], coloured from the brand.
+/// Northern lights, drawn on the GPU, behind [child]: dark sky, three shimmering
+/// curtains in the brand's colours, a few stars. Give it the brand's *dark*
+/// tokens ([night]) and put light text on top.
 ///
 /// Calm by design: it drifts slowly, stands still when the user prefers reduced
 /// motion, stops while the browser tab is hidden or the widget is out of the
@@ -31,6 +38,7 @@ List<Color> auroraColors(D3ColorTokens colors) {
 class AuroraHero extends StatefulWidget {
   const AuroraHero({
     super.key,
+    required this.night,
     required this.child,
     this.height,
     this.shaded = true,
@@ -44,6 +52,9 @@ class AuroraHero extends StatefulWidget {
   /// clock cannot finish in the next).
   @visibleForTesting
   static void resetForTest() => _AuroraHeroState._program = null;
+
+  /// The brand's dark-theme colour tokens.
+  final D3ColorTokens night;
 
   final Widget child;
 
@@ -131,24 +142,20 @@ class _AuroraHeroState extends State<AuroraHero>
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.d3Colors;
-    final palette = auroraColors(colors);
+    final palette = auroraPalette(widget.night);
     Widget background;
     if (_shader == null) {
+      // No shader (embedded, loading, or unsupported): a calm night gradient.
       background = DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
+              palette.sky,
               Color.alphaBlend(
-                palette[0].withValues(alpha: auroraStrength * 0.6),
-                colors.surfaceContainerLow,
-              ),
-              colors.surfaceContainerLow,
-              Color.alphaBlend(
-                palette[2].withValues(alpha: auroraStrength * 0.6),
-                colors.surfaceContainerLow,
+                palette.curtains[0].withValues(alpha: 0.28),
+                palette.sky,
               ),
             ],
           ),
@@ -161,8 +168,8 @@ class _AuroraHeroState extends State<AuroraHero>
           painter: _AuroraPainter(
             shader: _shader!,
             time: _time,
-            base: colors.surfaceContainerLow,
-            palette: palette,
+            sky: palette.sky,
+            curtains: palette.curtains,
           ),
           child: const SizedBox.expand(),
         ),
@@ -185,14 +192,14 @@ class _AuroraPainter extends CustomPainter {
   _AuroraPainter({
     required this.shader,
     required this.time,
-    required this.base,
-    required this.palette,
+    required this.sky,
+    required this.curtains,
   }) : super(repaint: time);
 
   final ui.FragmentShader shader;
   final ValueListenable<double> time;
-  final Color base;
-  final List<Color> palette;
+  final Color sky;
+  final List<Color> curtains;
 
   void _color(int index, Color c) {
     shader
@@ -207,15 +214,15 @@ class _AuroraPainter extends CustomPainter {
       ..setFloat(0, size.width)
       ..setFloat(1, size.height)
       ..setFloat(2, time.value)
-      ..setFloat(3, auroraStrength);
-    _color(4, base);
-    _color(7, palette[0]);
-    _color(10, palette[1]);
-    _color(13, palette[2]);
+      ..setFloat(3, auroraMaxLuminance);
+    _color(4, sky);
+    _color(7, curtains[0]);
+    _color(10, curtains[1]);
+    _color(13, curtains[2]);
     canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
   }
 
   @override
   bool shouldRepaint(_AuroraPainter old) =>
-      old.base != base || old.palette != palette;
+      old.sky != sky || old.curtains != curtains;
 }

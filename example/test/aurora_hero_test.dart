@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' show pow;
 
 import 'package:d3_ui/d3_ui.dart';
 import 'package:d3_ui_example/showcase/aurora_hero.dart';
@@ -9,33 +10,48 @@ import 'package:material_ui/material_ui.dart';
 
 void main() {
   late Map<String, BrandThemes> themes;
+  D3ColorTokens night() =>
+      themes['blue']!.dark.extension<D3TokensExtension>()!.colors;
 
   setUpAll(() async {
     themes = await loadBrandThemes(load: (a) => File(a).readAsString());
   });
 
+  /// A grey with the given relative luminance.
+  Color greyWithLuminance(double l) {
+    final v = l <= 0.0031308 ? 12.92 * l : 1.055 * pow(l, 1 / 2.4) - 0.055;
+    return Color.from(alpha: 1, red: v, green: v, blue: v);
+  }
+
   group('contrast over the aurora', () {
-    // The shader blends the surface towards one tint by at most auroraStrength,
-    // so the worst background is that blend for the palest tint.
-    for (final dark in [false, true]) {
-      test('text keeps 4.5:1 in every brand (${dark ? 'dark' : 'light'})', () {
-        for (final brand in showcaseBrands) {
-          final theme = dark ? themes[brand.id]!.dark : themes[brand.id]!.light;
-          final c = theme.extension<D3TokensExtension>()!.colors;
-          for (final tint in auroraColors(c)) {
-            final worst = Color.alphaBlend(
-              tint.withValues(alpha: auroraStrength),
-              c.surfaceContainerLow,
-            );
-            expect(
-              d3ContrastRatio(c.onSurface, worst),
-              greaterThanOrEqualTo(4.5),
-              reason: '${brand.id} ${dark ? 'dark' : 'light'} $tint',
-            );
-          }
-        }
-      });
-    }
+    // The shader caps every pixel at auroraMaxLuminance, so the brightest
+    // background any text can meet is a grey of that luminance.
+    test('every brand\'s hero text keeps 4.5:1 against the brightest pixel',
+        () {
+      final brightest = greyWithLuminance(auroraMaxLuminance);
+      for (final brand in showcaseBrands) {
+        final night =
+            themes[brand.id]!.dark.extension<D3TokensExtension>()!.colors;
+        expect(
+          d3ContrastRatio(night.onSurface, brightest),
+          greaterThanOrEqualTo(4.5),
+          reason: brand.id,
+        );
+      }
+    });
+
+    test('the palette is derived from the brand and differs between brands',
+        () {
+      final skies = <Color>{};
+      for (final brand in showcaseBrands) {
+        final night =
+            themes[brand.id]!.dark.extension<D3TokensExtension>()!.colors;
+        final p = auroraPalette(night);
+        expect(p.curtains, hasLength(3));
+        skies.add(p.sky);
+      }
+      expect(skies.length, showcaseBrands.length);
+    });
   });
 
   setUp(AuroraHero.resetForTest);
@@ -44,8 +60,12 @@ void main() {
         theme: themes['blue']!.light,
         home: MediaQuery(
           data: MediaQueryData(disableAnimations: reduceMotion),
-          child: const Scaffold(
-            body: AuroraHero(height: 200, child: Center(child: Text('Hello'))),
+          child: Scaffold(
+            body: AuroraHero(
+              night: night(),
+              height: 200,
+              child: const Center(child: Text('Hello')),
+            ),
           ),
         ),
       );
@@ -105,11 +125,12 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: themes['blue']!.light,
-        home: const Scaffold(
+        home: Scaffold(
           body: AuroraHero(
+            night: night(),
             height: 200,
             shaded: false,
-            child: Center(child: Text('Hello')),
+            child: const Center(child: Text('Hello')),
           ),
         ),
       ),
