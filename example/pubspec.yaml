@@ -26,6 +26,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  shaders:
+    - shaders/aurora.frag
+
   assets:
     - assets/themes/
     - assets/photos/
