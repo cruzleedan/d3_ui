@@ -2,14 +2,19 @@ import 'package:d3_ui/d3_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
+import 'helpers/d3_clear_button_mixin.dart';
+import 'helpers/d3_field_clear_button.dart';
 import 'helpers/d3_field_status.dart';
 import 'helpers/d3_field_slot.dart';
 import 'helpers/d3_field_styling_mixin.dart';
 
 /// Decimal number input styled to match [D3TextField].
 ///
-/// Accepts numeric input with up to [decimalPlaces] decimal digits.
-/// [onChanged] fires with the parsed [double] value (0.0 if blank/invalid).
+/// Accepts numeric input with up to [decimalPlaces] decimal digits. When the
+/// field loses focus the text is formatted to exactly [decimalPlaces] places
+/// (`5` becomes `5.00`, `5.` becomes `5.00`, a lone `.` is cleared). While it
+/// has focus and some text, a clear (✕) button shows unless [showClearButton] is
+/// false. [onChanged] fires with the parsed [double] value (0.0 if blank/invalid).
 class D3DecimalField extends StatefulWidget {
   const D3DecimalField({
     super.key,
@@ -27,6 +32,7 @@ class D3DecimalField extends StatefulWidget {
     this.isRequired = false,
     this.isEnabled = true,
     this.decimalPlaces = 2,
+    this.showClearButton = true,
     this.maxValue,
     this.minValue,
     this.onChanged,
@@ -66,6 +72,10 @@ class D3DecimalField extends StatefulWidget {
   final bool isRequired;
   final bool isEnabled;
   final int decimalPlaces;
+
+  /// Shows a clear (✕) button in the suffix while the field is focused and has
+  /// text.
+  final bool showClearButton;
   final double? maxValue;
   final double? minValue;
   final ValueChanged<double>? onChanged;
@@ -76,7 +86,7 @@ class D3DecimalField extends StatefulWidget {
 }
 
 class _D3DecimalFieldState extends State<D3DecimalField>
-    with D3FieldStylingMixin {
+    with D3FieldStylingMixin, D3ClearButtonMixin {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
   bool _isFocused = false;
@@ -93,6 +103,9 @@ class _D3DecimalFieldState extends State<D3DecimalField>
     super.initState();
     _controller = TextEditingController(text: _format(widget.initialValue));
     _focusNode = FocusNode()..addListener(_onFocusChange);
+    // The clear button and the status depend on whether there is text.
+    _hadText = _controller.text.isNotEmpty;
+    _controller.addListener(_onTextChange);
   }
 
   /// Returns the display string for [value], or empty string when the value is
@@ -119,14 +132,50 @@ class _D3DecimalFieldState extends State<D3DecimalField>
 
   @override
   void dispose() {
+    _controller.removeListener(_onTextChange);
     _focusNode.removeListener(_onFocusChange);
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
+  bool _hadText = false;
+
+  void _onTextChange() {
+    final hasText = _controller.text.isNotEmpty;
+    if (hasText != _hadText) {
+      _hadText = hasText;
+      if (mounted) setState(() {});
+    }
+  }
+
   void _onFocusChange() {
+    if (!_focusNode.hasFocus) _applyDecimalPlaces();
     setState(() => _isFocused = _focusNode.hasFocus);
+  }
+
+  /// On blur, shows the number with exactly [D3DecimalField.decimalPlaces]
+  /// places. Text that is not a number (a lone ".") is cleared.
+  void _applyDecimalPlaces() {
+    final text = _controller.text;
+    if (text.isEmpty) return;
+    final value = double.tryParse(text);
+    final formatted = value == null
+        ? ''
+        : value.toStringAsFixed(widget.decimalPlaces);
+    if (formatted == text) return;
+    _controller.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+    // Same number (or blank, which reads as 0.0): report it as onChanged does.
+    widget.onChanged?.call(value ?? 0.0);
+  }
+
+  void _clear() {
+    _controller.clear();
+    widget.onChanged?.call(0.0);
+    _focusNode.requestFocus();
   }
 
   Widget _slot(Widget child) => ExcludeFocus(
@@ -152,13 +201,32 @@ class _D3DecimalFieldState extends State<D3DecimalField>
       icon: widget.prefixIcon,
       text: widget.prefixText,
     );
-    final suffix = buildD3FieldSlot(
+    final customSuffix = buildD3FieldSlot(
       tokens: tokens,
       colors: colors,
       child: widget.suffixWidget,
       icon: widget.suffixIcon,
       text: widget.suffixText,
     );
+    final showClear = shouldShowClearButton(
+      requested: widget.showClearButton,
+      isFocused: _isFocused,
+      hasText: _controller.text.isNotEmpty,
+      isEnabled: widget.isEnabled,
+      isReadOnly: false,
+    );
+    // A press on the clear button counts as inside the field (see D3TextField).
+    final Widget? suffix = showClear
+        ? TextFieldTapRegion(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                D3FieldClearButton(onTap: _clear),
+                if (customSuffix != null) _slot(customSuffix),
+              ],
+            ),
+          )
+        : (customSuffix == null ? null : _slot(customSuffix));
 
     Widget field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,7 +344,7 @@ class _D3DecimalFieldState extends State<D3DecimalField>
               if (suffix != null)
                 Padding(
                   padding: EdgeInsets.only(right: tokens.paddingH),
-                  child: _slot(suffix),
+                  child: suffix,
                 ),
             ],
           ),
