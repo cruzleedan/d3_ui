@@ -218,33 +218,37 @@ class _D3SearchBarState extends State<D3SearchBar> {
           ),
 
           // Clear button — animated in/out
-          AnimatedSwitcher(
-            duration: D3Motion.fast,
-            child: _hasText
-                ? GestureDetector(
-                    key: const ValueKey('clear'),
-                    behavior: HitTestBehavior.opaque,
-                    onTap: _clear,
-                    child: D3TapTarget(
-                      child: Container(
-                        width: 17,
-                        height: 17,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: colors.onSurfaceVariant.withValues(
-                            alpha: 0.35,
+          // A press on the clear button counts as inside the field, so it
+          // does not unfocus the field (and drop the keyboard) first.
+          TextFieldTapRegion(
+            child: AnimatedSwitcher(
+              duration: D3Motion.fast,
+              child: _hasText
+                  ? GestureDetector(
+                      key: const ValueKey('clear'),
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _clear,
+                      child: D3TapTarget(
+                        child: Container(
+                          width: 17,
+                          height: 17,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colors.onSurfaceVariant.withValues(
+                              alpha: 0.35,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 11,
+                            color: colors.surface,
                           ),
                         ),
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.close_rounded,
-                          size: 11,
-                          color: colors.surface,
-                        ),
                       ),
-                    ),
-                  )
-                : const SizedBox(key: ValueKey('empty'), width: 12),
+                    )
+                  : const SizedBox(key: ValueKey('empty'), width: 12),
+            ),
           ),
 
           if (widget.trailingWidget != null) widget.trailingWidget!,

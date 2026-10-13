@@ -633,15 +633,22 @@ class D3TextFieldState extends State<D3TextField>
 
     if (parts.isEmpty) return const SizedBox.shrink();
 
-    return Padding(
-      padding: EdgeInsets.only(right: tokens.paddingH),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children:
-            parts
-                .expand((w) => [w, const SizedBox(width: D3Spacing.s8)])
-                .toList()
-              ..removeLast(),
+    // TextFieldTapRegion: a press on the clear or visibility button counts as
+    // a press inside the field. Without it, on desktop and the web the press
+    // unfocuses the field first, the clear button (shown only while focused)
+    // disappears, and the release lands on nothing: the field is not cleared
+    // and loses focus.
+    return TextFieldTapRegion(
+      child: Padding(
+        padding: EdgeInsets.only(right: tokens.paddingH),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children:
+              parts
+                  .expand((w) => [w, const SizedBox(width: D3Spacing.s8)])
+                  .toList()
+                ..removeLast(),
+        ),
       ),
     );
   }

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Fix** the clear (✕) button of `D3TextField` and `D3SearchBar` on desktop and the
+  web: pressing it unfocused the field first, so on `D3TextField` the button
+  vanished before the release and nothing was cleared. A press on the button now
+  counts as inside the field (`TextFieldTapRegion`): the field is cleared and
+  stays focused. The password visibility toggle benefits too.
 - **New** `D3NavRail` (a vertical rail with the same `D3NavItem`s as `D3NavBar`,
   optional leading and trailing widgets, `extended` mode) and
   `D3WindowSizeClass` / `D3WindowSizeBuilder` (the Material 3 compact, medium and
