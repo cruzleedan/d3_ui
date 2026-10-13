@@ -4,6 +4,7 @@ import 'dart:math' show pow;
 import 'package:d3_ui/d3_ui.dart';
 import 'package:d3_ui_example/showcase/aurora_hero.dart';
 import 'package:d3_ui_example/showcase/brands.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -141,5 +142,42 @@ void main() {
     await tester.pump();
     expect(find.text('Hello'), findsOneWidget);
     expect(SchedulerBinding.instance.transientCallbackCount, 0);
+  });
+
+  testWidgets('reacts to a hover and a touch without blocking the content', (
+    tester,
+  ) async {
+    var taps = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: themes['blue']!.light,
+        home: Scaffold(
+          body: AuroraHero(
+            night: night(),
+            height: 200,
+            child: Center(
+              child: TextButton(
+                onPressed: () => taps++,
+                child: const Text('Go'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 200)),
+    );
+    await tester.pump();
+
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    await mouse.moveTo(tester.getCenter(find.byType(AuroraHero)));
+    await tester.pump(const Duration(milliseconds: 100));
+    await mouse.moveTo(const Offset(-50, -50)); // leaves the hero
+    await tester.pump(const Duration(milliseconds: 100));
+
+    await tester.tap(find.text('Go'));
+    expect(taps, 1, reason: 'a button on top still works');
   });
 }
