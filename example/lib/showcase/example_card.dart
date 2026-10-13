@@ -38,104 +38,165 @@ class _ExampleCardState extends State<ExampleCard> {
     if (mounted) setState(() => _copied = false);
   }
 
+  /// From this card width the code sits to the right of the example, so the two
+  /// can be compared side by side; narrower, a "Code" button shows it below.
+  static const double sideBySideWidth = 820;
+
+  Widget _codeText(D3ColorTokens colors) => SelectableText(
+        widget.source!,
+        style: TextStyle(
+          fontFamily: 'RobotoMono',
+          fontSize: 12.5,
+          height: 1.5,
+          color: colors.onSurface,
+        ),
+      );
+
+  Widget _copyButton() => IconButton(
+        tooltip: _copied ? 'Copied' : 'Copy code',
+        onPressed: _copy,
+        icon:
+            Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, size: 18),
+      );
+
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
     final shape = context.d3Shape;
     final hasCode = widget.source != null;
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: shape.circularLg,
-        border: Border.all(
-          color: shape.cardBorder ?? colors.outline.withValues(alpha: 0.4),
-          width: shape.cardBorderWidth,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
-            child: Row(
-              children: [
-                Expanded(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final sideBySide = hasCode && constraints.maxWidth >= sideBySideWidth;
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: shape.circularLg,
+            border: Border.all(
+              color: shape.cardBorder ?? colors.outline.withValues(alpha: 0.4),
+              width: shape.cardBorderWidth,
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: colors.onSurface,
+                        ),
+                      ),
+                    ),
+                    if (hasCode && !sideBySide)
+                      TextButton.icon(
+                        onPressed: () => setState(() => _showCode = !_showCode),
+                        icon: Icon(
+                          _showCode
+                              ? Icons.visibility_off_outlined
+                              : Icons.code,
+                          size: 18,
+                        ),
+                        label: Text(_showCode ? 'Hide code' : 'Code'),
+                      ),
+                  ],
+                ),
+              ),
+              if (widget.description != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                   child: Text(
-                    widget.title,
+                    widget.description!,
                     style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: colors.onSurface,
+                      color: colors.onSurfaceVariant,
+                      fontSize: 13,
                     ),
                   ),
                 ),
-                if (hasCode)
-                  TextButton.icon(
-                    onPressed: () => setState(() => _showCode = !_showCode),
-                    icon: Icon(
-                      _showCode ? Icons.visibility_off_outlined : Icons.code,
-                      size: 18,
-                    ),
-                    label: Text(_showCode ? 'Hide code' : 'Code'),
+              if (sideBySide)
+                _sideBySide(colors)
+              else ...[
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: widget.child,
                   ),
+                ),
+                if (_showCode && hasCode) ...[
+                  Divider(height: 1, color: colors.outlineVariant),
+                  Stack(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        color: colors.surfaceVariant,
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: _codeText(colors),
+                        ),
+                      ),
+                      Positioned(top: 4, right: 4, child: _copyButton()),
+                    ],
+                  ),
+                ],
               ],
-            ),
+            ],
           ),
-          if (widget.description != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Text(
-                widget.description!,
-                style: TextStyle(color: colors.onSurfaceVariant, fontSize: 13),
+        );
+      },
+    );
+  }
+
+  /// The example on the left and its code on the right (scrolling when long).
+  Widget _sideBySide(D3ColorTokens colors) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 11,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Align(alignment: Alignment.centerLeft, child: widget.child),
+          ),
+        ),
+        Expanded(
+          flex: 9,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.surfaceVariant,
+              border: Border(
+                left: BorderSide(color: colors.outlineVariant),
+                top: BorderSide(color: colors.outlineVariant),
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: widget.child,
-            ),
-          ),
-          if (_showCode && hasCode) ...[
-            Divider(height: 1, color: colors.outlineVariant),
-            Stack(
-              children: [
-                Container(
-                  width: double.infinity,
-                  color: colors.surfaceVariant,
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: SelectableText(
-                      widget.source!,
-                      style: TextStyle(
-                        fontFamily: 'RobotoMono',
-                        fontSize: 12.5,
-                        height: 1.5,
-                        color: colors.onSurface,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 480),
+              child: Stack(
+                children: [
+                  Scrollbar(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 48, 14),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: _codeText(colors),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: IconButton(
-                    tooltip: _copied ? 'Copied' : 'Copy code',
-                    onPressed: _copy,
-                    icon: Icon(
-                      _copied ? Icons.check_rounded : Icons.copy_rounded,
-                      size: 18,
-                    ),
-                  ),
-                ),
-              ],
+                  Positioned(top: 4, right: 4, child: _copyButton()),
+                ],
+              ),
             ),
-          ],
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -214,11 +275,23 @@ class ExamplePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 880),
+        // Wide enough for an example and its code side by side.
+        constraints: const BoxConstraints(maxWidth: 1280),
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 48),
           children: [
-            PageHeader(title: title, summary: summary, importLine: importLine),
+            // Text reads best in a column about this wide, however wide the page.
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 840),
+                child: PageHeader(
+                  title: title,
+                  summary: summary,
+                  importLine: importLine,
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
             for (final example in examples) ...[
               example,
