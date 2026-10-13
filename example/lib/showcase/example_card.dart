@@ -2,6 +2,8 @@ import 'package:d3_ui/d3_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'code_highlighting.dart';
+
 /// One live example with its code, as a card: a title, an optional sentence, the
 /// widget itself, and a "Code" toggle that shows the example's source with a copy
 /// button.
@@ -15,6 +17,7 @@ class ExampleCard extends StatefulWidget {
     required this.child,
     this.description,
     this.source,
+    this.sourcePath,
   });
 
   final String title;
@@ -22,11 +25,25 @@ class ExampleCard extends StatefulWidget {
   final Widget child;
   final String? source;
 
+  /// The file the source comes from (`button/variants.dart`), shown above the
+  /// code like an editor tab.
+  final String? sourcePath;
+
   @override
   State<ExampleCard> createState() => _ExampleCardState();
 }
 
 class _ExampleCardState extends State<ExampleCard> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.source != null && !CodeHighlighting.isReady) {
+      CodeHighlighting.whenReady.then((_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
   bool _showCode = false;
   bool _copied = false;
 
@@ -42,22 +59,63 @@ class _ExampleCardState extends State<ExampleCard> {
   /// can be compared side by side; narrower, a "Code" button shows it below.
   static const double sideBySideWidth = 820;
 
-  Widget _codeText(D3ColorTokens colors) => SelectableText(
-        widget.source!,
-        style: TextStyle(
-          fontFamily: 'RobotoMono',
-          fontSize: 12.5,
-          height: 1.5,
-          color: colors.onSurface,
-        ),
-      );
+  CodePanelColors get _codeColors =>
+      CodeHighlighting.panel(Theme.of(context).brightness);
 
-  Widget _copyButton() => IconButton(
-        tooltip: _copied ? 'Copied' : 'Copy code',
-        onPressed: _copy,
-        icon:
-            Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, size: 18),
-      );
+  /// The code, coloured like an editor, selectable.
+  Widget _codeText(CodePanelColors code) {
+    final base = TextStyle(
+      fontFamily: 'RobotoMono',
+      fontSize: 12.5,
+      height: 1.55,
+      color: code.text,
+    );
+    final highlighted = CodeHighlighting.spans(
+      widget.source!,
+      Theme.of(context).brightness,
+    );
+    return SelectableText.rich(
+      highlighted == null
+          ? TextSpan(text: widget.source, style: base)
+          : TextSpan(style: base, children: [highlighted]),
+    );
+  }
+
+  /// The file name and the copy button, above the code.
+  Widget _codeHeader(CodePanelColors code) {
+    final name = widget.sourcePath?.split('/').last ?? 'example.dart';
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.only(left: 14, right: 4),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: code.border)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.description_outlined, size: 15, color: code.accent),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              name,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'RobotoMono',
+                fontSize: 12,
+                color: code.text,
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: _copied ? 'Copied' : 'Copy code',
+            onPressed: _copy,
+            iconSize: 17,
+            color: _copied ? code.accent : code.text,
+            icon: Icon(_copied ? Icons.check_rounded : Icons.copy_rounded),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,23 +188,28 @@ class _ExampleCardState extends State<ExampleCard> {
                     child: widget.child,
                   ),
                 ),
-                if (_showCode && hasCode) ...[
-                  Divider(height: 1, color: colors.outlineVariant),
-                  Stack(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        color: colors.surfaceVariant,
-                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: _codeText(colors),
+                if (_showCode && hasCode)
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: _codeColors.background,
+                      border:
+                          Border(top: BorderSide(color: _codeColors.border)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _codeHeader(_codeColors),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: _codeText(_codeColors),
+                          ),
                         ),
-                      ),
-                      Positioned(top: 4, right: 4, child: _copyButton()),
-                    ],
+                      ],
+                    ),
                   ),
-                ],
               ],
             ],
           ),
@@ -171,26 +234,30 @@ class _ExampleCardState extends State<ExampleCard> {
           flex: 9,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: colors.surfaceVariant,
+              color: _codeColors.background,
               border: Border(
-                left: BorderSide(color: colors.outlineVariant),
-                top: BorderSide(color: colors.outlineVariant),
+                left: BorderSide(color: _codeColors.border),
+                top: BorderSide(color: _codeColors.border),
               ),
             ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 480),
-              child: Stack(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Scrollbar(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 48, 14),
+                  _codeHeader(_codeColors),
+                  Flexible(
+                    child: Scrollbar(
                       child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: _codeText(colors),
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: _codeText(_codeColors),
+                        ),
                       ),
                     ),
                   ),
-                  Positioned(top: 4, right: 4, child: _copyButton()),
                 ],
               ),
             ),
