@@ -1784,6 +1784,96 @@ class ListTileExample extends StatelessWidget {
     );
   }
 }''',
+  'menu/basic.dart': r'''/// An overflow menu with sections, a selected, a destructive and a disabled item.
+class MenuBasicExample extends StatefulWidget {
+  const MenuBasicExample({super.key});
+
+  @override
+  State<MenuBasicExample> createState() => _MenuBasicExampleState();
+}
+
+class _MenuBasicExampleState extends State<MenuBasicExample> {
+  String _last = 'Nothing yet';
+  bool _pinned = true;
+
+  @override
+  Widget build(BuildContext context) {
+    void pick(String name) => setState(() => _last = name);
+
+    return Row(
+      children: [
+        Expanded(child: Text('Last choice: $_last')),
+        D3MenuButton(
+          entries: [
+            const D3MenuSection('Note'),
+            D3MenuItem(
+              label: 'Edit',
+              icon: Icons.edit_outlined,
+              shortcut: 'E',
+              onPressed: () => pick('Edit'),
+            ),
+            D3MenuItem(
+              label: 'Pinned',
+              icon: Icons.push_pin_outlined,
+              isSelected: _pinned,
+              onPressed: () {
+                setState(() => _pinned = !_pinned);
+                pick('Pinned: ${!_pinned ? 'off' : 'on'}');
+              },
+            ),
+            const D3MenuItem(
+                label: 'Share (offline)', icon: Icons.share, enabled: false),
+            const D3MenuDivider(),
+            D3MenuItem(
+              label: 'Delete',
+              icon: Icons.delete_outline,
+              isDestructive: true,
+              onPressed: () => pick('Delete'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}''',
+  'menu/custom_trigger.dart': r'''/// A menu opened by a D3Button, used to pick a sort order.
+class MenuCustomTriggerExample extends StatefulWidget {
+  const MenuCustomTriggerExample({super.key});
+
+  @override
+  State<MenuCustomTriggerExample> createState() =>
+      _MenuCustomTriggerExampleState();
+}
+
+class _MenuCustomTriggerExampleState extends State<MenuCustomTriggerExample> {
+  static const _orders = ['Newest first', 'Oldest first', 'Name A to Z'];
+  String _order = _orders.first;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: D3Menu(
+        alignment: Alignment.topLeft,
+        triggerBuilder: (context, toggle) => D3Button(
+          label: 'Sort: $_order',
+          variant: D3ButtonVariant.outlined,
+          leadingIcon: Icons.sort_rounded,
+          onPressed: toggle,
+        ),
+        entries: [
+          const D3MenuSection('Sort by'),
+          for (final o in _orders)
+            D3MenuItem(
+              label: o,
+              isSelected: o == _order,
+              onPressed: () => setState(() => _order = o),
+            ),
+        ],
+      ),
+    );
+  }
+}''',
   'nav_bar/variants.dart': r'''/// A bottom nav bar with badges, plus one with a centre action.
 class NavBarExample extends StatefulWidget {
   const NavBarExample({super.key});
@@ -1960,6 +2050,39 @@ class WindowSizeExample extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}''',
+  'otp_field/basic.dart': r'''/// A 6-digit code field that echoes the entry; 000000 shows an error.
+class OtpFieldBasicExample extends StatefulWidget {
+  const OtpFieldBasicExample({super.key});
+
+  @override
+  State<OtpFieldBasicExample> createState() => _OtpFieldBasicExampleState();
+}
+
+class _OtpFieldBasicExampleState extends State<OtpFieldBasicExample> {
+  String _entered = '';
+  String? _error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        D3OtpField(
+          errorText: _error,
+          onChanged: (v) => setState(() {
+            _entered = v;
+            _error = null;
+          }),
+          onCompleted: (v) => setState(() {
+            _error = v == '000000' ? 'That code is not right' : null;
+          }),
+        ),
+        const SizedBox(height: 16),
+        Text('Entered: ${_entered.isEmpty ? '(nothing)' : _entered}'),
+      ],
     );
   }
 }''',
@@ -2274,6 +2397,60 @@ class _RadioGroupExampleState extends State<RadioGroupExample> {
           groupValue: _plan,
           label: 'Enterprise (unavailable)',
           onChanged: null,
+        ),
+      ],
+    );
+  }
+}''',
+  'rating/variants.dart': r'''/// Ratings: read-only with halves, interactive, with value text, sizes, disabled.
+class RatingVariantsExample extends StatefulWidget {
+  const RatingVariantsExample({super.key});
+
+  @override
+  State<RatingVariantsExample> createState() => _RatingVariantsExampleState();
+}
+
+class _RatingVariantsExampleState extends State<RatingVariantsExample> {
+  double _input = 3;
+  double _half = 3.5;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const D3Rating(
+          value: 4.5,
+          label: 'Average rating',
+          showValue: true,
+          compact: true,
+          size: 20,
+        ),
+        const SizedBox(height: 16),
+        D3Rating(
+          value: _input,
+          label: 'Rate this dish',
+          onChanged: (v) => setState(() => _input = v),
+        ),
+        const SizedBox(height: 8),
+        D3Rating(
+          value: _half,
+          label: 'Rate with halves',
+          allowHalf: true,
+          allowClear: true,
+          showValue: true,
+          onChanged: (v) => setState(() => _half = v),
+        ),
+        const SizedBox(height: 16),
+        const D3Rating(value: 4, size: 16, compact: true, label: 'Small'),
+        const SizedBox(height: 8),
+        const D3Rating(value: 4, size: 40, label: 'Large'),
+        const SizedBox(height: 16),
+        D3Rating(
+          value: 2,
+          enabled: false,
+          label: 'Disabled',
+          onChanged: (_) {},
         ),
       ],
     );
@@ -3238,6 +3415,78 @@ class TicketCardExample extends StatelessWidget {
     );
   }
 }''',
+  'time_field/picker_sheet.dart': r'''/// A button that opens the time picker sheet and shows the chosen time.
+class TimePickerSheetExample extends StatefulWidget {
+  const TimePickerSheetExample({super.key});
+
+  @override
+  State<TimePickerSheetExample> createState() => _TimePickerSheetExampleState();
+}
+
+class _TimePickerSheetExampleState extends State<TimePickerSheetExample> {
+  TimeOfDay? _time;
+
+  Future<void> _open() async {
+    final picked = await showD3TimePicker(
+      context,
+      initialTime: _time ?? const TimeOfDay(hour: 9, minute: 30),
+      minuteInterval: 5,
+    );
+    if (picked != null) setState(() => _time = picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      spacing: 12,
+      children: [
+        FilledButton(onPressed: _open, child: const Text('Pick a time')),
+        Text(
+          _time == null ? 'No time chosen' : 'Chosen: ${d3FormatTime(_time!)}',
+        ),
+      ],
+    );
+  }
+}''',
+  'time_field/variants.dart': r'''/// Empty, filled, 24-hour, 15-minute interval, error and disabled time fields.
+class TimeFieldVariantsExample extends StatelessWidget {
+  const TimeFieldVariantsExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      spacing: 16,
+      children: [
+        const D3TimeField(label: 'Start time', hintText: 'Pick a time'),
+        const D3TimeField(
+          label: 'Reminder',
+          initialValue: TimeOfDay(hour: 9, minute: 30),
+          helperText: 'We will notify you then.',
+        ),
+        const D3TimeField(
+          label: 'Departure (24-hour)',
+          initialValue: TimeOfDay(hour: 17, minute: 5),
+          use24h: true,
+        ),
+        const D3TimeField(
+          label: 'Appointment',
+          hintText: 'Every 15 minutes',
+          minuteInterval: 15,
+        ),
+        const D3TimeField(
+          label: 'End time',
+          isRequired: true,
+          errorText: 'End time is required',
+        ),
+        const D3TimeField(
+          label: 'Locked',
+          initialValue: TimeOfDay(hour: 12, minute: 0),
+          isEnabled: false,
+        ),
+      ],
+    );
+  }
+}''',
   'toast/action.dart': r'''/// A toast with an action (such as undo) that stays until dismissed.
 class ToastActionExample extends StatelessWidget {
   const ToastActionExample({super.key});
@@ -3343,6 +3592,53 @@ class _ToggleStatesExampleState extends State<ToggleStatesExample> {
         const D3Toggle(value: true, label: 'Disabled, on', onChanged: null),
         const SizedBox(height: 12),
         const D3Toggle(value: false, label: 'Disabled, off', onChanged: null),
+      ],
+    );
+  }
+}''',
+  'tooltip/basic.dart': r'''/// Tooltips on icon buttons and text, and an info tip beside a label.
+class TooltipBasicExample extends StatelessWidget {
+  const TooltipBasicExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            D3Tooltip(
+              message: 'Add to favourites',
+              child: IconButton(
+                icon: const Icon(Icons.favorite_border),
+                onPressed: () {},
+              ),
+            ),
+            D3Tooltip(
+              message: 'Share this item with someone else',
+              child: IconButton(
+                icon: const Icon(Icons.share_outlined),
+                onPressed: () {},
+              ),
+            ),
+          ],
+        ),
+        const D3Tooltip(
+          message: 'Hover, focus or long-press the text to read this.',
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('Long-press this text'),
+          ),
+        ),
+        const Row(
+          children: [
+            Text('Display name'),
+            D3InfoTip(
+              title: 'Display name',
+              message: 'Shown to other people. You can change it any time.',
+            ),
+          ],
+        ),
       ],
     );
   }

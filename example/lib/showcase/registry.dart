@@ -7,6 +7,9 @@ import 'pages/controls_overlay_pages.dart' deferred as controls;
 import 'pages/banner_badge_pages.dart' deferred as extras;
 import 'pages/progress_inputs_pages.dart' deferred as progress;
 import 'pages/action_sheet_page.dart' deferred as sheets;
+import 'pages/rating_otp_pages.dart' deferred as rating;
+import 'pages/time_field_page.dart' deferred as time;
+import 'pages/menu_tooltip_pages.dart' deferred as menus;
 import 'pages/example_pages.dart' deferred as actions;
 import 'pages/inputs_text_pages.dart' deferred as inputs;
 import 'pages/nav_surface_pages.dart' deferred as nav;
@@ -580,6 +583,61 @@ final List<ShowcasePage> showcasePages = [
     builder: (_) => DeferredPage(
       load: sheets.loadLibrary,
       builder: (_) => sheets.ActionSheetPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'rating',
+    title: 'Rating',
+    group: ShowcaseGroup.inputs,
+    icon: Icons.star_rounded,
+    summary: 'Stars to show or choose a rating.',
+    builder: (_) => DeferredPage(
+      load: rating.loadLibrary,
+      builder: (_) => rating.RatingPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'otp-field',
+    title: 'OTP field',
+    group: ShowcaseGroup.inputs,
+    icon: Icons.password_rounded,
+    summary: 'One-time-code cells over one real text field.',
+    builder: (_) => DeferredPage(
+      load: rating.loadLibrary,
+      builder: (_) => rating.OtpFieldPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'time-field',
+    title: 'Time field',
+    group: ShowcaseGroup.inputs,
+    icon: Icons.schedule_outlined,
+    summary: 'A field that opens a wheel time picker.',
+    builder: (_) => DeferredPage(
+      load: time.loadLibrary,
+      builder: (_) => time.TimeFieldPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'menu',
+    title: 'Menu',
+    group: ShowcaseGroup.actions,
+    icon: Icons.more_vert_rounded,
+    summary: 'An overflow or context menu on a trigger.',
+    builder: (_) => DeferredPage(
+      load: menus.loadLibrary,
+      builder: (_) => menus.MenuPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'tooltip',
+    title: 'Tooltip',
+    group: ShowcaseGroup.feedback,
+    icon: Icons.chat_bubble_outline_rounded,
+    summary: 'Hints on hover, focus and long-press; tap-to-open info.',
+    builder: (_) => DeferredPage(
+      load: menus.loadLibrary,
+      builder: (_) => menus.TooltipPage(),
     ),
   ),
 ];
