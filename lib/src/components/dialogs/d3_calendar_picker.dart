@@ -102,13 +102,15 @@ class _D3CalendarPickerDialogState extends State<_D3CalendarPickerDialog> {
     });
   }
 
-  bool get _canGoPrevious =>
-      DateTime(_visibleMonth.year, _visibleMonth.month - 1)
-          .isAfter(DateTime(widget.firstDate.year, widget.firstDate.month - 1));
+  bool get _canGoPrevious => DateTime(
+    _visibleMonth.year,
+    _visibleMonth.month - 1,
+  ).isAfter(DateTime(widget.firstDate.year, widget.firstDate.month - 1));
 
-  bool get _canGoNext =>
-      DateTime(_visibleMonth.year, _visibleMonth.month + 1)
-          .isBefore(DateTime(widget.lastDate.year, widget.lastDate.month + 1));
+  bool get _canGoNext => DateTime(
+    _visibleMonth.year,
+    _visibleMonth.month + 1,
+  ).isBefore(DateTime(widget.lastDate.year, widget.lastDate.month + 1));
 
   Future<void> _pickYear() async {
     final year = await showDialog<int>(
@@ -127,8 +129,18 @@ class _D3CalendarPickerDialogState extends State<_D3CalendarPickerDialog> {
 
   static const _weekdayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
   static const _monthLabels = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   @override

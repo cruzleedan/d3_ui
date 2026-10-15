@@ -262,7 +262,12 @@ class D3Card extends StatelessWidget {
               onLongPress: onLongPress,
               splashColor: colors.primary.withValues(alpha: 0.12),
               highlightColor: colors.primary.withValues(alpha: 0.06),
-              child: cardContent,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: kMinInteractiveDimension,
+                ),
+                child: cardContent,
+              ),
             )
           : cardContent,
     );

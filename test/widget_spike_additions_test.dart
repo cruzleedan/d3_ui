@@ -13,24 +13,31 @@ Widget _wrap(Widget child) {
 
 void main() {
   group('D3Debouncer', () {
-    test('runs the action once after the delay, cancelling prior runs', () async {
-      var callCount = 0;
-      final debouncer = D3Debouncer(delay: const Duration(milliseconds: 20));
+    test(
+      'runs the action once after the delay, cancelling prior runs',
+      () async {
+        var callCount = 0;
+        final debouncer = D3Debouncer(delay: const Duration(milliseconds: 20));
 
-      debouncer.run(() => callCount++);
-      debouncer.run(() => callCount++);
-      debouncer.run(() => callCount++);
+        debouncer.run(() => callCount++);
+        debouncer.run(() => callCount++);
+        debouncer.run(() => callCount++);
 
-      await Future<void>.delayed(const Duration(milliseconds: 40));
-      expect(callCount, 1);
-    });
+        await Future<void>.delayed(const Duration(milliseconds: 40));
+        expect(callCount, 1);
+      },
+    );
   });
 
   group('D3HyperlinkButton', () {
-    testWidgets('renders label and calls onPressed when tapped', (tester) async {
+    testWidgets('renders label and calls onPressed when tapped', (
+      tester,
+    ) async {
       var tapped = false;
       await tester.pumpWidget(
-        _wrap(D3HyperlinkButton(label: 'Sign in', onPressed: () => tapped = true)),
+        _wrap(
+          D3HyperlinkButton(label: 'Sign in', onPressed: () => tapped = true),
+        ),
       );
       expect(find.text('Sign in'), findsOneWidget);
       await tester.tap(find.byType(D3HyperlinkButton));
@@ -38,7 +45,9 @@ void main() {
     });
 
     testWidgets('does not call onPressed when disabled', (tester) async {
-      await tester.pumpWidget(_wrap(const D3HyperlinkButton(label: 'Disabled')));
+      await tester.pumpWidget(
+        _wrap(const D3HyperlinkButton(label: 'Disabled')),
+      );
       await tester.tap(find.byType(D3HyperlinkButton));
       // No onPressed provided — tapping must not throw.
       expect(find.text('Disabled'), findsOneWidget);
@@ -46,7 +55,9 @@ void main() {
   });
 
   group('D3ExpandingFab', () {
-    testWidgets('expands to show actions and collapses on selection', (tester) async {
+    testWidgets('expands to show actions and collapses on selection', (
+      tester,
+    ) async {
       var pressed = false;
       await tester.pumpWidget(
         _wrap(
@@ -86,10 +97,7 @@ void main() {
         _wrap(
           const D3Shimmer(
             child: Column(
-              children: [
-                D3ListTileSkeleton(),
-                D3FormSkeleton(fieldCount: 2),
-              ],
+              children: [D3ListTileSkeleton(), D3FormSkeleton(fieldCount: 2)],
             ),
           ),
         ),

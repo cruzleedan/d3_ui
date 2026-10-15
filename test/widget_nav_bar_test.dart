@@ -102,37 +102,38 @@ void main() {
       expect(actionCenterX, closeTo(_screenWidth / 2, 1.0));
     });
 
-    testWidgets('2 left items + 1 right item still centers with a 3-item split', (
-      tester,
-    ) async {
-      // Regression check for the original bug: splitIndex=2 for 3 items
-      // put 2 on the left and 1 on the right — verify the action is still
-      // pixel-centered despite that asymmetric item count on each side.
-      await tester.pumpWidget(
-        _wrap(
-          D3NavBar(
-            selectedIndex: 0,
-            onTabSelected: (_) {},
-            items: const [
-              D3NavItem(icon: Icons.apartment_outlined, label: 'Projects'),
-              D3NavItem(icon: Icons.fact_check_outlined, label: 'Visits'),
-              D3NavItem(icon: Icons.settings_outlined, label: 'Settings'),
-            ],
-            centerAction: D3NavBarCenterAction(
-              icon: Icons.add,
-              onPressed: () {},
-              semanticsLabel: 'New Visit',
+    testWidgets(
+      '2 left items + 1 right item still centers with a 3-item split',
+      (tester) async {
+        // Regression check for the original bug: splitIndex=2 for 3 items
+        // put 2 on the left and 1 on the right — verify the action is still
+        // pixel-centered despite that asymmetric item count on each side.
+        await tester.pumpWidget(
+          _wrap(
+            D3NavBar(
+              selectedIndex: 0,
+              onTabSelected: (_) {},
+              items: const [
+                D3NavItem(icon: Icons.apartment_outlined, label: 'Projects'),
+                D3NavItem(icon: Icons.fact_check_outlined, label: 'Visits'),
+                D3NavItem(icon: Icons.settings_outlined, label: 'Settings'),
+              ],
+              centerAction: D3NavBarCenterAction(
+                icon: Icons.add,
+                onPressed: () {},
+                semanticsLabel: 'New Visit',
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      final actionCenterX = _centerXOf(
-        tester,
-        find.bySemanticsLabel('New Visit'),
-      );
-      expect(actionCenterX, closeTo(_screenWidth / 2, 1.0));
-    });
+        final actionCenterX = _centerXOf(
+          tester,
+          find.bySemanticsLabel('New Visit'),
+        );
+        expect(actionCenterX, closeTo(_screenWidth / 2, 1.0));
+      },
+    );
 
     testWidgets('selectedIndex/onTabSelected still map correctly across '
         'the split for items on both sides of the action', (tester) async {

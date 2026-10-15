@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
+import '../inputs/helpers/d3_tap_target.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // D3NavItem
 // ─────────────────────────────────────────────────────────────────────────────
@@ -227,35 +229,37 @@ class _NavBarCenterActionButton extends StatelessWidget {
     return Semantics(
       label: action.semanticsLabel ?? 'Action',
       button: true,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: D3Spacing.s8),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: colors.primary.withValues(alpha: 0.35),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Material(
-            color: colors.primary,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              splashColor: colors.onPrimary.withValues(alpha: 0.24),
-              highlightColor: colors.onPrimary.withValues(alpha: 0.12),
-              onTap: () {
-                HapticFeedback.lightImpact();
-                action.onPressed();
-              },
-              child: SizedBox(
-                width: 44,
-                height: 44,
-                child: Icon(action.icon, size: 24, color: colors.onPrimary),
+      child: D3PaddedTapTarget(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: D3Spacing.s8),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: colors.primary.withValues(alpha: 0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Material(
+              color: colors.primary,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                splashColor: colors.onPrimary.withValues(alpha: 0.24),
+                highlightColor: colors.onPrimary.withValues(alpha: 0.12),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  action.onPressed();
+                },
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Icon(action.icon, size: 24, color: colors.onPrimary),
+                ),
               ),
             ),
           ),
@@ -289,84 +293,110 @@ class _NavBarItem extends StatelessWidget {
     final labelColor = isSelected ? colors.primary : colors.onSurfaceVariant;
     final labelWeight = isSelected ? FontWeight.w600 : FontWeight.w400;
 
+    // The tap region is the whole cell (at least 48 dp tall); the ripple is only
+    // on the pill. A Stack, not nested detectors: a press on the pill reaches
+    // only the InkWell in it (so it ripples at once), a press anywhere else in
+    // the cell reaches only the detector below.
     return Semantics(
       label: item.semanticsLabel ?? item.label,
       selected: isSelected,
       button: true,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        splashColor: colors.primary.withValues(alpha: 0.14),
-        highlightColor: colors.primary.withValues(alpha: 0.08),
-        onTap: onTap,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ── Pill + icon ────────────────────────────────────────────────
-            Stack(
-              clipBehavior: Clip.none,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onTap,
+            ),
+          ),
+          ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: kMinInteractiveDimension,
+              minWidth: kMinInteractiveDimension,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isSelected ? D3Spacing.s16 : D3Spacing.s8,
-                    vertical: D3Spacing.s4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? colors.primaryContainer
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(D3Radius.full),
-                  ),
-                  child: Icon(icon, size: 22, color: iconColor),
+                // ── Pill + icon ──────────────────────────────────────────────
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // The pill's colour is painted by the container, and the
+                    // InkWell sits in a Material *inside* it, so the ripple is
+                    // drawn above the pill's fill and clipped to its shape.
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? colors.primaryContainer
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(D3Radius.full),
+                      ),
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: InkWell(
+                          onTap: onTap,
+                          customBorder: const StadiumBorder(),
+                          excludeFromSemantics: true,
+                          splashColor: colors.primary.withValues(alpha: 0.14),
+                          highlightColor: colors.primary.withValues(
+                            alpha: 0.08,
+                          ),
+                          child: AnimatedPadding(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeInOut,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSelected
+                                  ? D3Spacing.s16
+                                  : D3Spacing.s8,
+                              vertical: D3Spacing.s4,
+                            ),
+                            child: Icon(icon, size: 22, color: iconColor),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Badge
+                    if (item.badgeCount != null || item.badgeLabel != null)
+                      Positioned(
+                        top: -2,
+                        right: -4,
+                        child: IgnorePointer(
+                          child: _Badge(
+                            count: item.badgeCount,
+                            label: item.badgeLabel,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
 
-                // Ink over the pill: the selected pill's fill would otherwise
-                // paint over the item's ripple.
-                Positioned.fill(
-                  child: Material(
-                    type: MaterialType.transparency,
-                    child: InkWell(
-                      onTap: onTap,
-                      borderRadius: BorderRadius.circular(D3Radius.full),
-                      splashColor: colors.primary.withValues(alpha: 0.14),
-                      highlightColor: colors.primary.withValues(alpha: 0.08),
+                const SizedBox(height: 3),
+
+                // ── Label ────────────────────────────────────────────────────
+                IgnorePointer(
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 200),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: labelWeight,
+                      color: labelColor,
+                      letterSpacing: 0.1,
+                    ),
+                    child: Text(
+                      item.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
-
-                // Badge
-                if (item.badgeCount != null || item.badgeLabel != null)
-                  Positioned(
-                    top: -2,
-                    right: -4,
-                    child: _Badge(
-                      count: item.badgeCount,
-                      label: item.badgeLabel,
-                    ),
-                  ),
               ],
             ),
-
-            const SizedBox(height: 3),
-
-            // ── Label ──────────────────────────────────────────────────────
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: labelWeight,
-                color: labelColor,
-                letterSpacing: 0.1,
-              ),
-              child: Text(
-                item.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

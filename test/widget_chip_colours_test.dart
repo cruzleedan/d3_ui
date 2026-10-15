@@ -8,13 +8,11 @@ Widget _host(ThemeData theme, Widget child) => MaterialApp(
 );
 
 Color _fill(WidgetTester tester) {
-  final box = tester.widget<DecoratedBox>(
-    find.descendant(
-      of: find.byType(D3Chip),
-      matching: find.byType(DecoratedBox),
-    ),
+  // The chip is a Material in the pill's shape (the ink lives inside it).
+  final material = tester.widget<Material>(
+    find.descendant(of: find.byType(D3Chip), matching: find.byType(Material)),
   );
-  return (box.decoration as BoxDecoration).color!;
+  return material.color!;
 }
 
 Color _labelColour(WidgetTester tester) =>
@@ -75,14 +73,11 @@ void main() {
     );
     expect(_fill(tester), const Color(0xFFFFF3CD));
     expect(_labelColour(tester), const Color(0xFF8A4B00));
-    final box = tester.widget<DecoratedBox>(
-      find.descendant(
-        of: find.byType(D3Chip),
-        matching: find.byType(DecoratedBox),
-      ),
+    final material = tester.widget<Material>(
+      find.descendant(of: find.byType(D3Chip), matching: find.byType(Material)),
     );
     expect(
-      (box.decoration as BoxDecoration).border!.top.color,
+      (material.shape! as StadiumBorder).side.color,
       const Color(0xFF8A4B00),
     );
   });

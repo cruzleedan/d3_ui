@@ -3,7 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 Widget _wrap(Widget child) {
-  return MaterialApp(theme: D3AppTheme.light(), home: Scaffold(body: child));
+  return MaterialApp(
+    theme: D3AppTheme.light(),
+    home: Scaffold(body: child),
+  );
 }
 
 void main() {
@@ -11,9 +14,7 @@ void main() {
     testWidgets('a single photo renders as a plain static image, no page '
         'mechanics or pill', (tester) async {
       await tester.pumpWidget(
-        _wrap(
-          const D3PhotoCarousel(photoPaths: ['a.png'], itemLabel: 'Item'),
-        ),
+        _wrap(const D3PhotoCarousel(photoPaths: ['a.png'], itemLabel: 'Item')),
       );
       await tester.pumpAndSettle();
 
@@ -37,9 +38,7 @@ void main() {
       expect(find.text('1/3'), findsOneWidget);
     });
 
-    testWidgets('tapping a photo opens the full-screen viewer', (
-      tester,
-    ) async {
+    testWidgets('tapping a photo opens the full-screen viewer', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const D3PhotoCarousel(

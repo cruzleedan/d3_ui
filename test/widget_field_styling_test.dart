@@ -96,11 +96,7 @@ void main() {
     });
 
     test('idle status uses outline/onSurfaceVariant, thin border', () {
-      final style = field.resolveFieldStyle(
-        D3FieldStatus.idle,
-        colors,
-        tokens,
-      );
+      final style = field.resolveFieldStyle(D3FieldStatus.idle, colors, tokens);
       expect(style.borderColor, colors.outline);
       expect(style.labelColor, colors.onSurfaceVariant);
       expect(style.borderWidth, tokens.borderWidth);

@@ -8,8 +8,10 @@ class FieldOption {
   final String value;
   final String label;
 
-  factory FieldOption.fromJson(Map<String, dynamic> json) =>
-      FieldOption(value: json['value'] as String, label: json['label'] as String);
+  factory FieldOption.fromJson(Map<String, dynamic> json) => FieldOption(
+    value: json['value'] as String,
+    label: json['label'] as String,
+  );
 
   Map<String, dynamic> toJson() => {'value': value, 'label': label};
 
@@ -49,13 +51,14 @@ class FieldValidation {
   /// Shown instead of the generic message when [pattern] fails to match.
   final String? patternMessage;
 
-  factory FieldValidation.fromJson(Map<String, dynamic> json) => FieldValidation(
-    minValue: (json['minValue'] as num?)?.toDouble(),
-    maxValue: (json['maxValue'] as num?)?.toDouble(),
-    maxLength: json['maxLength'] as int?,
-    pattern: json['pattern'] as String?,
-    patternMessage: json['patternMessage'] as String?,
-  );
+  factory FieldValidation.fromJson(Map<String, dynamic> json) =>
+      FieldValidation(
+        minValue: (json['minValue'] as num?)?.toDouble(),
+        maxValue: (json['maxValue'] as num?)?.toDouble(),
+        maxLength: json['maxLength'] as int?,
+        pattern: json['pattern'] as String?,
+        patternMessage: json['patternMessage'] as String?,
+      );
 
   Map<String, dynamic> toJson() => {
     if (minValue != null) 'minValue': minValue,

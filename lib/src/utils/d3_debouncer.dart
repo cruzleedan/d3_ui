@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 /// Cancels and restarts a delayed callback on each [run] call, collapsing

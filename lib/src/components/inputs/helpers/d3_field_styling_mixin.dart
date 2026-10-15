@@ -52,8 +52,9 @@ mixin D3FieldStylingMixin {
   /// `tokens.focusedBorderWidth` vs `tokens.borderWidth` rule every d3_ui
   /// field already followed before this resolver existed.
   bool _isEmphasizedBorder(D3FieldStatus status) => switch (status) {
-    D3FieldStatus.focused || D3FieldStatus.error || D3FieldStatus.success =>
-      true,
+    D3FieldStatus.focused ||
+    D3FieldStatus.error ||
+    D3FieldStatus.success => true,
     _ => false,
   };
 

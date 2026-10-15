@@ -51,9 +51,7 @@ void main() {
     testWidgets('occupies the same size in both modes', (tester) async {
       await tester.pumpWidget(_wrap(inSelectionMode: false));
       await tester.pumpAndSettle();
-      final unselectedSize = tester.getSize(
-        find.byType(D3SelectionLeading),
-      );
+      final unselectedSize = tester.getSize(find.byType(D3SelectionLeading));
 
       await tester.pumpWidget(_wrap(inSelectionMode: true));
       await tester.pumpAndSettle();
@@ -106,18 +104,14 @@ void main() {
               getItemId: (item) => item,
               selectedIds: selected,
               onSelectionChanged: (next) => setState(() => selected = next),
-              itemBuilder:
-                  (
-                    context,
-                    item,
-                    index, {
-                    bool isSelected = false,
-                    bool inSelectionMode = false,
-                    VoidCallback? onAvatarTap,
-                  }) => D3Card(
-                    title: 'Item $item',
-                    onTap: () => cardTaps++,
-                  ),
+              itemBuilder: (
+                context,
+                item,
+                index, {
+                bool isSelected = false,
+                bool inSelectionMode = false,
+                VoidCallback? onAvatarTap,
+              }) => D3Card(title: 'Item $item', onTap: () => cardTaps++),
             ),
           ),
         ),
@@ -133,11 +127,9 @@ void main() {
       // The reported scenario: select, then tap that same card.
       await tester.tap(find.text('Item a'));
       await tester.pumpAndSettle();
-      expect(
-        selected,
-        {'a'},
-        reason: 'tapping the card must not drop the selection',
-      );
+      expect(selected, {
+        'a',
+      }, reason: 'tapping the card must not drop the selection');
       expect(cardTaps, 1, reason: "the card's own onTap still runs");
 
       // Another row's body likewise opens it rather than selecting it.
@@ -225,15 +217,14 @@ void main() {
                 getItemId: (item) => item,
                 selectedIds: selected,
                 onSelectionChanged: (next) => setState(() => selected = next),
-                itemBuilder:
-                    (
-                      context,
-                      item,
-                      index, {
-                      bool isSelected = false,
-                      bool inSelectionMode = false,
-                      VoidCallback? onAvatarTap,
-                    }) => D3Card(title: 'Item $item', onTap: () {}),
+                itemBuilder: (
+                  context,
+                  item,
+                  index, {
+                  bool isSelected = false,
+                  bool inSelectionMode = false,
+                  VoidCallback? onAvatarTap,
+                }) => D3Card(title: 'Item $item', onTap: () {}),
               ),
             ),
           ),
@@ -250,9 +241,7 @@ void main() {
     });
 
     testWidgets('selected state fills the circle', (tester) async {
-      await tester.pumpWidget(
-        _wrap(inSelectionMode: true, isSelected: true),
-      );
+      await tester.pumpWidget(_wrap(inSelectionMode: true, isSelected: true));
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.check_rounded), findsOneWidget);

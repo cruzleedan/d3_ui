@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
+import '../inputs/helpers/d3_tap_target.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // D3SplitButtonItem
 // ─────────────────────────────────────────────────────────────────────────────
@@ -63,39 +65,60 @@ class _D3SplitButtonState extends State<D3SplitButton>
 
   // ── Spec constants ────────────────────────────────────────────────────────
   static const _heights = {
+    // xs and xl share the nearest supported size's metrics.
+    D3ButtonSize.xs: 32.0,
     D3ButtonSize.sm: 32.0,
     D3ButtonSize.md: 40.0,
     D3ButtonSize.lg: 56.0,
+    D3ButtonSize.xl: 56.0,
   };
   static const _leadingPadL = {
+    // xs and xl share the nearest supported size's metrics.
+    D3ButtonSize.xs: 12.0,
     D3ButtonSize.sm: 12.0,
     D3ButtonSize.md: 16.0,
     D3ButtonSize.lg: 24.0,
+    D3ButtonSize.xl: 24.0,
   };
   static const _leadingPadR = {
+    // xs and xl share the nearest supported size's metrics.
+    D3ButtonSize.xs: 10.0,
     D3ButtonSize.sm: 10.0,
     D3ButtonSize.md: 12.0,
     D3ButtonSize.lg: 24.0,
+    D3ButtonSize.xl: 24.0,
   };
   static const _iconSizes = {
+    // xs and xl share the nearest supported size's metrics.
+    D3ButtonSize.xs: 20.0,
     D3ButtonSize.sm: 20.0,
     D3ButtonSize.md: 20.0,
     D3ButtonSize.lg: 24.0,
+    D3ButtonSize.xl: 24.0,
   };
   static const _trailingPadL = {
+    // xs and xl share the nearest supported size's metrics.
+    D3ButtonSize.xs: 12.0,
     D3ButtonSize.sm: 12.0,
     D3ButtonSize.md: 12.0,
     D3ButtonSize.lg: 13.0,
+    D3ButtonSize.xl: 13.0,
   };
   static const _trailingPadR = {
+    // xs and xl share the nearest supported size's metrics.
+    D3ButtonSize.xs: 14.0,
     D3ButtonSize.sm: 14.0,
     D3ButtonSize.md: 14.0,
     D3ButtonSize.lg: 17.0,
+    D3ButtonSize.xl: 17.0,
   };
   static const _textSizes = {
+    // xs and xl share the nearest supported size's metrics.
+    D3ButtonSize.xs: 13.0,
     D3ButtonSize.sm: 13.0,
     D3ButtonSize.md: 14.0,
     D3ButtonSize.lg: 15.0,
+    D3ButtonSize.xl: 15.0,
   };
   static const double _gap = 2;
   static const double _iconLabelGap = 8;
@@ -262,9 +285,10 @@ class _D3SplitButtonState extends State<D3SplitButton>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            leading,
+            // Each segment keeps its visual height; its tap region is 48 x 48.
+            MergeSemantics(child: D3PaddedTapTarget(child: leading)),
             const SizedBox(width: _gap),
-            trailing,
+            MergeSemantics(child: D3PaddedTapTarget(child: trailing)),
           ],
         ),
       ),

@@ -24,10 +24,7 @@ class D3ListTileSkeleton extends StatelessWidget {
     super.key,
     this.showLeading = true,
     this.showSubtitle = true,
-    this.padding = const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 10,
-    ),
+    this.padding = const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
   });
 
   /// Whether to show the leading circle, matching [D3ListTile.leading].

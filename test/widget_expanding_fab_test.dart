@@ -12,9 +12,7 @@ Future<void> _openMenu(
   await tester.pumpWidget(
     MaterialApp(
       theme: D3AppTheme.light(),
-      home: Scaffold(
-        floatingActionButton: D3ExpandingFab(actions: actions),
-      ),
+      home: Scaffold(floatingActionButton: D3ExpandingFab(actions: actions)),
     ),
   );
   await tester.pumpAndSettle();

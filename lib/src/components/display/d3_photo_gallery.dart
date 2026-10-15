@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/src/components/display/helpers/d3_local_image.dart';
 import 'package:d3_ui/d3_ui.dart';
@@ -329,7 +328,8 @@ class _D3PhotoThumbnailState extends State<_D3PhotoThumbnail> {
     final radius = BorderRadius.circular(widget.tokens.thumbnailRadius);
 
     return Semantics(
-      label: 'Photo ${widget.index + 1} of ${widget.count} for ${widget.itemLabel}',
+      label:
+          'Photo ${widget.index + 1} of ${widget.count} for ${widget.itemLabel}',
       button: true,
       image: true,
       child: SizedBox(
@@ -378,7 +378,10 @@ class _D3PhotoThumbnailState extends State<_D3PhotoThumbnail> {
                             decoration: BoxDecoration(
                               color: colors.error,
                               shape: BoxShape.circle,
-                              border: Border.all(color: colors.surface, width: 1.5),
+                              border: Border.all(
+                                color: colors.surface,
+                                width: 1.5,
+                              ),
                             ),
                             child: Icon(
                               Icons.close,

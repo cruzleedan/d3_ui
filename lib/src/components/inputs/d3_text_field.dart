@@ -394,96 +394,106 @@ class D3TextFieldState extends State<D3TextField>
         const SizedBox(height: D3Spacing.s6),
 
         // ── Input container ───────────────────────────────────────────────
-        AnimatedContainer(
-          duration: tokens.borderAnimDuration,
-          decoration: BoxDecoration(
-            color: style.backgroundColor,
-            borderRadius: BorderRadius.circular(tokens.radius),
-            border: Border.all(
-              color: style.borderColor,
-              width: style.borderWidth,
-              strokeAlign: BorderSide.strokeAlignInside,
+        // The whole box focuses the field, not only the 24 dp line of text in
+        // its middle (buttons and the text itself still take their own taps).
+        GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            if (widget.isEnabled && !widget.isReadOnly)
+              _focusNode.requestFocus();
+          },
+          child: AnimatedContainer(
+            duration: tokens.borderAnimDuration,
+            decoration: BoxDecoration(
+              color: style.backgroundColor,
+              borderRadius: BorderRadius.circular(tokens.radius),
+              border: Border.all(
+                color: style.borderColor,
+                width: style.borderWidth,
+                strokeAlign: BorderSide.strokeAlignInside,
+              ),
             ),
-          ),
-          child: Row(
-            crossAxisAlignment: isMultiline
-                ? CrossAxisAlignment.start
-                : CrossAxisAlignment.center,
-            children: [
-              // Prefix
-              if (prefix != null)
-                Padding(
-                  padding: EdgeInsets.only(left: tokens.paddingH),
-                  child: prefix,
-                ),
+            child: Row(
+              crossAxisAlignment: isMultiline
+                  ? CrossAxisAlignment.start
+                  : CrossAxisAlignment.center,
+              children: [
+                // Prefix
+                if (prefix != null)
+                  Padding(
+                    padding: EdgeInsets.only(left: tokens.paddingH),
+                    child: prefix,
+                  ),
 
-              // Input
-              Expanded(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: tokens.minHeight),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: prefix != null
-                          ? D3Spacing.s8
-                          : tokens.paddingH,
-                      vertical: tokens.paddingV,
-                    ),
-                    child: TextField(
-                      key: widget.textFieldKey,
-                      controller: _controller,
-                      focusNode: _focusNode,
-                      enabled: widget.isEnabled,
-                      readOnly: widget.isReadOnly,
-                      obscureText: _obscured,
-                      maxLines: widget.obscureText ? 1 : widget.maxLines,
-                      minLines: widget.minLines,
-                      maxLength: widget.maxLengthEnforced
-                          ? widget.maxLength
-                          : null,
-                      keyboardType: widget.keyboardType,
-                      textInputAction: widget.textInputAction,
-                      autofocus: widget.autofocus,
-                      autofillHints: widget.autofillHints,
-                      autocorrect: widget.autocorrect,
-                      inputFormatters: widget.inputFormatters,
-                      onTap: widget.onTap,
-                      onSubmitted: (v) {
-                        if (widget.validationMode ==
-                                D3ValidationMode.onSubmit ||
-                            widget.validationMode == D3ValidationMode.onBlur) {
-                          _runValidation(v);
-                        }
-                        widget.onSubmitted?.call(v);
-                      },
-                      style: TextStyle(
-                        fontSize: tokens.textSize,
-                        color: colors.onSurface,
-                        height: 1.4,
+                // Input
+                Expanded(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: tokens.minHeight),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: prefix != null
+                            ? D3Spacing.s8
+                            : tokens.paddingH,
+                        vertical: tokens.paddingV,
                       ),
-                      cursorColor: colors.primary,
-                      decoration: InputDecoration(
-                        hintText: widget.hintText,
-                        hintStyle: TextStyle(
+                      child: TextField(
+                        key: widget.textFieldKey,
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        enabled: widget.isEnabled,
+                        readOnly: widget.isReadOnly,
+                        obscureText: _obscured,
+                        maxLines: widget.obscureText ? 1 : widget.maxLines,
+                        minLines: widget.minLines,
+                        maxLength: widget.maxLengthEnforced
+                            ? widget.maxLength
+                            : null,
+                        keyboardType: widget.keyboardType,
+                        textInputAction: widget.textInputAction,
+                        autofocus: widget.autofocus,
+                        autofillHints: widget.autofillHints,
+                        autocorrect: widget.autocorrect,
+                        inputFormatters: widget.inputFormatters,
+                        onTap: widget.onTap,
+                        onSubmitted: (v) {
+                          if (widget.validationMode ==
+                                  D3ValidationMode.onSubmit ||
+                              widget.validationMode ==
+                                  D3ValidationMode.onBlur) {
+                            _runValidation(v);
+                          }
+                          widget.onSubmitted?.call(v);
+                        },
+                        style: TextStyle(
                           fontSize: tokens.textSize,
-                          color: colors.onSurfaceVariant,
+                          color: colors.onSurface,
+                          height: 1.4,
                         ),
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                        counterText: '', // hide built-in counter
+                        cursorColor: colors.primary,
+                        decoration: InputDecoration(
+                          hintText: widget.hintText,
+                          hintStyle: TextStyle(
+                            fontSize: tokens.textSize,
+                            color: colors.onSurfaceVariant,
+                          ),
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          counterText: '', // hide built-in counter
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              // Suffix
-              _buildSuffix(tokens, colors, status),
-            ],
+                // Suffix
+                _buildSuffix(tokens, colors, status),
+              ],
+            ),
           ),
         ),
 

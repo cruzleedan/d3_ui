@@ -163,9 +163,7 @@ void main() {
         _wrap(
           D3ImageViewer(
             key: key,
-            images: const [
-              D3ImageSource.network('https://example.com/a.png'),
-            ],
+            images: const [D3ImageSource.network('https://example.com/a.png')],
           ),
         ),
       );
@@ -278,9 +276,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           D3ImageViewer(
-            images: const [
-              D3ImageSource.network('https://example.com/a.png'),
-            ],
+            images: const [D3ImageSource.network('https://example.com/a.png')],
             resolveImage: (index) async {
               callCount++;
               return const D3ImageSource.network('https://example.com/a2.png');
@@ -297,9 +293,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           D3ImageViewer(
-            images: const [
-              D3ImageSource.network('https://example.com/a.png'),
-            ],
+            images: const [D3ImageSource.network('https://example.com/a.png')],
             resolveImage: (index) async {
               callCount++;
               return const D3ImageSource.network('https://example.com/a2.png');
@@ -349,19 +343,14 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           D3ImageViewer(
-            images: const [
-              D3ImageSource.network('https://example.com/a.png'),
-            ],
+            images: const [D3ImageSource.network('https://example.com/a.png')],
           ),
         ),
       );
       await tester.pump();
 
       final image = tester.widget<Image>(find.byType(Image));
-      expect(
-        (image.image as NetworkImage).url,
-        'https://example.com/a.png',
-      );
+      expect((image.image as NetworkImage).url, 'https://example.com/a.png');
     });
   });
 
@@ -499,9 +488,7 @@ void main() {
         _wrap(
           D3ImageViewer(
             key: key,
-            images: const [
-              D3ImageSource.network('https://example.com/a.png'),
-            ],
+            images: const [D3ImageSource.network('https://example.com/a.png')],
           ),
         ),
       );
@@ -710,9 +697,7 @@ void main() {
         _wrap(
           D3ImageViewer(
             key: key,
-            images: const [
-              D3ImageSource.network('https://example.com/a.png'),
-            ],
+            images: const [D3ImageSource.network('https://example.com/a.png')],
           ),
         ),
       );
@@ -751,16 +736,15 @@ void main() {
         _wrap(
           D3ImageViewer(
             key: key,
-            images: const [
-              D3ImageSource.network('https://example.com/a.png'),
-            ],
+            images: const [D3ImageSource.network('https://example.com/a.png')],
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      IconButton resetButton() =>
-          tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.zoom_out_map));
+      IconButton resetButton() => tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, Icons.zoom_out_map),
+      );
 
       expect(resetButton().onPressed, isNull);
 
