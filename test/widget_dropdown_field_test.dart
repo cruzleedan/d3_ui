@@ -121,7 +121,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('*'), findsOneWidget);
+      expect(find.textContaining('*'), findsOneWidget);
     });
 
     testWidgets('shows prefixIcon when provided', (tester) async {

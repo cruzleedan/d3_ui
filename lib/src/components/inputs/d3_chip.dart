@@ -220,16 +220,18 @@ class D3Chip extends StatelessWidget {
             Icon(leadingIcon, size: 14, color: fg),
             const SizedBox(width: D3Spacing.s4),
           ],
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: D3TypeScale.labelMdSize,
-              fontWeight: FontWeight.w500,
-              color: fg,
-              height: 1.0,
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: D3TypeScale.labelMdSize,
+                fontWeight: FontWeight.w500,
+                color: fg,
+                height: 1.0,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
           if (trailingIcon != null) ...[
             const SizedBox(width: D3Spacing.s4),

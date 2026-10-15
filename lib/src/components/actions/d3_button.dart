@@ -241,7 +241,11 @@ class _D3ButtonState extends State<D3Button> {
     D3ButtonState state,
   ) {
     final textStyle = d3ButtonTextStyle(fontSize: fontSize, color: fgColor);
-    final effectiveMaxLines = widget.maxLines ?? tokens.maxLines;
+    // At large system text sizes a long label wraps (up to 3 lines) instead of
+    // being cut with an ellipsis; an explicit [maxLines] always wins.
+    final largeText = MediaQuery.textScalerOf(context).scale(14) / 14 > 1.3;
+    final effectiveMaxLines =
+        widget.maxLines ?? (largeText ? 3 : tokens.maxLines);
 
     Widget? leading;
     if (state == D3ButtonState.loading) {
@@ -287,6 +291,7 @@ class _D3ButtonState extends State<D3Button> {
                 : widget.label,
             style: textStyle,
             maxLines: effectiveMaxLines,
+            textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
           ),
         ),
