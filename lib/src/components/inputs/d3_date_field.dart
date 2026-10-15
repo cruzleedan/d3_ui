@@ -1,4 +1,7 @@
 import 'package:d3_ui/d3_ui.dart';
+
+import 'helpers/d3_field_label.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import 'helpers/d3_field_status.dart';
@@ -147,30 +150,10 @@ class _D3DateFieldState extends State<D3DateField> with D3FieldStylingMixin {
         // Label
         Padding(
           padding: EdgeInsets.symmetric(horizontal: tokens.paddingH),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.label,
-                style: TextStyle(
-                  fontSize: tokens.labelSize,
-                  fontWeight: FontWeight.w600,
-                  color: colors.onSurfaceVariant,
-                  letterSpacing: -0.1,
-                ),
-              ),
-              if (widget.isRequired) ...[
-                const SizedBox(width: 2),
-                Text(
-                  '*',
-                  style: TextStyle(
-                    fontSize: tokens.labelSize,
-                    fontWeight: FontWeight.w700,
-                    color: colors.error,
-                  ),
-                ),
-              ],
-            ],
+          child: D3FieldLabel(
+            label: widget.label,
+            isRequired: widget.isRequired,
+            fontSize: tokens.labelSize,
           ),
         ),
 

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Fix** long text and large system text size: field labels (`D3TextField`,
+  `D3DateField`, `D3DropdownField`) wrap instead of overflowing, `D3Chip` and
+  `D3SplitButton` ellipsize a long label inside their width, and `D3Button`
+  wraps its label (up to 3 lines) when the text scale is above 1.3 instead of
+  cutting it. `test/audit/text_scale_audit_test.dart` checks 40 widgets at text
+  scales 1 to 3 with long strings.
 - **Fix** tap targets and ripples: every tappable widget now has a tap region of
   at least 48 x 48 dp even where its visual is smaller (`D3Button` xs/sm/md and
   icon-only, `D3Chip`, `D3HyperlinkButton` (new `inline` opt-out for links in

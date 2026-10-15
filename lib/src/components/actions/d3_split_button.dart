@@ -199,16 +199,19 @@ class _D3SplitButtonState extends State<D3SplitButton>
                   Icon(widget.icon, size: iconSz, color: fg),
                   const SizedBox(width: _iconLabelGap),
                 ],
-                Text(
-                  widget.label,
-                  style: TextStyle(
-                    fontSize: textSz,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.1,
-                    color: fg,
-                    height: 1,
+                Flexible(
+                  child: Text(
+                    widget.label,
+                    style: TextStyle(
+                      fontSize: textSz,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.1,
+                      color: fg,
+                      height: 1,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
                 ),
               ],
             ),
@@ -279,14 +282,19 @@ class _D3SplitButtonState extends State<D3SplitButton>
       );
     }
 
-    return UnconstrainedBox(
+    return Align(
+      alignment: Alignment.centerLeft,
+      widthFactor: 1,
+      heightFactor: 1,
       child: Opacity(
         opacity: isEnabled ? 1.0 : _disabledOpacity,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Each segment keeps its visual height; its tap region is 48 x 48.
-            MergeSemantics(child: D3PaddedTapTarget(child: leading)),
+            Flexible(
+              child: MergeSemantics(child: D3PaddedTapTarget(child: leading)),
+            ),
             const SizedBox(width: _gap),
             MergeSemantics(child: D3PaddedTapTarget(child: trailing)),
           ],

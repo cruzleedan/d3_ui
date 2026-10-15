@@ -673,26 +673,31 @@ class _LabelRow extends StatelessWidget {
           ),
           const SizedBox(width: 6),
         ],
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: tokens.labelSize,
-            fontWeight: FontWeight.w600,
-            color: colors.onSurfaceVariant,
-            letterSpacing: -0.1,
-          ),
-        ),
-        if (isRequired) ...[
-          const SizedBox(width: 2),
-          Text(
-            '*',
-            style: TextStyle(
-              fontSize: tokens.labelSize,
-              fontWeight: FontWeight.w700,
-              color: colors.error,
+        // A long label (or a large system text size) wraps rather than
+        // overflowing; the required asterisk stays with the last word.
+        Flexible(
+          child: Text.rich(
+            TextSpan(
+              text: label,
+              style: TextStyle(
+                fontSize: tokens.labelSize,
+                fontWeight: FontWeight.w600,
+                color: colors.onSurfaceVariant,
+                letterSpacing: -0.1,
+              ),
+              children: [
+                if (isRequired)
+                  TextSpan(
+                    text: ' *',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: colors.error,
+                    ),
+                  ),
+              ],
             ),
           ),
-        ],
+        ),
       ],
     );
 

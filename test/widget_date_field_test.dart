@@ -74,7 +74,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(const D3DateField(label: 'Due date', isRequired: true)),
       );
-      expect(find.text('*'), findsOneWidget);
+      expect(find.textContaining('*'), findsOneWidget);
     });
 
     testWidgets('opens the stock date picker on tap and calls onChanged', (
