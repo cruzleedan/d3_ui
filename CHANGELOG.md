@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **New widgets** (mobile first, from the theme's tokens, 48 dp targets, text
+  scale 1.5, reduced motion): `D3Rating` (display with half stars and input with
+  tap, drag and keyboard), `D3OtpField` (one real text field behind the cells, so
+  paste and SMS autofill work), `showD3TimePicker` and `D3TimeField` (a wheel
+  time sheet and its field), `D3Menu` and `D3MenuButton` (anchored, flips to stay
+  on screen, keyboard), and `D3Tooltip` and `D3InfoTip` (hover, focus,
+  long-press; tap-to-open for touch).
 - **New widgets** (mobile first, all from the theme's tokens): `D3Banner` (a
   persistent inline message, four variants, action and dismiss),
   `D3ProgressBar` and `D3ProgressRing` (determinate and indeterminate),
