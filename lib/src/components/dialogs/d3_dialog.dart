@@ -250,23 +250,14 @@ class D3Dialog extends StatelessWidget {
     final isCentered =
         icon != null && iconPlacement == D3DialogIconPlacement.centered;
 
-    return Dialog(
-      backgroundColor: colors.surfaceVariant,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: context.d3Shape.circularXl,
-        side: BorderSide(
-          color: colors.outline.withValues(alpha: 0.2),
-          width: 0.5,
-        ),
-      ),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-      constraints: const BoxConstraints(minWidth: 280, maxWidth: maxWidth),
+    // Header and custom content scroll (long text, large text scale, landscape,
+    // the keyboard); the actions stay pinned below so they are always reachable.
+    final body = SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Header ─────────────────────────────────────────────────────────
+          // ── Header ───────────────────────────────────────────────────────
           Padding(
             padding: EdgeInsets.fromLTRB(
               D3Spacing.s24,
@@ -291,7 +282,7 @@ class D3Dialog extends StatelessWidget {
                   ),
           ),
 
-          // ── Custom content ─────────────────────────────────────────────────
+          // ── Custom content ───────────────────────────────────────────────
           if (content != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -302,13 +293,40 @@ class D3Dialog extends StatelessWidget {
               ),
               child: content,
             ),
-
-          // ── Actions ────────────────────────────────────────────────────────
-          if (_useStackedActions)
-            _StackedActions(actions: actions, colors: colors)
-          else
-            _InlineActions(actions: actions, colors: colors),
         ],
+      ),
+    );
+
+    // The route is announced by its title, and its contents are scoped to it,
+    // so a screen reader starts in the dialog and does not wander behind it.
+    return Semantics(
+      scopesRoute: true,
+      namesRoute: title != null,
+      label: title,
+      explicitChildNodes: true,
+      child: Dialog(
+        backgroundColor: colors.surfaceVariant,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: context.d3Shape.circularXl,
+          side: BorderSide(
+            color: colors.outline.withValues(alpha: 0.2),
+            width: 0.5,
+          ),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: maxWidth),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Flexible(child: body),
+            if (_useStackedActions)
+              _StackedActions(actions: actions, colors: colors)
+            else
+              _InlineActions(actions: actions, colors: colors),
+          ],
+        ),
       ),
     );
   }
@@ -352,15 +370,18 @@ class _CenteredIconHeader extends StatelessWidget {
 
         if (title != null) ...[
           const SizedBox(height: D3Spacing.s16),
-          Text(
-            title!,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: colors.onSurface,
-              letterSpacing: -0.2,
-              height: 1.3,
+          Semantics(
+            header: true,
+            child: Text(
+              title!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: colors.onSurface,
+                letterSpacing: -0.2,
+                height: 1.3,
+              ),
             ),
           ),
         ],
@@ -371,7 +392,7 @@ class _CenteredIconHeader extends StatelessWidget {
             message!,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               color: colors.onSurfaceVariant,
               height: 1.5,
             ),
@@ -405,14 +426,17 @@ class _LeadingIconHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (title != null)
-          Text(
-            title!,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: colors.onSurface,
-              letterSpacing: -0.2,
-              height: 1.3,
+          Semantics(
+            header: true,
+            child: Text(
+              title!,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: colors.onSurface,
+                letterSpacing: -0.2,
+                height: 1.3,
+              ),
             ),
           ),
         if (message != null) ...[
@@ -420,7 +444,7 @@ class _LeadingIconHeader extends StatelessWidget {
           Text(
             message!,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               color: colors.onSurfaceVariant,
               height: 1.5,
             ),
@@ -465,13 +489,12 @@ class _StackedActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Render primary/destructive action first (visually on top), then cancel.
-    final sorted = [...actions]
-      ..sort((a, b) {
-        if (a.isDefault || a.isDestructive) return -1;
-        if (b.isDefault || b.isDestructive) return 1;
-        return 0;
-      });
+    // Primary and destructive actions first (visually on top), the rest after
+    // them, each group in the order it was given.
+    final sorted = [
+      ...actions.where((a) => a.isDefault || a.isDestructive),
+      ...actions.where((a) => !(a.isDefault || a.isDestructive)),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -516,7 +539,7 @@ class _StackedButton extends StatelessWidget {
 
     if (action.isDestructive) {
       bg = colors.error;
-      fg = Colors.white;
+      fg = colors.onError;
     } else if (action.isDefault) {
       bg = colors.primary;
       fg = colors.onPrimary;
@@ -526,8 +549,8 @@ class _StackedButton extends StatelessWidget {
       fg = colors.onSurface;
     }
 
-    return SizedBox(
-      height: 46,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: kMinInteractiveDimension),
       child: Material(
         color: bg,
         borderRadius: BorderRadius.circular(D3Radius.md),
@@ -536,14 +559,21 @@ class _StackedButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(D3Radius.md),
           splashColor: Colors.white.withValues(alpha: 0.08),
           highlightColor: Colors.white.withValues(alpha: 0.04),
-          child: Center(
-            child: Text(
-              action.label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: fg,
-                letterSpacing: 0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: D3Spacing.s12,
+              vertical: D3Spacing.s12,
+            ),
+            child: Center(
+              child: Text(
+                action.label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: fg,
+                  letterSpacing: 0,
+                ),
               ),
             ),
           ),
@@ -570,14 +600,20 @@ class _InlineActions extends StatelessWidget {
         D3Spacing.s12,
         D3Spacing.s12,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          for (int i = 0; i < actions.length; i++) ...[
-            if (i > 0) const SizedBox(width: D3Spacing.s4),
-            _InlineButton(action: actions[i], colors: colors),
+      // A Wrap, so two long labels drop to a second line on a narrow phone
+      // instead of overflowing.
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Wrap(
+          alignment: WrapAlignment.end,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: D3Spacing.s4,
+          runSpacing: D3Spacing.s4,
+          children: [
+            for (final action in actions)
+              _InlineButton(action: action, colors: colors),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -606,10 +642,14 @@ class _InlineButton extends StatelessWidget {
           horizontal: D3Spacing.s12,
           vertical: D3Spacing.s8,
         ),
-        minimumSize: Size.zero,
+        // 48 dp tall: a thumb-sized target, as the dialog's neighbours have.
+        minimumSize: const Size(
+          kMinInteractiveDimension,
+          kMinInteractiveDimension,
+        ),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         textStyle: TextStyle(
-          fontSize: 14,
+          fontSize: 15,
           fontWeight: action.isDefault ? FontWeight.w600 : FontWeight.w500,
           letterSpacing: 0,
         ),
