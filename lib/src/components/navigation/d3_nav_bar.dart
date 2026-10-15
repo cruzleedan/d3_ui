@@ -386,10 +386,16 @@ class _NavBarItem extends StatelessWidget {
                       color: labelColor,
                       letterSpacing: 0.1,
                     ),
-                    child: Text(
-                      item.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    // Wraps to two lines before it is cut, and stops growing at
+                    // 1.5x so the bar stays a bar at the largest system sizes.
+                    child: MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: 1.5,
+                      child: Text(
+                        item.label,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ),

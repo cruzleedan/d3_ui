@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Fix** large system text in compact controls: `D3NavBar` labels wrap to two
+  lines (and stop growing at 1.5x) instead of being cut to one; `D3SegmentedControl`
+  grows taller and wraps a label to two lines; `D3QuantityStepper`'s number stops
+  growing at 1.5x so it no longer overflows its 48 dp pill.
 - **Fix** long text and large system text size: field labels (`D3TextField`,
   `D3DateField`, `D3DropdownField`) wrap instead of overflowing, `D3Chip` and
   `D3SplitButton` ellipsize a long label inside their width, and `D3Button`

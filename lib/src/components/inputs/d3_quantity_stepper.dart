@@ -147,15 +147,21 @@ class _D3QuantityStepperState extends State<D3QuantityStepper> {
             ),
           );
         },
-        child: Text(
-          '${widget.value}',
+        // The control is a fixed 48 dp pill, so the number stops growing at 1.5x.
+        child: KeyedSubtree(
           key: ValueKey<int>(widget.value),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w600,
-            color: colors.onSurface,
-            fontFeatures: tabular,
+          child: MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.5,
+            child: Text(
+              '${widget.value}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+                color: colors.onSurface,
+                fontFeatures: tabular,
+              ),
+            ),
           ),
         ),
       ),
