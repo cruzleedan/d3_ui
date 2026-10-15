@@ -81,7 +81,13 @@ class _AuroraHeroState extends State<AuroraHero>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // At most about 30 repaints a second: the aurora drifts slowly, and a large
+    // hero is a lot of pixels to shade, so this halves the GPU work and the
+    // battery use for no visible difference.
+    var last = Duration.zero;
     _ticker = createTicker((elapsed) {
+      if (elapsed - last < const Duration(milliseconds: 30)) return;
+      last = elapsed;
       _pointer.ease();
       _time.value = elapsed.inMicroseconds / 1e6;
     });
