@@ -3,7 +3,7 @@
 # .sha256. The same script runs in CI and locally.
 #
 #   scripts/build_showcase.sh                 # build only
-#   scripts/build_showcase.sh --publish v0.3.0   # build, then attach to that GitHub Release
+#   scripts/build_showcase.sh --publish showcase-v1.9.0   # build, then attach to that GitHub Release
 #
 # GitHub Actions is disabled on this repo, so publishing is done here with the
 # `gh` CLI (the host fetches the release asset). The web-showcase workflow does
@@ -17,7 +17,18 @@ cd "$(dirname "$0")/.."
 OUT=dist
 NAME=d3-ui-showcase-web.tar.gz
 
-(cd example && flutter pub get && dart run tool/gen_example_sources.dart && flutter build web --release --no-web-resources-cdn --base-href /)
+# What the page shows as its version: the release tag when publishing (the tag
+# does not exist yet at build time, so it comes from the argument), else "dev".
+VERSION=dev
+if [ "${1:-}" = "--publish" ]; then
+  TAG="${2:?usage: scripts/build_showcase.sh --publish showcase-vX.Y.Z}"
+  VERSION="${TAG#showcase-v}"
+fi
+COMMIT="$(git rev-parse --short HEAD 2>/dev/null || true)"
+LIB_VERSION="$(sed -n 's/^version: *\([0-9][^ ]*\).*/\1/p' pubspec.yaml | head -1)"
+
+(cd example && flutter pub get && dart run tool/gen_example_sources.dart && flutter build web --release --no-web-resources-cdn --base-href / \
+  --dart-define=SHOWCASE_VERSION="$VERSION" --dart-define=SHOWCASE_COMMIT="$COMMIT" --dart-define=D3_UI_VERSION="$LIB_VERSION")
 
 BUILD=example/build/web
 [ -f "$BUILD/index.html" ] || { echo "No index.html in $BUILD"; exit 1; }

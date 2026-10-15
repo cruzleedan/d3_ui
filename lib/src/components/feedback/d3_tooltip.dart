@@ -129,6 +129,12 @@ class _D3TooltipState extends State<D3Tooltip>
     duration: D3Motion.fast,
   );
   Timer? _showTimer;
+
+  /// Set for a moment after a press on the target: pressing often opens
+  /// something over it (a menu), which makes the pointer leave and re-enter, and
+  /// that must not bring the tooltip up on top of what the press opened.
+  Timer? _quietTimer;
+  bool get _quiet => _quietTimer?.isActive ?? false;
   Timer? _hideTimer;
   Rect? _target;
   bool _visible = false;
@@ -146,6 +152,7 @@ class _D3TooltipState extends State<D3Tooltip>
   void dispose() {
     _showTimer?.cancel();
     _hideTimer?.cancel();
+    _quietTimer?.cancel();
     _scroll?.removeListener(_onScroll);
     if (_visible) {
       GestureBinding.instance.pointerRouter.removeGlobalRoute(_onPointer);
@@ -161,6 +168,7 @@ class _D3TooltipState extends State<D3Tooltip>
   }
 
   void _scheduleShow() {
+    if (_quiet) return;
     if (_visible) return;
     _showTimer?.cancel();
     _showTimer = Timer(widget.showDelay, _show);
@@ -224,16 +232,28 @@ class _D3TooltipState extends State<D3Tooltip>
             }
             return KeyEventResult.ignored;
           },
-          child: GestureDetector(
+          // A press on the target cancels a tooltip that is still waiting to
+          // appear (the global pointer route only exists once it is showing),
+          // so it never pops up over what the press opened.
+          child: Listener(
             behavior: HitTestBehavior.translucent,
-            onLongPress: () {
-              HapticFeedback.selectionClick();
-              _show(touch: true);
+            onPointerDown: (e) {
+              if (e.kind == PointerDeviceKind.touch) return;
+              _hide();
+              _quietTimer?.cancel();
+              _quietTimer = Timer(const Duration(seconds: 1), () {});
             },
-            child: OverlayPortal(
-              controller: _portal,
-              overlayChildBuilder: _buildBubble,
-              child: widget.child,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onLongPress: () {
+                HapticFeedback.selectionClick();
+                _show(touch: true);
+              },
+              child: OverlayPortal(
+                controller: _portal,
+                overlayChildBuilder: _buildBubble,
+                child: widget.child,
+              ),
             ),
           ),
         ),

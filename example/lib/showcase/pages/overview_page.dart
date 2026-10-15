@@ -3,8 +3,10 @@ import 'package:material_ui/material_ui.dart';
 
 import '../aurora_hero.dart';
 import '../page_model.dart';
+import 'components_page.dart';
 import '../registry.dart';
 import '../scope.dart';
+import '../version.dart';
 
 /// The landing page: what d3_ui is and where to go next.
 class OverviewPage extends StatelessWidget {
@@ -17,8 +19,7 @@ class OverviewPage extends StatelessWidget {
     // theme (light text, light-on-dark buttons).
     final nightTheme = scope.brandThemes[scope.brand.id]!.dark;
     final night = nightTheme.extension<D3TokensExtension>()!.colors;
-    final components =
-        showcasePages.where((p) => p.group != ShowcaseGroup.start).length;
+    final components = showcasePages.where(isComponentPage).length;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 880),
@@ -96,6 +97,14 @@ class OverviewPage extends StatelessWidget {
                 'Light and dark',
                 'Both themes are first class. Use the Theme control in the '
                     'navigation.'),
+            const SizedBox(height: 18),
+            Text(
+              ShowcaseVersion.label,
+              style: TextStyle(
+                fontSize: 12,
+                color: context.d3Colors.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
       ),
