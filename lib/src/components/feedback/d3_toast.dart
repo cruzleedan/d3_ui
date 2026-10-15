@@ -212,18 +212,20 @@ class _D3ToastContent extends StatelessWidget {
           borderRadius: context.d3Shape.circularLg,
           border: Border.all(color: style.border, width: 1.0),
         ),
+        // Vertical padding is small because the action and dismiss buttons are
+        // 48 dp tall themselves (thumb-sized targets).
         padding: const EdgeInsets.fromLTRB(
           D3Spacing.s12,
-          D3Spacing.s12,
-          D3Spacing.s8,
-          D3Spacing.s12,
+          D3Spacing.s4,
+          D3Spacing.s4,
+          D3Spacing.s4,
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Icon
             Padding(
-              padding: const EdgeInsets.only(top: 1),
+              padding: EdgeInsets.zero,
               child: Container(
                 width: 22,
                 height: 22,
@@ -239,71 +241,91 @@ class _D3ToastContent extends StatelessWidget {
 
             // Text block
             Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: style.titleColor,
-                      height: 1.3,
-                    ),
-                  ),
-                  if (message != null) ...[
-                    const SizedBox(height: 2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: D3Spacing.s8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      message!,
+                      title,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: style.messageColor,
-                        height: 1.4,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: style.titleColor,
+                        height: 1.3,
                       ),
                     ),
+                    if (message != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        message!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: style.messageColor,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
 
-            // Action button
+            // Action button: a 48 dp target with ink
             if (action != null) ...[
-              const SizedBox(width: D3Spacing.s8),
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  onDismiss();
-                  action!.onPressed();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: D3Spacing.s4,
-                    vertical: D3Spacing.s2,
-                  ),
-                  child: Text(
-                    action!.label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: style.actionColor,
+              const SizedBox(width: D3Spacing.s4),
+              Semantics(
+                button: true,
+                child: InkWell(
+                  onTap: () {
+                    onDismiss();
+                    action!.onPressed();
+                  },
+                  borderRadius: context.d3Shape.circularMd,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: kMinInteractiveDimension,
+                      minHeight: kMinInteractiveDimension,
+                    ),
+                    child: Center(
+                      widthFactor: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: D3Spacing.s8,
+                        ),
+                        child: Text(
+                          action!.label,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: style.actionColor,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ],
 
-            // Dismiss button
-            const SizedBox(width: D3Spacing.s4),
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: onDismiss,
-              child: Padding(
-                padding: const EdgeInsets.all(D3Spacing.s4),
-                child: Icon(
-                  Icons.close_rounded,
-                  size: 15,
-                  color: style.titleColor.withValues(alpha: 0.45),
+            // Dismiss button: a 48 dp target with ink
+            Semantics(
+              button: true,
+              label: 'Dismiss',
+              child: InkResponse(
+                onTap: onDismiss,
+                radius: 24,
+                child: SizedBox(
+                  width: kMinInteractiveDimension,
+                  height: kMinInteractiveDimension,
+                  child: Center(
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 16,
+                      color: style.titleColor.withValues(alpha: 0.6),
+                    ),
+                  ),
                 ),
               ),
             ),

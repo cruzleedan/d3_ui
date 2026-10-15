@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- **New widgets** (mobile first, all from the theme's tokens): `D3Banner` (a
+  persistent inline message, four variants, action and dismiss),
+  `D3ProgressBar` and `D3ProgressRing` (determinate and indeterminate),
+  `D3Badge` (count, dot, label) and `D3BadgeAnchor` (overlay on any widget),
+  `D3Slider`, `D3QuantityStepper` (hold to repeat) and `D3ActionSheet` (a bottom
+  sheet of thumb-sized actions with destructive and selected rows and a
+  separate Cancel). Touch targets are at least 48 dp, text scales to 1.5, and
+  motion stops under reduced motion.
+- **Fix** `D3Dialog` on phones: buttons are at least 48 dp tall (inline were
+  about 36, stacked 46); the body scrolls with the actions pinned, so long text,
+  large text scale or landscape no longer overflow; inline actions wrap instead
+  of overflowing; the destructive button's label uses `onError` (white on the
+  dark theme's salmon `error` was about 2.5:1); title 17 sp and message 14 sp;
+  the title is a header and the dialog names its route for screen readers;
+  action order is stable.
+- **Fix** `D3Toast`: the action and the dismiss button are 48 dp touch targets
+  with ink (they were about 20 and 23 dp).
 - **Fix** the search field in `D3DropdownField`'s bottom sheet (`D3DropdownMode.sheet`,
   `searchable`) was barely visible: its fill matched the sheet colour. It is now a
   `D3SearchBar`, which tints with `onSurface`, so it shows in light and dark (and

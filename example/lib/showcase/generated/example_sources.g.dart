@@ -3,6 +3,109 @@
 
 /// The source of each example, by path under lib/examples/.
 const Map<String, String> exampleSources = {
+  'action_sheet/basic.dart': r'''/// A Share / Edit / Duplicate / Delete sheet that shows the chosen action.
+class ActionSheetBasicExample extends StatefulWidget {
+  const ActionSheetBasicExample({super.key});
+
+  @override
+  State<ActionSheetBasicExample> createState() =>
+      _ActionSheetBasicExampleState();
+}
+
+class _ActionSheetBasicExampleState extends State<ActionSheetBasicExample> {
+  String? _chosen;
+
+  Future<void> _open() async {
+    final result = await D3ActionSheet.show<String>(
+      context,
+      actions: [
+        for (final item in const [
+          ('Share', Icons.ios_share_rounded),
+          ('Edit', Icons.edit_outlined),
+          ('Duplicate', Icons.copy_rounded),
+        ])
+          D3ActionSheetAction(
+            label: item.$1,
+            icon: item.$2,
+            onPressedWithContext: (ctx) => D3ActionSheet.pop(ctx, item.$1),
+          ),
+        D3ActionSheetAction(
+          label: 'Delete',
+          icon: Icons.delete_outline_rounded,
+          isDestructive: true,
+          onPressedWithContext: (ctx) => D3ActionSheet.pop(ctx, 'Delete'),
+        ),
+      ],
+    );
+    setState(() => _chosen = result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        D3Button(
+          label: 'Show actions',
+          variant: D3ButtonVariant.outlined,
+          onPressed: _open,
+        ),
+        const SizedBox(height: 12),
+        Text('Chosen: ${_chosen ?? 'none'}'),
+      ],
+    );
+  }
+}''',
+  'action_sheet/selection.dart': r'''/// A sort-order sheet with a title, a message and the current choice checked.
+class ActionSheetSelectionExample extends StatefulWidget {
+  const ActionSheetSelectionExample({super.key});
+
+  @override
+  State<ActionSheetSelectionExample> createState() =>
+      _ActionSheetSelectionExampleState();
+}
+
+class _ActionSheetSelectionExampleState
+    extends State<ActionSheetSelectionExample> {
+  String _sort = 'Newest first';
+
+  Future<void> _open() async {
+    final result = await D3ActionSheet.show<String>(
+      context,
+      title: 'Sort by',
+      message: 'Choose how to order the list.',
+      actions: [
+        for (final option in const [
+          'Newest first',
+          'Oldest first',
+          'Name (A to Z)',
+        ])
+          D3ActionSheetAction(
+            label: option,
+            isSelected: option == _sort,
+            onPressedWithContext: (ctx) => D3ActionSheet.pop(ctx, option),
+          ),
+      ],
+    );
+    if (result != null) setState(() => _sort = result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        D3Button(
+          label: 'Sort by',
+          variant: D3ButtonVariant.outlined,
+          leadingIcon: Icons.sort_rounded,
+          onPressed: _open,
+        ),
+        const SizedBox(width: 12),
+        Flexible(child: Text('Sorted: $_sort')),
+      ],
+    );
+  }
+}''',
   'avatar/sizes_group.dart': r'''/// Every size, and a group that collapses into a "+N" count.
 class AvatarSizesExample extends StatelessWidget {
   const AvatarSizesExample({super.key});
@@ -57,6 +160,167 @@ class AvatarVariantsExample extends StatelessWidget {
             name: 'Barbara Liskov', indicator: D3AvatarIndicator.busy),
         const D3Avatar(
             name: 'Donald Knuth', indicator: D3AvatarIndicator.offline),
+      ],
+    );
+  }
+}''',
+  'badge/on_widgets.dart': r'''/// Badges overlaid on an icon button, an avatar and a tab-like row.
+class BadgeOnWidgetsExample extends StatelessWidget {
+  const BadgeOnWidgetsExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 24,
+      runSpacing: 16,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        D3Badge.on(
+          badge: const D3Badge.count(3, semanticsLabel: '3 notifications'),
+          child: IconButton(
+            tooltip: 'Notifications',
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {},
+          ),
+        ),
+        D3BadgeAnchor(
+          alignment: Alignment.bottomRight,
+          badge: const D3Badge.dot(
+            variant: D3BadgeVariant.success,
+            semanticsLabel: 'Online',
+          ),
+          child: const CircleAvatar(child: Text('AB')),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (label, count) in [
+              ('Inbox', 12),
+              ('Sent', 0),
+              ('Spam', 120)
+            ])
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(label),
+                    const SizedBox(width: 6),
+                    D3Badge.count(count, variant: D3BadgeVariant.neutral),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}''',
+  'badge/variants.dart': r'''/// Count, dot and label badges in each colour.
+class BadgeVariantsExample extends StatelessWidget {
+  const BadgeVariantsExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        D3Badge.count(3, semanticsLabel: '3 notifications'),
+        D3Badge.count(42),
+        D3Badge.count(150),
+        D3Badge.count(7, variant: D3BadgeVariant.primary),
+        D3Badge.count(0, showZero: true, variant: D3BadgeVariant.neutral),
+        D3Badge.dot(semanticsLabel: 'Unread'),
+        D3Badge.dot(variant: D3BadgeVariant.success, semanticsLabel: 'Online'),
+        D3Badge.label('New'),
+        D3Badge.label('Paid', variant: D3BadgeVariant.success),
+        D3Badge.label('Due soon', variant: D3BadgeVariant.warning),
+        D3Badge.label('Overdue', variant: D3BadgeVariant.error),
+        D3Badge.label('Draft', variant: D3BadgeVariant.neutral),
+      ],
+    );
+  }
+}''',
+  'banner/compact_and_title.dart': r'''/// A banner with a title, a compact one, and a custom icon.
+class BannerLayoutsExample extends StatelessWidget {
+  const BannerLayoutsExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        D3Banner(
+          variant: D3BannerVariant.warning,
+          title: 'Storage almost full',
+          message: 'Free up space or upgrade your plan to keep uploading.',
+        ),
+        SizedBox(height: 10),
+        D3Banner(
+          compact: true,
+          variant: D3BannerVariant.success,
+          message: 'Saved just now.',
+        ),
+        SizedBox(height: 10),
+        D3Banner(
+          icon: Icons.wifi_off_rounded,
+          title: 'No connection',
+          message: 'Showing the last downloaded results.',
+        ),
+      ],
+    );
+  }
+}''',
+  'banner/variants.dart': r'''/// The four banner tones, one with an action and one you can dismiss.
+class BannerVariantsExample extends StatefulWidget {
+  const BannerVariantsExample({super.key});
+
+  @override
+  State<BannerVariantsExample> createState() => _BannerVariantsExampleState();
+}
+
+class _BannerVariantsExampleState extends State<BannerVariantsExample> {
+  bool _showTip = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const D3Banner(message: 'Your trial ends in 3 days.'),
+        const SizedBox(height: 10),
+        const D3Banner(
+          variant: D3BannerVariant.success,
+          message: 'Backup finished. Everything is saved.',
+        ),
+        const SizedBox(height: 10),
+        D3Banner(
+          variant: D3BannerVariant.warning,
+          message: 'You are offline. Changes will sync later.',
+          action: D3BannerAction(label: 'Retry', onPressed: () {}),
+        ),
+        const SizedBox(height: 10),
+        const D3Banner(
+          variant: D3BannerVariant.error,
+          message: 'Payment failed. Update your card to keep access.',
+        ),
+        const SizedBox(height: 10),
+        if (_showTip)
+          D3Banner(
+            message: 'Tip: swipe a row to delete it.',
+            onDismiss: () => setState(() => _showTip = false),
+          )
+        else
+          Align(
+            alignment: Alignment.centerLeft,
+            child: D3Button(
+              label: 'Bring the tip back',
+              variant: D3ButtonVariant.outlined,
+              onPressed: () => setState(() => _showTip = true),
+            ),
+          ),
       ],
     );
   }
@@ -1799,6 +2063,153 @@ class PosterCardExample extends StatelessWidget {
     );
   }
 }''',
+  'progress/bar.dart': r'''/// Linear progress: determinate with a Start button, indeterminate, variants.
+class ProgressBarExample extends StatefulWidget {
+  const ProgressBarExample({super.key});
+
+  @override
+  State<ProgressBarExample> createState() => _ProgressBarExampleState();
+}
+
+class _ProgressBarExampleState extends State<ProgressBarExample>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _run = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 4),
+  );
+
+  @override
+  void dispose() {
+    _run.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AnimatedBuilder(
+          animation: _run,
+          builder: (context, _) => D3ProgressBar(
+            value: _run.value,
+            label: 'Uploading photos',
+            showValue: true,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: D3Button(
+            label: 'Start',
+            size: D3ButtonSize.sm,
+            onPressed: () => _run.forward(from: 0),
+          ),
+        ),
+        const SizedBox(height: 24),
+        const D3ProgressBar(value: null, label: 'Loading'),
+        const SizedBox(height: 24),
+        const D3ProgressBar(value: 0.8, variant: D3ProgressVariant.success),
+        const SizedBox(height: 12),
+        const D3ProgressBar(value: 0.5, variant: D3ProgressVariant.warning),
+        const SizedBox(height: 12),
+        const D3ProgressBar(
+          value: 0.25,
+          variant: D3ProgressVariant.error,
+          label: 'Storage almost full',
+          showValue: true,
+        ),
+      ],
+    );
+  }
+}''',
+  'progress/ring.dart': r'''/// Circular progress: determinate with centre text, indeterminate, sizes.
+class ProgressRingExample extends StatelessWidget {
+  const ProgressRingExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Wrap(
+      spacing: 24,
+      runSpacing: 16,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        D3ProgressRing(value: 0.65, size: 80, thickness: 8, showValue: true),
+        D3ProgressRing(
+          value: 0.4,
+          size: 72,
+          variant: D3ProgressVariant.success,
+          child: Icon(Icons.download_rounded),
+        ),
+        D3ProgressRing(value: null, label: 'Loading'),
+        D3ProgressRing(value: null, size: 24, thickness: 3),
+        D3ProgressRing(value: 0.9, size: 32, thickness: 4),
+      ],
+    );
+  }
+}''',
+  'quantity_stepper/variants.dart': r'''/// Quantity steppers: default, with a maximum, compact, disabled, and a price.
+class QuantityStepperExample extends StatefulWidget {
+  const QuantityStepperExample({super.key});
+
+  @override
+  State<QuantityStepperExample> createState() => _QuantityStepperExampleState();
+}
+
+class _QuantityStepperExampleState extends State<QuantityStepperExample> {
+  int _basic = 1;
+  int _limited = 2;
+  int _compact = 1;
+  int _items = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = (_items * 4.5).toStringAsFixed(2);
+    return Wrap(
+      spacing: 24,
+      runSpacing: 12,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        D3QuantityStepper(
+          value: _basic,
+          label: 'Quantity',
+          onChanged: (v) => setState(() => _basic = v),
+        ),
+        D3QuantityStepper(
+          value: _limited,
+          min: 1,
+          max: 5,
+          label: 'Tickets, 1 to 5',
+          onChanged: (v) => setState(() => _limited = v),
+        ),
+        D3QuantityStepper(
+          value: _compact,
+          compact: true,
+          label: 'Compact quantity',
+          onChanged: (v) => setState(() => _compact = v),
+        ),
+        const D3QuantityStepper(
+          value: 2,
+          label: 'Disabled quantity',
+          onChanged: null,
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            D3QuantityStepper(
+              value: _items,
+              min: 1,
+              label: 'Coffees',
+              onChanged: (v) => setState(() => _items = v),
+            ),
+            const SizedBox(width: 12),
+            Text('\$$total'),
+          ],
+        ),
+      ],
+    );
+  }
+}''',
   'radio/disabled.dart': r'''/// Disabled radios, selected and not selected.
 class RadioDisabledExample extends StatelessWidget {
   const RadioDisabledExample({super.key});
@@ -2467,6 +2878,53 @@ class _SlidableRowExampleState extends State<SlidableRowExample> {
             ),
           ),
         Text(_last),
+      ],
+    );
+  }
+}''',
+  'slider/variants.dart': r'''/// Sliders: plain, with steps and a value label, and disabled.
+class SliderVariantsExample extends StatefulWidget {
+  const SliderVariantsExample({super.key});
+
+  @override
+  State<SliderVariantsExample> createState() => _SliderVariantsExampleState();
+}
+
+class _SliderVariantsExampleState extends State<SliderVariantsExample> {
+  double _plain = 0.4;
+  double _steps = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        D3Slider(
+          value: _plain,
+          label: 'Brightness',
+          semanticsLabel: 'Brightness',
+          onChanged: (v) => setState(() => _plain = v),
+        ),
+        const SizedBox(height: 16),
+        D3Slider(
+          value: _steps,
+          min: 1,
+          max: 5,
+          divisions: 4,
+          label: 'Text size',
+          showValue: true,
+          valueFormatter: (v) => 'Size ${v.round()}',
+          onChanged: (v) => setState(() => _steps = v),
+        ),
+        const SizedBox(height: 16),
+        D3Slider(
+          value: 0.6,
+          label: 'Disabled',
+          showValue: true,
+          valueFormatter: (v) => '${(v * 100).round()}%',
+          enabled: false,
+          onChanged: (_) {},
+        ),
       ],
     );
   }

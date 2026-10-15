@@ -4,6 +4,9 @@ import 'deferred_page.dart';
 import 'page_model.dart';
 import 'pages/display_pages.dart' deferred as display;
 import 'pages/controls_overlay_pages.dart' deferred as controls;
+import 'pages/banner_badge_pages.dart' deferred as extras;
+import 'pages/progress_inputs_pages.dart' deferred as progress;
+import 'pages/action_sheet_page.dart' deferred as sheets;
 import 'pages/example_pages.dart' deferred as actions;
 import 'pages/inputs_text_pages.dart' deferred as inputs;
 import 'pages/nav_surface_pages.dart' deferred as nav;
@@ -511,6 +514,72 @@ final List<ShowcasePage> showcasePages = [
     builder: (_) => DeferredPage(
       load: patterns.loadLibrary,
       builder: (_) => patterns.PatternsPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'banner',
+    title: 'Banner',
+    group: ShowcaseGroup.feedback,
+    icon: Icons.campaign_outlined,
+    summary: 'A message that stays until it is dealt with.',
+    builder: (_) => DeferredPage(
+      load: extras.loadLibrary,
+      builder: (_) => extras.BannerPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'progress',
+    title: 'Progress',
+    group: ShowcaseGroup.feedback,
+    icon: Icons.linear_scale,
+    summary: 'Bar and ring, known or unknown.',
+    builder: (_) => DeferredPage(
+      load: progress.loadLibrary,
+      builder: (_) => progress.ProgressPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'badge',
+    title: 'Badge',
+    group: ShowcaseGroup.display,
+    icon: Icons.notifications_none_rounded,
+    summary: 'A count, dot or status pill, on anything.',
+    builder: (_) => DeferredPage(
+      load: extras.loadLibrary,
+      builder: (_) => extras.BadgePage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'slider',
+    title: 'Slider',
+    group: ShowcaseGroup.inputs,
+    icon: Icons.tune,
+    summary: 'Pick a value by dragging.',
+    builder: (_) => DeferredPage(
+      load: progress.loadLibrary,
+      builder: (_) => progress.SliderPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'quantity-stepper',
+    title: 'Quantity stepper',
+    group: ShowcaseGroup.inputs,
+    icon: Icons.exposure,
+    summary: 'Minus, value, plus, with hold to repeat.',
+    builder: (_) => DeferredPage(
+      load: progress.loadLibrary,
+      builder: (_) => progress.QuantityStepperPage(),
+    ),
+  ),
+  ShowcasePage(
+    id: 'action-sheet',
+    title: 'Action sheet',
+    group: ShowcaseGroup.overlays,
+    icon: Icons.view_agenda_outlined,
+    summary: 'A bottom sheet of thumb-sized actions.',
+    builder: (_) => DeferredPage(
+      load: sheets.loadLibrary,
+      builder: (_) => sheets.ActionSheetPage(),
     ),
   ),
 ];
