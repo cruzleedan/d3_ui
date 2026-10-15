@@ -200,9 +200,10 @@ void main() {
           ),
         ),
       );
-      final targets = find.byType(InkWell);
-      final left = tester.getRect(targets.at(0));
-      final right = tester.getRect(targets.at(1));
+      // The tap region is the whole chip box; the InkWell inside it is only the
+      // visible pill (so the ripple stays on it).
+      final left = tester.getRect(find.byType(D3Chip).at(0));
+      final right = tester.getRect(find.byType(D3Chip).at(1));
       _minimum(left);
       _minimum(right);
       expect(left.overlaps(right), isFalse);

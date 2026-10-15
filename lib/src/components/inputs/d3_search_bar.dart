@@ -278,6 +278,7 @@ class _D3SearchBarState extends State<D3SearchBar> {
               child: Material(
                 type: MaterialType.transparency,
                 child: InkWell(
+                  excludeFromSemantics: true,
                   borderRadius: BorderRadius.circular(D3Radius.full),
                   splashColor: colors.primary.withValues(alpha: 0.14),
                   highlightColor: colors.primary.withValues(alpha: 0.08),

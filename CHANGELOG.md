@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **Fix** tap targets and ripples: every tappable widget now has a tap region of
+  at least 48 x 48 dp even where its visual is smaller (`D3Button` xs/sm/md and
+  icon-only, `D3Chip`, `D3HyperlinkButton` (new `inline` opt-out for links in
+  running text), `D3ScrimIconButton`, `D3SplitButton` segments, the nav bar
+  centre action, `D3ListTile`, `D3Card` and `D3ExpandableSection` headers when
+  tappable). The new `D3PaddedTapTarget` does this without changing the visual.
+  Text and decimal fields focus from anywhere in their box. Ripples are confined
+  to the visible shape: `D3Chip` is now a pill-shaped Material, `D3NavBar` items
+  ripple inside the pill, and `D3QuantityStepper` stays inside its pill.
+  Layout: `D3Button` xs/sm/md now occupy 48 dp of height. `test/audit/` holds
+  asserting audits for both.
 - **New widgets** (mobile first, from the theme's tokens, 48 dp targets, text
   scale 1.5, reduced motion): `D3Rating` (display with half stars and input with
   tap, drag and keyboard), `D3OtpField` (one real text field behind the cells, so

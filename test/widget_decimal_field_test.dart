@@ -26,9 +26,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        _wrap(
-          const D3DecimalField(label: 'Amount', initialValue: 1234.5),
-        ),
+        _wrap(const D3DecimalField(label: 'Amount', initialValue: 1234.5)),
       );
       expect(find.text('1234.50'), findsOneWidget);
     });

@@ -177,13 +177,13 @@ class D3Chip extends StatelessWidget {
 
     final Color bg;
     final Color fg;
-    final Border? border;
+    final BorderSide side;
 
     switch (effectiveVariant) {
       case D3ChipVariant.filled:
         bg = backgroundColor ?? colors.primary;
         fg = foregroundColor ?? colors.onPrimary;
-        border = null;
+        side = BorderSide.none;
       case D3ChipVariant.tonal:
         bg = backgroundColor ?? colors.primaryContainer;
         // The default fill is translucent: judge contrast on what shows.
@@ -193,56 +193,63 @@ class D3Chip extends StatelessWidget {
               colors.onPrimaryContainer,
               Color.alphaBlend(bg, colors.surface),
             );
-        border = null;
+        side = BorderSide.none;
       case D3ChipVariant.outlined:
         bg = backgroundColor ?? Colors.transparent;
         fg = foregroundColor ?? colors.onSurfaceVariant;
-        border = Border.all(
-          color: foregroundColor ?? colors.outline,
-          width: 0.5,
-        );
+        side = BorderSide(color: foregroundColor ?? colors.outline, width: 0.5);
     }
 
-    final chip = DecoratedBox(
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: D3Radius.circularFull,
-        border: border,
+    // The chip is a Material in the chip's own shape, with the ink inside it, so
+    // a press ripples over the visible pill and nowhere else, even though the tap
+    // region (below) is a full 48 dp.
+    const shape = StadiumBorder();
+    final padded = Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: D3Spacing.s12,
+        vertical: D3Spacing.s6,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: D3Spacing.s12,
-          vertical: D3Spacing.s6,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Checkmark when selected (color-blind-safe); otherwise leadingIcon.
-            if (selected) ...[
-              Icon(Icons.check_rounded, size: 13, color: fg),
-              const SizedBox(width: D3Spacing.s4),
-            ] else if (leadingIcon != null) ...[
-              Icon(leadingIcon, size: 14, color: fg),
-              const SizedBox(width: D3Spacing.s4),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: D3TypeScale.labelMdSize,
-                fontWeight: FontWeight.w500,
-                color: fg,
-                height: 1.0,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (trailingIcon != null) ...[
-              const SizedBox(width: D3Spacing.s4),
-              Icon(trailingIcon, size: 14, color: fg),
-            ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Checkmark when selected (color-blind-safe); otherwise leadingIcon.
+          if (selected) ...[
+            Icon(Icons.check_rounded, size: 13, color: fg),
+            const SizedBox(width: D3Spacing.s4),
+          ] else if (leadingIcon != null) ...[
+            Icon(leadingIcon, size: 14, color: fg),
+            const SizedBox(width: D3Spacing.s4),
           ],
-        ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: D3TypeScale.labelMdSize,
+              fontWeight: FontWeight.w500,
+              color: fg,
+              height: 1.0,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (trailingIcon != null) ...[
+            const SizedBox(width: D3Spacing.s4),
+            Icon(trailingIcon, size: 14, color: fg),
+          ],
+        ],
       ),
+    );
+
+    final chip = Material(
+      color: bg,
+      shape: StadiumBorder(side: side),
+      child: _interactive
+          ? InkWell(
+              customBorder: shape,
+              excludeFromSemantics: true,
+              onTap: _tap,
+              child: padded,
+            )
+          : padded,
     );
 
     if (!enabled) {
@@ -254,18 +261,30 @@ class D3Chip extends StatelessWidget {
 
     if (!_interactive) return chip;
 
+    // The 48 dp tap region is the whole box; the ripple is only on the pill.
     return Semantics(
       label: semanticsLabel ?? label,
       button: true,
       selected: selected,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap!();
-        },
-        borderRadius: D3Radius.circularFull,
-        child: D3TapTarget(child: chip),
+      // A Stack, not nested detectors: a press on the pill reaches only the
+      // InkWell above (so it ripples at once), a press in the margin reaches only
+      // the detector below.
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _tap,
+            ),
+          ),
+          D3TapTarget(child: chip),
+        ],
       ),
     );
+  }
+
+  void _tap() {
+    HapticFeedback.lightImpact();
+    onTap!();
   }
 }

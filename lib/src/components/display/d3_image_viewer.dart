@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/src/components/display/helpers/d3_local_image.dart';
 import 'package:d3_ui/src/tokens/d3_spacing.dart';
@@ -309,12 +308,13 @@ class D3ImageViewerState extends State<D3ImageViewer>
     _animateZoomTo(controller, target);
   }
 
-  late final AnimationController _snapBack = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 200),
-  )..addListener(() {
-      setState(() => _dragDy = _snapBackStart * (1 - _snapBack.value));
-    });
+  late final AnimationController _snapBack =
+      AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 200),
+      )..addListener(() {
+        setState(() => _dragDy = _snapBackStart * (1 - _snapBack.value));
+      });
 
   /// [_dragDy] at the moment a snap-back animation starts -- read by the
   /// listener above on every tick. A field rather than a captured local
@@ -759,7 +759,8 @@ class _D3ViewerPage extends StatelessWidget {
         builder: (context, constraints) {
           Offset? doubleTapPosition;
           return GestureDetector(
-            onDoubleTapDown: (details) => doubleTapPosition = details.localPosition,
+            onDoubleTapDown: (details) =>
+                doubleTapPosition = details.localPosition,
             onDoubleTap: () {
               final position = doubleTapPosition;
               if (position == null || onDoubleTap == null) return;

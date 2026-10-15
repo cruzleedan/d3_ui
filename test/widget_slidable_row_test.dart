@@ -16,7 +16,9 @@ void main() {
         _wrap(
           D3SlidableRow(
             groupTag: 'test',
-            actions: [D3SwipeAction(icon: Icons.delete_outline, onPressed: () {})],
+            actions: [
+              D3SwipeAction(icon: Icons.delete_outline, onPressed: () {}),
+            ],
             child: const Text('Row content'),
           ),
         ),
@@ -62,7 +64,11 @@ void main() {
           D3SlidableRow(
             groupTag: 'test',
             actions: [
-              D3SwipeAction(icon: Icons.edit_outlined, label: 'Edit', onPressed: () {}),
+              D3SwipeAction(
+                icon: Icons.edit_outlined,
+                label: 'Edit',
+                onPressed: () {},
+              ),
               D3SwipeAction(
                 icon: Icons.delete_outline,
                 label: 'Delete',

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
@@ -166,7 +168,12 @@ class D3ListTile extends StatelessWidget {
         : colors.onSurfaceVariant.withValues(alpha: 0.38);
 
     Widget content = ConstrainedBox(
-      constraints: BoxConstraints(minHeight: minHeight),
+      // A tappable row is never shorter than the 48 dp tap-target minimum.
+      constraints: BoxConstraints(
+        minHeight: _isInteractive
+            ? math.max(minHeight, kMinInteractiveDimension)
+            : minHeight,
+      ),
       child: Padding(
         padding:
             contentPadding ??

@@ -22,9 +22,7 @@ void main() {
       expect(find.text('Pick a date'), findsOneWidget);
     });
 
-    testWidgets('renders initialValue as ISO date by default', (
-      tester,
-    ) async {
+    testWidgets('renders initialValue as ISO date by default', (tester) async {
       await tester.pumpWidget(
         _wrap(
           D3DateField(label: 'Due date', initialValue: DateTime(2026, 9, 4)),
@@ -108,12 +106,7 @@ void main() {
 
     testWidgets('does not open the picker when disabled', (tester) async {
       await tester.pumpWidget(
-        _wrap(
-          const D3DateField(
-            label: 'Due date',
-            isEnabled: false,
-          ),
-        ),
+        _wrap(const D3DateField(label: 'Due date', isEnabled: false)),
       );
 
       await tester.tap(find.byType(D3DateField));
@@ -124,12 +117,7 @@ void main() {
 
     testWidgets('does not open the picker when read-only', (tester) async {
       await tester.pumpWidget(
-        _wrap(
-          const D3DateField(
-            label: 'Due date',
-            isReadOnly: true,
-          ),
-        ),
+        _wrap(const D3DateField(label: 'Due date', isReadOnly: true)),
       );
 
       await tester.tap(find.byType(D3DateField));

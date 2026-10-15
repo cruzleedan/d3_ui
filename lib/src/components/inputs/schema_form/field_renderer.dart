@@ -186,13 +186,14 @@ class _LabeledSegmentedControl extends StatelessWidget {
       children: [
         Text(
           field.label,
-          style: Theme.of(
-            context,
-          ).textTheme.labelMedium?.copyWith(color: colors.onSurfaceVariant),
+          style: Theme.of(context).textTheme.labelMedium
+              ?.copyWith(color: colors.onSurfaceVariant),
         ),
         const SizedBox(height: 6),
         D3SegmentedControl<String>(
-          segments: [for (final o in items) D3Segment(value: o.value, label: o.label)],
+          segments: [
+            for (final o in items) D3Segment(value: o.value, label: o.label),
+          ],
           selected: value,
           expand: true,
           onChanged: field.isEnabled ? onChanged : (_) {},

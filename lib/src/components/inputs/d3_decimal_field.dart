@@ -267,86 +267,94 @@ class _D3DecimalFieldState extends State<D3DecimalField>
         const SizedBox(height: D3Spacing.s6),
 
         // Input container
-        AnimatedContainer(
-          duration: tokens.borderAnimDuration,
-          decoration: BoxDecoration(
-            color: style.backgroundColor,
-            borderRadius: BorderRadius.circular(tokens.radius),
-            border: Border.all(
-              color: style.borderColor,
-              width: style.borderWidth,
-              strokeAlign: BorderSide.strokeAlignInside,
+        // The whole box focuses the field, not only the 24 dp line of text in
+        // its middle (buttons and the text itself still take their own taps).
+        GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            if (widget.isEnabled) _focusNode.requestFocus();
+          },
+          child: AnimatedContainer(
+            duration: tokens.borderAnimDuration,
+            decoration: BoxDecoration(
+              color: style.backgroundColor,
+              borderRadius: BorderRadius.circular(tokens.radius),
+              border: Border.all(
+                color: style.borderColor,
+                width: style.borderWidth,
+                strokeAlign: BorderSide.strokeAlignInside,
+              ),
             ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (prefix != null)
-                Padding(
-                  padding: EdgeInsets.only(left: tokens.paddingH),
-                  child: _slot(prefix),
-                ),
-              Expanded(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: tokens.minHeight),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: prefix != null
-                          ? D3Spacing.s8
-                          : tokens.paddingH,
-                      vertical: tokens.paddingV,
-                    ),
-                    child: TextField(
-                      controller: _controller,
-                      focusNode: _focusNode,
-                      enabled: widget.isEnabled,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (prefix != null)
+                  Padding(
+                    padding: EdgeInsets.only(left: tokens.paddingH),
+                    child: _slot(prefix),
+                  ),
+                Expanded(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: tokens.minHeight),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: prefix != null
+                            ? D3Spacing.s8
+                            : tokens.paddingH,
+                        vertical: tokens.paddingV,
                       ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(
-                            r'^\d*\.?\d{0,'
-                            '${widget.decimalPlaces}'
-                            r'}',
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        enabled: widget.isEnabled,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(
+                              r'^\d*\.?\d{0,'
+                              '${widget.decimalPlaces}'
+                              r'}',
+                            ),
                           ),
-                        ),
-                        if (widget.maxValue != null)
-                          _MaxValueFormatter(widget.maxValue!),
-                      ],
-                      onChanged: (v) {
-                        widget.onChanged?.call(double.tryParse(v) ?? 0.0);
-                      },
-                      style: TextStyle(
-                        fontSize: tokens.textSize,
-                        color: colors.onSurface,
-                        height: 1.4,
-                      ),
-                      cursorColor: colors.primary,
-                      decoration: InputDecoration(
-                        hintText: widget.hintText,
-                        hintStyle: TextStyle(
+                          if (widget.maxValue != null)
+                            _MaxValueFormatter(widget.maxValue!),
+                        ],
+                        onChanged: (v) {
+                          widget.onChanged?.call(double.tryParse(v) ?? 0.0);
+                        },
+                        style: TextStyle(
                           fontSize: tokens.textSize,
-                          color: colors.onSurfaceVariant,
+                          color: colors.onSurface,
+                          height: 1.4,
                         ),
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
+                        cursorColor: colors.primary,
+                        decoration: InputDecoration(
+                          hintText: widget.hintText,
+                          hintStyle: TextStyle(
+                            fontSize: tokens.textSize,
+                            color: colors.onSurfaceVariant,
+                          ),
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              if (suffix != null)
-                Padding(
-                  padding: EdgeInsets.only(right: tokens.paddingH),
-                  child: suffix,
-                ),
-            ],
+                if (suffix != null)
+                  Padding(
+                    padding: EdgeInsets.only(right: tokens.paddingH),
+                    child: suffix,
+                  ),
+              ],
+            ),
           ),
         ),
 

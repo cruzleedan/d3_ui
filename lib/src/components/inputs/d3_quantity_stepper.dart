@@ -187,6 +187,7 @@ class _D3QuantityStepperState extends State<D3QuantityStepper> {
               dimmedOpacity: dim,
               color: iconColor,
               iconSize: compact ? 18 : 20,
+              rippleRadius: compact ? 14 : 18,
               onStep: () => _stepBy(-1),
             ),
             valueText,
@@ -197,6 +198,7 @@ class _D3QuantityStepperState extends State<D3QuantityStepper> {
               dimmedOpacity: dim,
               color: iconColor,
               iconSize: compact ? 18 : 20,
+              rippleRadius: compact ? 14 : 18,
               onStep: () => _stepBy(1),
             ),
           ],
@@ -259,6 +261,7 @@ class _StepButton extends StatefulWidget {
     required this.dimmedOpacity,
     required this.color,
     required this.iconSize,
+    required this.rippleRadius,
     required this.onStep,
   });
 
@@ -268,6 +271,9 @@ class _StepButton extends StatefulWidget {
   final double dimmedOpacity;
   final Color color;
   final double iconSize;
+
+  /// Half the visible pill height, so the ripple stays inside the pill.
+  final double rippleRadius;
 
   /// Performs one step; returns whether more steps are possible.
   final bool Function() onStep;
@@ -335,7 +341,7 @@ class _StepButtonState extends State<_StepButton> {
                     if (!_repeated) widget.onStep();
                   }
                 : null,
-            radius: 22,
+            radius: widget.rippleRadius,
             highlightShape: BoxShape.circle,
             child: SizedBox(
               width: kMinInteractiveDimension,

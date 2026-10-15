@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
+import '../inputs/helpers/d3_tap_target.dart';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Enums
 // ─────────────────────────────────────────────────────────────────────────────
@@ -205,6 +207,12 @@ class _D3ButtonState extends State<D3Button> {
     if (!widget._isInteractive && effectiveState != D3ButtonState.loading) {
       shell = Opacity(opacity: tokens.disabledOpacity, child: shell);
     }
+
+    // ── Tap region ───────────────────────────────────────────────────────────
+    // The smaller sizes are visually 30 to 46 dp tall but always have a 48 x 48
+    // dp tap region (as Material's buttons do). The ripple stays inside the
+    // button's own shape.
+    shell = D3PaddedTapTarget(child: shell);
 
     // ── Full width ───────────────────────────────────────────────────────────
     if (widget.isFullWidth) {

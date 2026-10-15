@@ -3,7 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 Widget _wrap(Widget child) {
-  return MaterialApp(theme: D3AppTheme.light(), home: Scaffold(body: child));
+  return MaterialApp(
+    theme: D3AppTheme.light(),
+    home: Scaffold(body: child),
+  );
 }
 
 void main() {
@@ -32,10 +35,7 @@ void main() {
         'unchanged from before this parameter existed', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          const D3PhotoGallery(
-            photoPaths: ['a.png'],
-            itemLabel: 'Test item',
-          ),
+          const D3PhotoGallery(photoPaths: ['a.png'], itemLabel: 'Test item'),
         ),
       );
 
@@ -98,10 +98,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          const D3PhotoGallery(
-            photoPaths: ['a.png'],
-            itemLabel: 'Test item',
-          ),
+          const D3PhotoGallery(photoPaths: ['a.png'], itemLabel: 'Test item'),
         ),
       );
 
@@ -169,10 +166,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          const D3PhotoGallery(
-            photoPaths: ['a.png'],
-            itemLabel: 'Test item',
-          ),
+          const D3PhotoGallery(photoPaths: ['a.png'], itemLabel: 'Test item'),
         ),
       );
       await tester.pumpAndSettle();

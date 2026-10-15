@@ -224,10 +224,9 @@ class _ExpandingFabOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
-    final fabCenter = fabTopLeft + const Offset(
-      D3ExpandingFab._size / 2,
-      D3ExpandingFab._size / 2,
-    );
+    final fabCenter =
+        fabTopLeft +
+        const Offset(D3ExpandingFab._size / 2, D3ExpandingFab._size / 2);
 
     return AnimatedBuilder(
       animation: progress,
