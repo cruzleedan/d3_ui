@@ -14,6 +14,7 @@ import 'pages/example_pages.dart' deferred as actions;
 import 'pages/inputs_text_pages.dart' deferred as inputs;
 import 'pages/nav_surface_pages.dart' deferred as nav;
 import 'pages/patterns_page.dart' deferred as patterns;
+import 'pages/components_page.dart';
 import 'pages/overview_page.dart';
 import 'pages/theme_page.dart';
 
@@ -21,11 +22,19 @@ import 'pages/theme_page.dart';
 final List<ShowcasePage> showcasePages = [
   ShowcasePage(
     id: 'overview',
-    title: 'Overview',
+    title: 'Home',
     group: ShowcaseGroup.start,
     icon: Icons.home_outlined,
     summary: 'What d3_ui is.',
     builder: (_) => const OverviewPage(),
+  ),
+  ShowcasePage(
+    id: 'components',
+    title: 'Components',
+    group: ShowcaseGroup.start,
+    icon: Icons.widgets_outlined,
+    summary: 'Every component, by group.',
+    builder: (_) => const ComponentsPage(),
   ),
   ShowcasePage(
     id: 'theme',

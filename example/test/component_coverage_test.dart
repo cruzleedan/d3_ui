@@ -53,7 +53,8 @@ void main() {
 
   test('every example file is used by a page', () {
     final pages = StringBuffer();
-    for (final file in Directory('lib/showcase/pages').listSync().whereType<File>()) {
+    for (final file
+        in Directory('lib/showcase/pages').listSync().whereType<File>()) {
       pages.writeln(file.readAsStringSync());
     }
     final unused = [
@@ -62,8 +63,8 @@ void main() {
           .whereType<File>()
           .where((f) => f.path.endsWith('.dart')))
         if (!pages.toString().contains(
-          "'${file.path.replaceFirst('lib/examples/', '')}'",
-        ))
+              "'${file.path.replaceFirst('lib/examples/', '')}'",
+            ))
           file.path,
     ];
     expect(unused, isEmpty, reason: 'No page shows these examples: $unused');

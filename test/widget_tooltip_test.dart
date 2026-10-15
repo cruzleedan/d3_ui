@@ -217,4 +217,57 @@ void main() {
   });
 }
 
-void _noop() {}
+void _noop() {
+  testWidgets('a press cancels a tooltip that is still waiting to appear', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: D3AppTheme.light(),
+        home: const Scaffold(
+          body: Center(
+            child: D3Tooltip(message: 'Hint', child: Text('target')),
+          ),
+        ),
+      ),
+    );
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    addTearDown(mouse.removePointer);
+    await mouse.moveTo(tester.getCenter(find.text('target')));
+    await tester.pump(const Duration(milliseconds: 100)); // delay not over
+    await mouse.down(tester.getCenter(find.text('target')));
+    await mouse.up();
+    await tester.pump(const Duration(seconds: 1)); // past the delay
+    await tester.pumpAndSettle();
+    expect(find.text('Hint'), findsNothing);
+  });
+
+  testWidgets('leaving and re-entering right after a press does not show it '
+      '(a menu opening over the target)', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: D3AppTheme.light(),
+        home: const Scaffold(
+          body: Center(
+            child: D3Tooltip(message: 'Hint', child: Text('target')),
+          ),
+        ),
+      ),
+    );
+    final centre = tester.getCenter(find.text('target'));
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    addTearDown(mouse.removePointer);
+    await mouse.moveTo(centre);
+    await mouse.down(centre);
+    await mouse.up();
+    // The press opened something over the target: the pointer leaves, re-enters.
+    await mouse.moveTo(const Offset(5, 5));
+    await tester.pump(const Duration(milliseconds: 100));
+    await mouse.moveTo(centre);
+    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pumpAndSettle();
+    expect(find.text('Hint'), findsNothing);
+  });
+}

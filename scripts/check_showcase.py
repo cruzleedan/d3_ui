@@ -151,12 +151,38 @@ def run_flow(browser, port, page_id, steps, width):
             else:
                 page.keyboard.press(name)
             page.wait_for_timeout(1200)
-            behind = page.get_by_role("button", name=re.compile("^(Overview|Open navigation menu)$"))
+            behind = page.get_by_role("button", name=re.compile("^(Home|Overview|Open navigation menu)"))
             # A modal hides the page behind it, or (inside the Places frame) shows
             # its own Cancel button while the showcase navigation stays visible.
             is_open = behind.count() == 0 or page.get_by_role("button", name=re.compile("^Cancel")).count() > 0
             if is_open != bool(wants_open):
                 return problems + [f"after {action} {name!r}: expected {'an overlay' if wants_open else 'no overlay'}"]
+        return problems
+    except Exception as e:
+        return [f"{type(e).__name__}: {str(e)[:160]}"]
+    finally:
+        if page:
+            page.close()
+
+
+def run_search_flow(browser, port, width):
+    """Search: the shortcut (wide) or the app-bar icon (phone), a synonym, a result."""
+    page = None
+    try:
+        page, problems = open_page(browser, port, "page=button&theme=light&brand=blue", width)
+        enable_semantics(page)
+        if width >= 900:
+            page.mouse.click(width // 2, 400)
+            page.keyboard.press("Control+k")
+        else:
+            page.get_by_role("button", name="Search").first.click()
+        page.wait_for_timeout(1000)
+        page.keyboard.type("snack")  # a synonym of Toast
+        page.wait_for_timeout(900)
+        page.keyboard.press("Enter")
+        page.wait_for_timeout(1500)
+        if not page.url.split("?")[0].endswith("/toast"):
+            return problems + [f"searching 'snack' did not open Toast (at {page.url})"]
         return problems
     except Exception as e:
         return [f"{type(e).__name__}: {str(e)[:160]}"]
@@ -179,6 +205,10 @@ def check_flows(args):
             if problems:
                 problems = run_flow(browser, port, page_id, steps, width)
             results.append(((f"flow {page_id}", width), problems))
+        problems = run_search_flow(browser, port, width)
+        if problems:
+            problems = run_search_flow(browser, port, width)
+        results.append((("flow search", width), problems))
         browser.close()
     server.shutdown()
     return results
