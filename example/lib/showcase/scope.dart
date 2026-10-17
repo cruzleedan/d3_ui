@@ -13,6 +13,9 @@ class ShowcaseScope extends InheritedWidget {
     required this.themeMode,
     required this.onBrandChanged,
     required this.onThemeModeChanged,
+    required this.textScale,
+    required this.onTextScaleChanged,
+    required this.systemTextScaler,
     required this.brandThemes,
     this.embed = false,
     required super.child,
@@ -26,6 +29,13 @@ class ShowcaseScope extends InheritedWidget {
   final ValueChanged<ShowcaseBrand> onBrandChanged;
   final ValueChanged<ThemeMode> onThemeModeChanged;
   final Map<String, BrandThemes> brandThemes;
+
+  /// The system text size being mimicked (1.0 = the device's own).
+  final double textScale;
+  final ValueChanged<double> onTextScaleChanged;
+
+  /// The device's own text scaler, which the showcase's controls keep.
+  final TextScaler systemTextScaler;
 
   /// Shown alone in a frame (`?embed=1`): pages drop their own headings.
   final bool embed;
@@ -44,6 +54,7 @@ class ShowcaseScope extends InheritedWidget {
       pageId != old.pageId ||
       brand != old.brand ||
       themeMode != old.themeMode ||
+      textScale != old.textScale ||
       brandThemes != old.brandThemes;
 }
 

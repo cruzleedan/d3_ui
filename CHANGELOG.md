@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Showcase** text size: an "Aa" control (rail, and the app bar on a phone)
+  mimics the device's font-size setting from 85% to 200%, so every component
+  and label can be seen at larger system text sizes. It scales the page,
+  dialogs, sheets and toasts, leaves the showcase's own controls readable, shows
+  a "Text size N% / Reset" pill while on, and is in the address as `?text=1.5`.
 - **Fix** large system text in compact controls: `D3NavBar` labels wrap to two
   lines (and stop growing at 1.5x) instead of being cut to one; `D3SegmentedControl`
   grows taller and wraps a label to two lines; `D3QuantityStepper`'s number stops

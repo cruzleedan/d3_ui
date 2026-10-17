@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:d3_ui_example/showcase/app.dart';
 import 'package:d3_ui_example/showcase/brands.dart';
 import 'package:d3_ui_example/showcase/params.dart';
+import 'package:d3_ui_example/showcase/text_size.dart';
 import 'package:d3_ui_example/showcase/scope.dart';
 import 'package:d3_ui_example/showcase/shell.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,6 +45,42 @@ void main() {
       expect(back.themeMode, ThemeMode.light);
       expect(back.brand, 'green');
       expect(back.embed, isTrue);
+    });
+  });
+
+  group('text size', () {
+    test('is in the address only when it differs, and round-trips', () {
+      expect(
+        showcaseLocation(
+          page: 'button',
+          themeMode: ThemeMode.system,
+          brand: 'blue',
+          textScale: 1.0,
+        ).toString(),
+        '/button',
+      );
+      final uri = showcaseLocation(
+        page: 'button',
+        themeMode: ThemeMode.system,
+        brand: 'blue',
+        textScale: 1.5,
+      );
+      expect(uri.queryParameters, {'text': '1.5'});
+      expect(ShowcaseParams.fromUri(uri).textScale, 1.5);
+    });
+
+    test('ignores values that are not a sensible scale', () {
+      for (final bad in ['abc', '0', '9', '-1', '']) {
+        expect(
+            ShowcaseParams.fromUri(Uri.parse('/?text=$bad')).textScale, isNull);
+      }
+    });
+
+    test('the menu steps are 85% to 200%, and nearest snaps to one', () {
+      expect(ShowcaseTextSize.all.first.percent, '85%');
+      expect(ShowcaseTextSize.all.last.percent, '200%');
+      expect(ShowcaseTextSize.nearest(1.4).scale, 1.3);
+      expect(ShowcaseTextSize.nearest(1.0).label, 'Default');
     });
   });
 
@@ -109,6 +146,27 @@ void main() {
       final scope = await open(tester, '/?page=chip&brand=terracotta');
       expect(scope.pageId, 'chip');
       expect(scope.brand.id, 'terracotta');
+      await settle(tester);
+    });
+
+    testWidgets('?text= scales the page but not the showcase controls', (
+      tester,
+    ) async {
+      final scope = await open(tester, '/chip?text=2');
+      expect(scope.textScale, 2.0);
+      await settle(tester);
+      final page = tester.element(find.text('Text size 200%'));
+      expect(MediaQuery.textScalerOf(page).scale(10), 10);
+      final body = tester.element(find.byType(AnimatedSwitcher));
+      expect(MediaQuery.textScalerOf(body).scale(10), 20);
+      // The way back is on the page.
+      await tester.tap(find.text('Reset'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        ShowcaseScope.of(tester.element(find.byType(ShowcaseShell))).textScale,
+        1.0,
+      );
       await settle(tester);
     });
 
