@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Showcase** the engine (`canvaskit.wasm`, 2 MB) now lives in
+  `canvaskit-<hash>/`, a name that changes with the engine, so a host can cache it
+  for a year as immutable without ever serving an old wasm to a new app. The
+  build script renames the folder and updates the page and loader.
 - **Showcase** faster first load: the bundled Roboto fonts are subset to Latin and
   unhinted (811 KB down to about 120 KB, and hosts send fonts uncompressed), the
   unused Light weight is gone, the first frame no longer waits for the code
