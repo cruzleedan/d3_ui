@@ -301,7 +301,10 @@ class _NavBarItem extends StatelessWidget {
       label: item.semanticsLabel ?? item.label,
       selected: isSelected,
       button: true,
+      // Centred: a Stack aligns a loosely sized child top-left, which put each
+      // item at the left edge of its cell.
       child: Stack(
+        alignment: Alignment.center,
         children: [
           Positioned.fill(
             child: GestureDetector(

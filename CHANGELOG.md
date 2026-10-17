@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Fix** `D3NavBar` items sat at the left edge of their cells instead of the middle
+  (a regression from the 48 dp tap-target change: a `Stack` aligns a loosely sized
+  child top-left). They are centred again; a test checks each item against its
+  share of the bar.
 - **Showcase** the engine (`canvaskit.wasm`, 2 MB) now lives in
   `canvaskit-<hash>/`, a name that changes with the engine, so a host can cache it
   for a year as immutable without ever serving an old wasm to a new app. The
