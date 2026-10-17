@@ -12,8 +12,10 @@ Future<void> main() async {
   // shared link opens that page (the host serves index.html for any path).
   usePathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
-  final loaded =
-      await Future.wait([loadBrandThemes(), CodeHighlighting.load()]);
-  final brandThemes = loaded[0] as Map<String, BrandThemes>;
+  // The first frame waits only for the brand themes. The code highlighter
+  // (a grammar to parse and four small files) loads in the background; until
+  // it is ready the code shows as plain text and then repaints with colour.
+  unawaited(CodeHighlighting.load());
+  final brandThemes = await loadBrandThemes();
   runApp(ShowcaseApp(brandThemes: brandThemes, initialUri: Uri.base));
 }

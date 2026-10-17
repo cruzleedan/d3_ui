@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Showcase** faster first load: the bundled Roboto fonts are subset to Latin and
+  unhinted (811 KB down to about 120 KB, and hosts send fonts uncompressed), the
+  unused Light weight is gone, the first frame no longer waits for the code
+  highlighter (code shows plain, then in colour), the two large downloads are
+  preloaded, and the splash has a progress bar. First-load transfer is about
+  3.3 MB, from about 4.0 MB.
 - **Showcase** text size: an "Aa" control (rail, and the app bar on a phone)
   mimics the device's font-size setting from 85% to 200%, so every component
   and label can be seen at larger system text sizes. It scales the page,
