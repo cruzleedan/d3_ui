@@ -39,6 +39,36 @@ ls "$BUILD"/main.dart.* >/dev/null 2>&1 || { echo "No main.dart.* in $BUILD"; ex
 # glyphs no bundled font has).
 [ -d "$BUILD/canvaskit" ] || { echo "No canvaskit/ in $BUILD (was --no-web-resources-cdn dropped?)"; exit 1; }
 
+# Put the engine under a name that changes with it (canvaskit-<hash>/), so a host
+# can cache it for a year as immutable: the 2 MB canvaskit.wasm must match the
+# engine inside main.dart.js, and a fixed path cannot be cached for long without
+# serving an old wasm to a new app. The page and the loader point at the new name
+# (the service worker lists no engine files).
+python3 - "$BUILD" <<'PY'
+import hashlib, pathlib, re, sys
+build = pathlib.Path(sys.argv[1])
+wasm = build / "canvaskit/chromium/canvaskit.wasm"
+h = hashlib.sha256(wasm.read_bytes() + (build / "canvaskit/chromium/canvaskit.js").read_bytes()).hexdigest()[:10]
+new = f"canvaskit-{h}"
+for old in build.glob("canvaskit-*"):  # left by an earlier build into the same folder
+    __import__("shutil").rmtree(old)
+(build / "canvaskit").rename(build / new)
+for name in ["index.html", "flutter_service_worker.js"]:  # the worker only if it lists any
+    f = build / name
+    t = f.read_text()
+    f.write_text(t.replace("canvaskit/", new + "/"))
+f = build / "flutter_bootstrap.js"
+t = f.read_text()
+patched, n = re.subn(r':"canvaskit"\}', f':"{new}"}}', t)
+if n != 1:
+    sys.exit("flutter_bootstrap.js: expected one default canvaskit base, found %d" % n)
+f.write_text(patched)
+for name in ["index.html", "flutter_bootstrap.js"]:
+    if new not in (build / name).read_text():
+        sys.exit(f"{name} does not point at {new}")
+print(f"engine is now {new}/")
+PY
+
 # Poster screenshots for the portfolio, taken from this very build so they never
 # go stale. Needs Playwright (see scripts/make_showcase_assets.py); skipped, with
 # a warning, when it is not installed.

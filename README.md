@@ -32,6 +32,14 @@ shared, and the browser's back, forward and reload work (the app uses
 Older links of the form `/?page=dialog&brand=green` are redirected to
 `/dialog?brand=green`. The host must serve `index.html` for any path.
 
+**Caching.** The build puts the engine in `canvaskit-<hash>/` (the hash changes
+with the engine), so a host can send `Cache-Control: public, max-age=31536000,
+immutable` for `/canvaskit-*/*`. Keep `no-cache` (revalidate) for `index.html`,
+`flutter_bootstrap.js`, `flutter_service_worker.js`, `version.json` and
+`main.dart.js*`, which keep fixed names. Compress `.js`, `.wasm` and `.json`
+with Brotli; fonts (`.ttf`, `.otf`) are sent as they are unless the host
+compresses them too.
+
 `example/` is the app. It also builds for the web:
 
 ```bash
