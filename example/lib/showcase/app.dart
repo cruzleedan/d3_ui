@@ -106,11 +106,19 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
   ThemeMode get _themeMode => _params.themeMode ?? ThemeMode.system;
   String get _pageId => pageForId(_params.page).id;
 
-  String _location({String? page, ShowcaseBrand? brand, ThemeMode? mode}) =>
+  double get _textScale => _params.textScale ?? 1.0;
+
+  String _location({
+    String? page,
+    ShowcaseBrand? brand,
+    ThemeMode? mode,
+    double? textScale,
+  }) =>
       showcaseLocation(
         page: page ?? _pageId,
         themeMode: mode ?? _themeMode,
         brand: (brand ?? _brand).id,
+        textScale: textScale ?? _textScale,
         embed: _params.embed,
         defaultPage: showcasePages.first.id,
         defaultBrand: showcaseBrands.first.id,
@@ -128,23 +136,50 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
       darkTheme: themes.dark,
       themeMode: _themeMode,
       routerConfig: _router,
-      builder: (context, child) => ShowcaseScope(
-        pageId: pageId,
-        onPageChanged: (id) => _router.go(_location(page: id)),
-        brand: brand,
-        themeMode: _themeMode,
-        brandThemes: widget.brandThemes,
-        embed: _params.embed,
-        onBrandChanged: (b) => _router.go(_location(brand: b)),
-        onThemeModeChanged: (m) => _router.go(_location(mode: m)),
-        // The tab title follows the page, so a bookmark has a useful name.
-        child: Title(
-          title: pageId == showcasePages.first.id
-              ? 'd3_ui: a Flutter design system'
-              : '${pageForId(pageId).title} · d3_ui',
-          color: themes.light.colorScheme.primary,
-          child: child ?? const SizedBox.shrink(),
-        ),
+      builder: (context, child) {
+        // Everything the page shows, dialogs, sheets and toasts included (they
+        // live in the navigator's overlay, under this builder), gets the mimicked
+        // text size; the showcase's own controls opt back out to the device's.
+        final system = MediaQuery.textScalerOf(context);
+        final scale = _textScale;
+        return MediaQuery(
+          data: scale == 1.0
+              ? MediaQuery.of(context)
+              : MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: TextScaler.linear(scale)),
+          child: _scope(child, system, brand, themes, pageId),
+        );
+      },
+    );
+  }
+
+  Widget _scope(
+    Widget? child,
+    TextScaler system,
+    ShowcaseBrand brand,
+    BrandThemes themes,
+    String pageId,
+  ) {
+    return ShowcaseScope(
+      pageId: pageId,
+      onPageChanged: (id) => _router.go(_location(page: id)),
+      brand: brand,
+      themeMode: _themeMode,
+      brandThemes: widget.brandThemes,
+      embed: _params.embed,
+      onBrandChanged: (b) => _router.go(_location(brand: b)),
+      onThemeModeChanged: (m) => _router.go(_location(mode: m)),
+      textScale: _textScale,
+      onTextScaleChanged: (s) => _router.go(_location(textScale: s)),
+      systemTextScaler: system,
+      // The tab title follows the page, so a bookmark has a useful name.
+      child: Title(
+        title: pageId == showcasePages.first.id
+            ? 'd3_ui: a Flutter design system'
+            : '${pageForId(pageId).title} · d3_ui',
+        color: themes.light.colorScheme.primary,
+        child: child ?? const SizedBox.shrink(),
       ),
     );
   }

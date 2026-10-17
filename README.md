@@ -26,6 +26,7 @@ shared, and the browser's back, forward and reload work (the app uses
 | path | a page id: `button`, `dialog`, `theme`, `patterns`, ... (none is the overview) | `/dialog` |
 | `theme` | `light`, `dark`, `system` | `/button?theme=dark` |
 | `brand` | `blue`, `green`, `terracotta` | `/button?brand=terracotta` |
+| `text` | a system text size from `0.5` to `3`, such as `1.5` for 150% | `/dialog?text=1.5` |
 | `embed` | `1` shows only the page, with no navigation, for a frame | `/patterns?embed=1` |
 
 Older links of the form `/?page=dialog&brand=green` are redirected to

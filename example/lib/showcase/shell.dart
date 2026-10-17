@@ -11,6 +11,7 @@ import 'registry.dart';
 import 'scope.dart';
 import 'search/search_palette.dart';
 import 'search/search_shortcuts.dart';
+import 'text_size.dart';
 import 'version.dart';
 
 /// Width from which the navigation rail sits beside the page and the bottom bar
@@ -128,8 +129,44 @@ class _ShowcaseShellState extends State<ShowcaseShell> {
       ),
     );
 
+    final scope = ShowcaseScope.of(context);
+    final textScale = scope.textScale;
+    // The app scales the page, dialogs and sheets (see ShowcaseApp). The
+    // showcase's own controls keep the device's text size, so the size can
+    // always be read and changed back.
+    Widget chrome(Widget child) => textScale == 1.0
+        ? child
+        : MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: scope.systemTextScaler),
+            child: child,
+          );
+    final pageBody = Stack(
+      fit: StackFit.expand,
+      children: [
+        body,
+        if (textScale != 1.0)
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 12,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: chrome(
+                _TextSizeNotice(
+                  size: ShowcaseTextSize.nearest(textScale),
+                  scale: textScale,
+                  onReset: () => scope.onTextScaleChanged(1.0),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+
     if (widget.embed) {
-      return Scaffold(backgroundColor: colors.surface, body: body);
+      return Scaffold(backgroundColor: colors.surface, body: pageBody);
     }
 
     final destination = _Destination.of(page);
@@ -139,17 +176,19 @@ class _ShowcaseShellState extends State<ShowcaseShell> {
             backgroundColor: colors.surface,
             body: Row(
               children: [
-                D3NavRail(
-                  items: [for (final d in _Destination.values) d.navItem],
-                  selectedIndex: destination.index,
-                  onDestinationSelected: (i) =>
-                      _open(_Destination.values[i].pageId),
-                  leading: _SearchButton(onPressed: _search),
-                  trailing: const _RailUtilities(),
+                chrome(
+                  D3NavRail(
+                    items: [for (final d in _Destination.values) d.navItem],
+                    selectedIndex: destination.index,
+                    onDestinationSelected: (i) =>
+                        _open(_Destination.values[i].pageId),
+                    leading: _SearchButton(onPressed: _search),
+                    trailing: const _RailUtilities(),
+                  ),
                 ),
                 if (destination == _Destination.components)
-                  _ComponentsPane(current: page, onOpen: _open),
-                Expanded(child: body),
+                  chrome(_ComponentsPane(current: page, onOpen: _open)),
+                Expanded(child: pageBody),
               ],
             ),
           )
@@ -158,18 +197,21 @@ class _ShowcaseShellState extends State<ShowcaseShell> {
             appBar: AppBar(
               backgroundColor: colors.surface,
               scrolledUnderElevation: 0,
-              title: Text(
-                page.title,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+              title: chrome(
+                Text(
+                  page.title,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
               actions: [
                 _SearchButton(onPressed: _search, compact: true),
+                const _TextSizeMenu(),
                 const _BrandMenu(),
                 const _ThemeButton(),
                 const SizedBox(width: 4),
               ],
             ),
-            body: body,
+            body: pageBody,
             bottomNavigationBar: D3NavBar(
               items: [for (final d in _Destination.values) d.navItem],
               selectedIndex: destination.index,
@@ -243,6 +285,8 @@ class _RailUtilities extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        const _TextSizeMenu(),
+        const SizedBox(height: 4),
         const _BrandMenu(),
         const SizedBox(height: 4),
         const _ThemeButton(),
@@ -255,6 +299,147 @@ class _RailUtilities extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// "Aa" button: mimics the device's font-size setting for the page, so every
+/// component and label can be seen at larger or smaller system text sizes.
+class _TextSizeMenu extends StatelessWidget {
+  const _TextSizeMenu();
+
+  @override
+  Widget build(BuildContext context) {
+    final scope = ShowcaseScope.of(context);
+    final colors = context.d3Colors;
+    final wide = MediaQuery.sizeOf(context).width >= wideBreakpoint;
+    final active = scope.textScale != 1.0;
+    final current = ShowcaseTextSize.nearest(scope.textScale);
+    final label =
+        'Text size: ${active ? ShowcaseTextSize.format(scope.textScale) : 'default'}';
+    return D3Menu(
+      alignment: wide ? Alignment.bottomLeft : Alignment.topRight,
+      width: 260,
+      entries: [
+        const D3MenuSection('Mimic system text size'),
+        for (final size in ShowcaseTextSize.all)
+          D3MenuItem(
+            label: size.label,
+            shortcut: size.percent,
+            isSelected: size.scale == current.scale,
+            onPressed: () => scope.onTextScaleChanged(size.scale),
+          ),
+      ],
+      triggerBuilder: (context, toggle) => D3Tooltip(
+        message: label,
+        child: Semantics(
+          container: true,
+          button: true,
+          label: label,
+          excludeSemantics: true,
+          child: InkResponse(
+            onTap: toggle,
+            radius: 26,
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color:
+                        active ? colors.primaryContainer : Colors.transparent,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'A',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: active
+                                ? colors.primary
+                                : colors.onSurfaceVariant,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'A',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: active
+                                ? colors.primary
+                                : colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    textScaler: TextScaler.noScaling,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Floats over the page while a text size other than the device's is being
+/// mimicked, so it is never mistaken for the real thing, with a way back.
+class _TextSizeNotice extends StatelessWidget {
+  const _TextSizeNotice({
+    required this.size,
+    required this.scale,
+    required this.onReset,
+  });
+
+  final ShowcaseTextSize size;
+  final double scale;
+  final VoidCallback onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.d3Colors;
+    final pct = '${(scale * 100).round()}%';
+    return Material(
+      color: colors.onSurface,
+      elevation: 3,
+      shape: const StadiumBorder(),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16, right: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.format_size_rounded, size: 18, color: colors.surface),
+            const SizedBox(width: 8),
+            Text(
+              'Text size $pct',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: colors.surface,
+              ),
+              textScaler: TextScaler.noScaling,
+            ),
+            const SizedBox(width: 4),
+            TextButton(
+              onPressed: onReset,
+              style: TextButton.styleFrom(
+                foregroundColor: colors.surface,
+                minimumSize: const Size(48, 48),
+              ),
+              child: const Text('Reset', textScaler: TextScaler.noScaling),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

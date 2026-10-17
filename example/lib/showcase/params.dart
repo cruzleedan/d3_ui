@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'text_size.dart';
+
 /// What the address asks for, so a link (or the portfolio's embed) can open the
 /// showcase on a page, in a theme and in a brand:
 /// `/patterns?theme=dark&brand=terracotta&embed=1`.
@@ -13,12 +15,16 @@ class ShowcaseParams {
     this.page,
     this.themeMode,
     this.brand,
+    this.textScale,
     this.embed = false,
   });
 
   final String? page;
   final ThemeMode? themeMode;
   final String? brand;
+
+  /// `?text=1.5`: mimic a system text size of 150%.
+  final double? textScale;
 
   /// `?embed=1`: show only the page, with none of the navigation, for a frame.
   final bool embed;
@@ -37,6 +43,7 @@ class ShowcaseParams {
       page: query['page'],
       themeMode: mode,
       brand: query['brand']?.toLowerCase(),
+      textScale: ShowcaseTextSize.parse(query['text']),
       embed: query['embed'] == '1' || query['embed'] == 'true',
     );
   }
@@ -49,6 +56,7 @@ class ShowcaseParams {
       page: segments.isNotEmpty ? segments.first : fromQuery.page,
       themeMode: fromQuery.themeMode,
       brand: fromQuery.brand,
+      textScale: fromQuery.textScale,
       embed: fromQuery.embed,
     );
   }
@@ -76,6 +84,7 @@ Uri showcaseLocation({
   required String page,
   required ThemeMode themeMode,
   required String brand,
+  double textScale = 1.0,
   bool embed = false,
   String defaultPage = 'overview',
   String defaultBrand = 'blue',
@@ -83,6 +92,7 @@ Uri showcaseLocation({
   final query = <String, String>{
     if (themeMode != ThemeMode.system) 'theme': themeMode.name,
     if (brand != defaultBrand) 'brand': brand,
+    if (textScale != 1.0) 'text': ShowcaseTextSize.format(textScale),
     if (embed) 'embed': '1',
   };
   return Uri(
