@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Fix** `showD3CalendarPicker` (and `D3DateField(useD3CalendarPicker: true)`)
+  cut off the last week of the month on phone-width dialogs. The month grid was
+  sized for 40 dp rows while its square cells are a seventh of the grid's width
+  (about 44 dp), so the last row didn't fit. The grid now takes its height from
+  its width. Tests open a five-week and a six-week month at phone width and pick
+  the 31st.
 - **Fix** `D3TextField` ignored a new `initialValue` after its first build, so a
   form that loads its data a frame later (such as `SchemaForm` seeded after the
   first build) showed an empty field. It now picks up a changed `initialValue`,

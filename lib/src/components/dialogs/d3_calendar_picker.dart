@@ -304,19 +304,26 @@ class _D3CalendarPickerDialogState extends State<_D3CalendarPickerDialog> {
       );
     }
 
-    const cellSize = 40.0;
     final rowCount = (cells.length / 7).ceil();
 
-    return SizedBox(
-      height: cellSize * rowCount,
-      child: GridView.count(
-        crossAxisCount: 7,
-        mainAxisSpacing: 0,
-        crossAxisSpacing: 0,
-        childAspectRatio: 1,
-        physics: const NeverScrollableScrollPhysics(),
-        children: cells,
-      ),
+    // Cells are square and a seventh of the grid's width, so the height must
+    // come from that width — a fixed cell size clipped the last week whenever
+    // the dialog was wider than 7 × that size (root WORK-0087).
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cellSize = constraints.maxWidth / 7;
+        return SizedBox(
+          height: cellSize * rowCount,
+          child: GridView.count(
+            crossAxisCount: 7,
+            mainAxisSpacing: 0,
+            crossAxisSpacing: 0,
+            childAspectRatio: 1,
+            physics: const NeverScrollableScrollPhysics(),
+            children: cells,
+          ),
+        );
+      },
     );
   }
 

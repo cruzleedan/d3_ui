@@ -168,5 +168,47 @@ void main() {
       expect(completed, isTrue);
       expect(picked, isNull);
     });
+
+    // WORK-0087: on a phone-width dialog the cells are wider than 40dp, and
+    // a grid sized at 40dp per row cut off the last week.
+    for (final (month, label) in [
+      (DateTime(2026, 10, 4), 'five-week October'),
+      (DateTime(2026, 8, 4), 'six-week August'),
+    ]) {
+      testWidgets('shows the whole last week of a $label', (tester) async {
+        tester.view.physicalSize = const Size(412, 915);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        DateTime? picked;
+        await tester.pumpWidget(
+          _wrap(
+            Builder(
+              builder: (context) => D3Button(
+                label: 'Open',
+                onPressed: () async {
+                  picked = await showD3CalendarPicker(
+                    context: context,
+                    initialDate: month,
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.byType(D3Button));
+        await tester.pumpAndSettle();
+
+        final grid = tester.getRect(find.byType(GridView));
+        final lastDay = tester.getRect(find.text('31'));
+        expect(lastDay.bottom, lessThanOrEqualTo(grid.bottom));
+
+        await tester.tap(find.text('31'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('OK'));
+        await tester.pumpAndSettle();
+        expect(picked, DateTime(month.year, month.month, 31));
+      });
+    }
   });
 }
