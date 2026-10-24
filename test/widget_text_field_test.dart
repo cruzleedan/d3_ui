@@ -205,4 +205,67 @@ void main() {
       externalController.dispose();
     });
   });
+
+  // WORK-0088: a parent that loads data after the first build passes it as
+  // a new initialValue.
+  group('D3TextField initialValue updates', () {
+    Widget field(String? value, {ValueChanged<String>? onChanged}) => _wrap(
+      D3TextField(
+        label: 'Description',
+        initialValue: value,
+        onChanged: onChanged,
+      ),
+    );
+
+    testWidgets('shows a new initialValue when the field is not focused', (
+      tester,
+    ) async {
+      final changes = <String>[];
+      await tester.pumpWidget(field('', onChanged: changes.add));
+      expect(find.text('Bluebird Cafe lunch'), findsNothing);
+
+      await tester.pumpWidget(
+        field('Bluebird Cafe lunch', onChanged: changes.add),
+      );
+      await tester.pump();
+
+      expect(find.text('Bluebird Cafe lunch'), findsOneWidget);
+      // The caller's own value is not an edit, so it isn't echoed back.
+      expect(changes, isEmpty);
+    });
+
+    testWidgets('keeps what the user typed while the field has focus', (
+      tester,
+    ) async {
+      await tester.pumpWidget(field('Draft'));
+      await tester.enterText(find.byType(TextField), 'Typed by user');
+      await tester.pump();
+
+      await tester.pumpWidget(field('Reloaded from server'));
+      await tester.pump();
+
+      expect(find.text('Typed by user'), findsOneWidget);
+      expect(find.text('Reloaded from server'), findsNothing);
+    });
+
+    testWidgets('a theme change does not reset typed text', (tester) async {
+      Widget themed(Brightness b) => MaterialApp(
+        theme: b == Brightness.light ? D3AppTheme.light() : D3AppTheme.dark(),
+        home: const Scaffold(
+          body: Center(
+            child: D3TextField(label: 'Description', initialValue: 'Draft'),
+          ),
+        ),
+      );
+      await tester.pumpWidget(themed(Brightness.light));
+      await tester.enterText(find.byType(TextField), 'Typed by user');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pump();
+
+      await tester.pumpWidget(themed(Brightness.dark));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Typed by user'), findsOneWidget);
+    });
+  });
 }
