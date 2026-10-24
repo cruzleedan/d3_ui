@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Fix** `D3TextField` ignored a new `initialValue` after its first build, so a
+  form that loads its data a frame later (such as `SchemaForm` seeded after the
+  first build) showed an empty field. It now picks up a changed `initialValue`,
+  except while the field has focus or when you pass your own `controller`, and
+  the update doesn't fire `onChanged`. It also no longer resets typed text to
+  `initialValue` when the theme or another inherited dependency changes. Tests
+  cover all three cases.
 - **Fix** `D3NavBar` items sat at the left edge of their cells instead of the middle
   (a regression from the 48 dp tap-target change: a `Stack` aligns a loosely sized
   child top-left). They are centred again; a test checks each item against its

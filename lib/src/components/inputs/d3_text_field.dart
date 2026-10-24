@@ -230,15 +230,27 @@ class D3TextFieldState extends State<D3TextField>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // If the initialValue changes after the first build, update the controller.
-      if (widget.initialValue != null &&
-          widget.initialValue != _controller.text) {
-        _controller.text = widget.initialValue!;
-      }
-    });
+  void didUpdateWidget(covariant D3TextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A parent that loads its data after the first build passes the loaded
+    // value as a new initialValue — show it. Skipped while the field has
+    // focus (like D3DecimalField) so a rebuild never overwrites typing, and
+    // when the caller supplies its own controller, which then owns the text.
+    final next = widget.initialValue;
+    if (widget.controller != null ||
+        next == null ||
+        next == oldWidget.initialValue ||
+        _focusNode.hasFocus ||
+        next == _controller.text) {
+      return;
+    }
+    // Mark the text as seen first: this is the caller's value, not an edit,
+    // so it must not echo back through onChanged.
+    _lastSeenText = next;
+    _controller.value = TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: next.length),
+    );
   }
 
   // ── Focus ──────────────────────────────────────────────────────────────────
