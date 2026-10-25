@@ -1,5 +1,7 @@
-import 'package:material_ui/material_ui.dart';
+import 'dart:ui' show Tristate;
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 // Root context/work/0045: only the icon circle was tappable, so pointing at
@@ -24,6 +26,37 @@ Future<void> _openMenu(
 
 void main() {
   group('D3ExpandingFab', () {
+    testWidgets('announces the open and closed state', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: D3AppTheme.light(),
+          home: const Scaffold(
+            floatingActionButton: D3ExpandingFab(actions: []),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      var semantics = tester.getSemantics(
+        find.bySemanticsLabel('Open actions menu'),
+      );
+      expect(semantics.flagsCollection.isExpanded != Tristate.none, isTrue);
+      expect(semantics.flagsCollection.isExpanded == Tristate.isTrue, isFalse);
+
+      await tester.tap(find.byIcon(Icons.add_rounded));
+      await tester.pumpAndSettle();
+
+      semantics = tester.getSemantics(
+        find.bySemanticsLabel('Close actions menu'),
+      );
+      expect(semantics.flagsCollection.isExpanded != Tristate.none, isTrue);
+      expect(semantics.flagsCollection.isExpanded == Tristate.isTrue, isTrue);
+
+      await tester.tap(find.byIcon(Icons.close_rounded));
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Open actions menu'), findsOneWidget);
+    });
+
     testWidgets('tapping an action label triggers it, not just the icon', (
       tester,
     ) async {

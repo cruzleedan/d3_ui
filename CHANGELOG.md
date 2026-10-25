@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Accessibility:** `D3Button.icon` now requires a non-empty `semanticsLabel`;
+  update icon-only button call sites when upgrading. `D3ExpandingFab` announces
+  its open and close actions and exposes its expanded state. The Patterns
+  showcase intro is shorter so the live example appears sooner.
+
 - **Form fields** default to compact density (40 dp painted surface, minimum
   48 dp touch row) across text, decimal, dropdown, date, time, and OTP inputs.
   Theme input tokens can opt back into regular height, and `isCompact` can

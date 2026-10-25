@@ -216,6 +216,7 @@ D3Button(
 // Icon-only
 D3Button.icon(
   icon: Icons.share_outlined,
+  semanticsLabel: 'Share',
   variant: D3ButtonVariant.ghost,
   onPressed: _share,
 )

@@ -43,6 +43,7 @@ enum D3ButtonState { idle, loading, success, error }
 ///
 /// D3Button.icon(
 ///   icon: Icons.add,
+///   semanticsLabel: 'Add item',
 ///   onPressed: _handleAdd,
 /// )
 /// ```
@@ -75,9 +76,10 @@ class D3Button extends StatefulWidget {
     this.size = D3ButtonSize.md,
     this.isCompact,
     this.buttonState = D3ButtonState.idle,
-    this.semanticsLabel,
+    required String semanticsLabel,
     this.autofocus = false,
-  }) : label = '',
+  }) : semanticsLabel = semanticsLabel,
+       label = '',
        loadingLabel = null,
        leadingIcon = null,
        leadingWidget = null,
@@ -85,7 +87,8 @@ class D3Button extends StatefulWidget {
        isFullWidth = false,
        maxLines = 1,
        _iconOnly = true,
-       _iconOnlyIcon = icon;
+       _iconOnlyIcon = icon,
+       assert(semanticsLabel != '', 'Provide a meaningful semanticsLabel.');
 
   final String label;
   final VoidCallback? onPressed;
@@ -132,6 +135,10 @@ class _D3ButtonState extends State<D3Button> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget._iconOnly && widget.semanticsLabel!.trim().isEmpty) {
+      throw FlutterError('D3Button.icon requires a non-empty semanticsLabel.');
+    }
+
     final tokens = context.d3ButtonTokens;
     final compact = widget.isCompact ?? context.d3InputTokens.compactByDefault;
     final colors = context.d3Colors;
@@ -233,11 +240,14 @@ class _D3ButtonState extends State<D3Button> {
     return Semantics(
       button: true,
       enabled: widget._isInteractive,
-      label:
-          widget.semanticsLabel ??
-          (effectiveState == D3ButtonState.loading
-              ? '${widget.loadingLabel ?? widget.label}, loading'
-              : widget.label),
+      label: widget._iconOnly
+          ? effectiveState == D3ButtonState.loading
+                ? '${widget.semanticsLabel}, loading'
+                : widget.semanticsLabel
+          : widget.semanticsLabel ??
+                (effectiveState == D3ButtonState.loading
+                    ? '${widget.loadingLabel ?? widget.label}, loading'
+                    : widget.label),
       child: shell,
     );
   }
