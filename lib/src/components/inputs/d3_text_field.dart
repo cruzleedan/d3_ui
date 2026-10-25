@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
@@ -69,6 +71,8 @@ class D3TextField extends StatefulWidget {
     this.tooltip,
     this.errorText,
     this.successText,
+    this.warningText,
+    this.isCompact,
     this.prefixIcon,
     this.suffixIcon,
     this.prefixText,
@@ -114,8 +118,17 @@ class D3TextField extends StatefulWidget {
   /// in the label row.
   final String? tooltip;
 
-  /// When set, overrides validation error and shows success state.
+  /// The success message, shown when no error or warning is present.
   final String? successText;
+
+  /// A non-blocking warning, shown unless an error is present.
+  final String? warningText;
+
+  /// Overrides the theme's `compactByDefault` input token for this field.
+  ///
+  /// The surface is 40 dp at normal text size; its touch row stays at least
+  /// 48 dp. Both grow for larger text and content.
+  final bool? isCompact;
 
   /// When set, forces error state and overrides validator result.
   final String? errorText;
@@ -166,7 +179,6 @@ class D3TextField extends StatefulWidget {
   final String? semanticsLabel;
 
   @override
-  @override
   State<D3TextField> createState() => D3TextFieldState();
 }
 
@@ -181,6 +193,7 @@ class D3TextFieldState extends State<D3TextField>
   FocusNode get _focusNode => focusNode;
 
   bool _isFocused = false;
+  bool _suffixFocused = false;
   String? _validationError;
 
   /// Last text seen by [_onTextChange] — [TextEditingController] notifies
@@ -261,7 +274,11 @@ class D3TextFieldState extends State<D3TextField>
     if (!_focusNode.hasFocus) {
       _hasBeenBlurred = true;
       _removeTooltip();
-      _runValidation(_controller.text);
+      if (widget.isEnabled &&
+          !widget.isReadOnly &&
+          widget.validationMode != D3ValidationMode.onSubmit) {
+        _runValidation(_controller.text);
+      }
     }
   }
 
@@ -366,26 +383,96 @@ class D3TextFieldState extends State<D3TextField>
   );
 
   String? get _effectiveError => widget.errorText ?? _validationError;
-  String? get _effectiveHelper => _effectiveError ?? widget.helperText;
+  String? get _effectiveHelper =>
+      _effectiveError ??
+      widget.warningText ??
+      widget.successText ??
+      widget.helperText;
+
+  bool get _hasWarning =>
+      widget.isEnabled &&
+      !widget.isReadOnly &&
+      _effectiveError == null &&
+      widget.warningText != null;
 
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.d3InputTokens;
+    final isCompact = widget.isCompact ?? tokens.compactByDefault;
     final colors = context.d3Colors;
     final status = _status;
     final isMultiline = (widget.maxLines == null || (widget.maxLines ?? 1) > 1);
 
     final style = resolveFieldStyle(status, colors, tokens);
+    final background = widget.variant == D3InputVariant.filled
+        ? colors.surfaceVariant
+        : style.backgroundColor;
+    final secondary = d3EnsureContrast(colors.onSurfaceVariant, background);
+    final statusColor = _hasWarning ? colors.warning : style.borderColor;
+    // Paint is independent of layout, including when a theme overrides widths.
+    final borderColor = status == D3FieldStatus.disabled
+        ? statusColor
+        : d3EnsureContrast(
+            d3EnsureContrast(statusColor, background, minRatio: 3),
+            colors.surface,
+            minRatio: 3,
+          );
+    final visualInset = isCompact ? D3Spacing.s4 : 0.0;
+    final verticalPadding = isCompact
+        ? tokens.paddingV
+        : tokens.paddingV + tokens.borderWidth;
+    final lineHeight = math.max(
+      24.0,
+      MediaQuery.textScalerOf(context).scale(tokens.textSize) * 1.4,
+    );
+    final hasSuffix =
+        widget.suffixWidget != null ||
+        widget.suffixIcon != null ||
+        widget.suffixText != null ||
+        widget.obscureText ||
+        shouldShowClearButton(
+          requested: widget.showClearButton,
+          isFocused: _isFocused || _suffixFocused,
+          hasText: _controller.text.isNotEmpty,
+          isEnabled: widget.isEnabled,
+          isReadOnly: widget.isReadOnly,
+        );
+    final showFocus =
+        (_isFocused || _suffixFocused) &&
+        widget.isEnabled &&
+        !widget.isReadOnly;
 
     final prefix = buildD3FieldSlot(
       tokens: tokens,
       colors: colors,
-      child: widget.prefixWidget,
+      child: widget.prefixWidget == null
+          ? null
+          : D3PaddedTapTarget(child: widget.prefixWidget!),
+      foregroundColor: secondary,
       icon: widget.prefixIcon,
       text: widget.prefixText,
     );
+    final statusIconSize = math.min(12.0, tokens.paddingH);
+    final Widget? statusIcon = status == D3FieldStatus.error || _hasWarning
+        ? Icon(
+            Icons.warning_amber_rounded,
+            size: statusIconSize,
+            color: d3EnsureContrast(
+              _hasWarning ? colors.warning : colors.error,
+              background,
+              minRatio: 3,
+            ),
+          )
+        : status == D3FieldStatus.success
+        ? Icon(
+            Icons.check_circle_outline_rounded,
+            size: statusIconSize,
+            color: d3EnsureContrast(colors.success, background, minRatio: 3),
+          )
+        : null;
+    final hasPrefix = prefix != null;
 
     Widget field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,111 +488,188 @@ class D3TextFieldState extends State<D3TextField>
           tokens: tokens,
           colors: colors,
           isEnabled: widget.isEnabled,
+          isFocused: showFocus,
         ),
 
-        const SizedBox(height: D3Spacing.s6),
+        SizedBox(height: isCompact ? D3Spacing.s2 : D3Spacing.s4),
 
         // ── Input container ───────────────────────────────────────────────
         // The whole box focuses the field, not only the 24 dp line of text in
         // its middle (buttons and the text itself still take their own taps).
         GestureDetector(
+          excludeFromSemantics: true,
           behavior: HitTestBehavior.translucent,
           onTap: () {
-            if (widget.isEnabled && !widget.isReadOnly)
+            if (widget.isEnabled && !widget.isReadOnly) {
               _focusNode.requestFocus();
+            }
           },
-          child: AnimatedContainer(
-            duration: tokens.borderAnimDuration,
-            decoration: BoxDecoration(
-              color: style.backgroundColor,
-              borderRadius: BorderRadius.circular(tokens.radius),
-              border: Border.all(
-                color: style.borderColor,
-                width: style.borderWidth,
-                strokeAlign: BorderSide.strokeAlignInside,
-              ),
-            ),
-            child: Row(
-              crossAxisAlignment: isMultiline
-                  ? CrossAxisAlignment.start
-                  : CrossAxisAlignment.center,
-              children: [
-                // Prefix
-                if (prefix != null)
-                  Padding(
-                    padding: EdgeInsets.only(left: tokens.paddingH),
-                    child: prefix,
-                  ),
-
-                // Input
-                Expanded(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: tokens.minHeight),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: prefix != null
-                            ? D3Spacing.s8
-                            : tokens.paddingH,
-                        vertical: tokens.paddingV,
-                      ),
-                      child: TextField(
-                        key: widget.textFieldKey,
-                        controller: _controller,
-                        focusNode: _focusNode,
-                        enabled: widget.isEnabled,
-                        readOnly: widget.isReadOnly,
-                        obscureText: _obscured,
-                        maxLines: widget.obscureText ? 1 : widget.maxLines,
-                        minLines: widget.minLines,
-                        maxLength: widget.maxLengthEnforced
-                            ? widget.maxLength
-                            : null,
-                        keyboardType: widget.keyboardType,
-                        textInputAction: widget.textInputAction,
-                        autofocus: widget.autofocus,
-                        autofillHints: widget.autofillHints,
-                        autocorrect: widget.autocorrect,
-                        inputFormatters: widget.inputFormatters,
-                        onTap: widget.onTap,
-                        onSubmitted: (v) {
-                          if (widget.validationMode ==
-                                  D3ValidationMode.onSubmit ||
-                              widget.validationMode ==
-                                  D3ValidationMode.onBlur) {
-                            _runValidation(v);
-                          }
-                          widget.onSubmitted?.call(v);
-                        },
-                        style: TextStyle(
-                          fontSize: tokens.textSize,
-                          color: colors.onSurface,
-                          height: 1.4,
-                        ),
-                        cursorColor: colors.primary,
-                        decoration: InputDecoration(
-                          hintText: widget.hintText,
-                          hintStyle: TextStyle(
-                            fontSize: tokens.textSize,
-                            color: colors.onSurfaceVariant,
-                          ),
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                          border: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          errorBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          counterText: '', // hide built-in counter
-                        ),
-                      ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                top: visualInset,
+                bottom: visualInset,
+                child: IgnorePointer(
+                  child: AnimatedContainer(
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : tokens.borderAnimDuration,
+                    decoration: BoxDecoration(
+                      color: background,
+                      borderRadius: BorderRadius.circular(tokens.radius),
+                      border: widget.variant == D3InputVariant.filled
+                          ? Border(
+                              bottom: BorderSide(
+                                color: borderColor,
+                                width: tokens.borderWidth,
+                              ),
+                            )
+                          : Border.all(
+                              color: borderColor,
+                              width: tokens.borderWidth,
+                            ),
                     ),
                   ),
                 ),
+              ),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: math.max(
+                    kMinInteractiveDimension,
+                    isCompact
+                        ? kMinInteractiveDimension
+                        : tokens.minHeight + 2 * tokens.borderWidth,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: isMultiline
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.center,
+                  children: [
+                    if (hasPrefix)
+                      Padding(
+                        padding: EdgeInsetsDirectional.only(
+                          start: tokens.paddingH,
+                          top: isMultiline
+                              ? math.max(
+                                  0,
+                                  verticalPadding +
+                                      (lineHeight -
+                                              (widget.prefixWidget != null
+                                                  ? kMinInteractiveDimension
+                                                  : lineHeight)) /
+                                          2,
+                                )
+                              : 0,
+                        ),
+                        child: SizedBox(
+                          height: widget.prefixWidget == null
+                              ? lineHeight
+                              : null,
+                          child: TextFieldTapRegion(
+                            child: Center(child: prefix),
+                          ),
+                        ),
+                      ),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                          hasPrefix ? D3Spacing.s8 : tokens.paddingH,
+                          verticalPadding,
+                          hasSuffix ? D3Spacing.s8 : tokens.paddingH,
+                          verticalPadding,
+                        ),
+                        child: Semantics(
+                          label:
+                              widget.semanticsLabel ??
+                              (widget.isRequired
+                                  ? '${widget.label}, required'
+                                  : widget.label),
+                          child: TextField(
+                            key: widget.textFieldKey,
+                            controller: _controller,
+                            focusNode: _focusNode,
+                            enabled: widget.isEnabled,
+                            readOnly: widget.isReadOnly,
+                            obscureText: _obscured,
+                            maxLines: widget.obscureText ? 1 : widget.maxLines,
+                            minLines: widget.minLines,
+                            maxLength: widget.maxLengthEnforced
+                                ? widget.maxLength
+                                : null,
+                            keyboardType: widget.keyboardType,
+                            textInputAction: widget.textInputAction,
+                            autofocus: widget.autofocus,
+                            autofillHints: widget.autofillHints,
+                            autocorrect: widget.autocorrect,
+                            inputFormatters: widget.inputFormatters,
+                            onTap: widget.onTap,
+                            onSubmitted: (v) {
+                              if (widget.validationMode ==
+                                      D3ValidationMode.onSubmit ||
+                                  widget.validationMode ==
+                                      D3ValidationMode.onBlur) {
+                                _runValidation(v);
+                              }
+                              widget.onSubmitted?.call(v);
+                            },
+                            style: TextStyle(
+                              fontSize: tokens.textSize,
+                              color: colors.onSurface,
+                              height: 1.4,
+                            ),
+                            cursorColor: colors.primary,
+                            decoration: InputDecoration(
+                              hintText: widget.hintText,
+                              hintStyle: TextStyle(
+                                fontSize: tokens.textSize,
+                                color: secondary,
+                              ),
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                              border: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
+                              counterText: '', // hide built-in counter
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
 
-                // Suffix
-                _buildSuffix(tokens, colors, status),
-              ],
-            ),
+                    // Actions occupy the complete interaction height even
+                    // when the painted surface is compact.
+                    _buildSuffix(
+                      tokens,
+                      colors,
+                      status,
+                      background: background,
+                      isMultiline: isMultiline,
+                      verticalPadding: verticalPadding,
+                      lineHeight: lineHeight,
+                    ),
+                  ],
+                ),
+              ),
+              if (statusIcon != null)
+                PositionedDirectional(
+                  start: math.max(0, tokens.paddingH - statusIconSize - 2),
+                  top: isMultiline
+                      ? verticalPadding + (lineHeight - statusIconSize) / 2
+                      : 0,
+                  bottom: isMultiline ? null : 0,
+                  width: statusIconSize,
+                  child: IgnorePointer(
+                    child: ExcludeSemantics(
+                      child: isMultiline
+                          ? statusIcon
+                          : Center(child: statusIcon),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
 
@@ -514,12 +678,17 @@ class D3TextFieldState extends State<D3TextField>
           _BottomRow(
             helperText: _effectiveHelper,
             isError: _effectiveError != null,
-            isSuccess: widget.successText != null && _effectiveError == null,
+            isSuccess:
+                widget.successText != null &&
+                _effectiveError == null &&
+                widget.warningText == null,
+            isWarning: widget.warningText != null && _effectiveError == null,
             maxLength: widget.maxLength,
             currentLength: _controller.text.length,
             tokens: tokens,
             colors: colors,
             warnThreshold: tokens.counterWarnThreshold,
+            topGap: isCompact ? 0 : D3Spacing.s2,
           ),
       ],
     );
@@ -529,13 +698,7 @@ class D3TextFieldState extends State<D3TextField>
       field = Opacity(opacity: tokens.disabledOpacity, child: field);
     }
 
-    return Semantics(
-      label: widget.semanticsLabel ?? widget.label,
-      textField: true,
-      enabled: widget.isEnabled,
-      readOnly: widget.isReadOnly,
-      child: field,
-    );
+    return field;
   }
 
   // ── Suffix builder ─────────────────────────────────────────────────────────
@@ -543,15 +706,19 @@ class D3TextFieldState extends State<D3TextField>
   Widget _buildSuffix(
     D3InputTokens tokens,
     D3ColorTokens colors,
-    D3FieldStatus status,
-  ) {
+    D3FieldStatus status, {
+    required Color background,
+    required bool isMultiline,
+    required double verticalPadding,
+    required double lineHeight,
+  }) {
     final parts = <Widget>[];
 
     // ── Clear button ────────────────────────────────────────────────────────
     // Visible on password fields too.
     final showClear = shouldShowClearButton(
       requested: widget.showClearButton,
-      isFocused: _isFocused,
+      isFocused: _isFocused || _suffixFocused,
       hasText: _controller.text.isNotEmpty,
       isEnabled: widget.isEnabled,
       isReadOnly: widget.isReadOnly,
@@ -569,47 +736,24 @@ class D3TextFieldState extends State<D3TextField>
       );
     }
 
-    // ── State icon (validation feedback) ───────────────────────────────────
-    if (status == D3FieldStatus.error) {
-      parts.add(
-        Icon(
-          Icons.warning_amber_rounded,
-          size: tokens.iconSize,
-          color: colors.error,
-        ),
-      );
-    } else if (status == D3FieldStatus.success) {
-      parts.add(
-        Icon(
-          Icons.check_circle_outline_rounded,
-          size: tokens.iconSize,
-          color: colors.success,
-        ),
-      );
-    }
-
     // ── Password visibility toggle ─────────────────────────────────────────
     if (widget.obscureText) {
       parts.add(
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => setState(() => _obscured = !_obscured),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minWidth: kMinInteractiveDimension,
-              minHeight: kMinInteractiveDimension,
-            ),
-            child: Center(
-              widthFactor: 1,
-              heightFactor: 1,
-              child: Icon(
-                _obscured
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                size: tokens.iconSize,
-                color: colors.onSurfaceVariant,
-              ),
-            ),
+        IconButton(
+          tooltip: _obscured ? 'Show password' : 'Hide password',
+          onPressed: widget.isEnabled
+              ? () => setState(() => _obscured = !_obscured)
+              : null,
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          padding: EdgeInsets.zero,
+          visualDensity: VisualDensity.standard,
+          iconSize: tokens.iconSize,
+          color: d3EnsureContrast(colors.onSurfaceVariant, background),
+          icon: Icon(
+            _obscured
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
+            semanticLabel: _obscured ? 'Show password' : 'Hide password',
           ),
         ),
       );
@@ -619,7 +763,10 @@ class D3TextFieldState extends State<D3TextField>
     final suffix = buildD3FieldSlot(
       tokens: tokens,
       colors: colors,
-      child: widget.suffixWidget,
+      child: widget.suffixWidget == null
+          ? null
+          : D3PaddedTapTarget(child: widget.suffixWidget!),
+      foregroundColor: d3EnsureContrast(colors.onSurfaceVariant, background),
       icon: widget.suffixIcon,
       text: widget.suffixText,
     );
@@ -627,21 +774,66 @@ class D3TextFieldState extends State<D3TextField>
 
     if (parts.isEmpty) return const SizedBox.shrink();
 
+    final lastPart = parts.last;
+    final lastPartIsAction =
+        lastPart is D3FieldClearButton ||
+        lastPart is IconButton ||
+        (widget.suffixWidget != null && identical(lastPart, suffix));
+    bool isAction(Widget part) =>
+        part is D3FieldClearButton ||
+        part is IconButton ||
+        (widget.suffixWidget != null && identical(part, suffix));
+
     // TextFieldTapRegion: a press on the clear or visibility button counts as
     // a press inside the field. Without it, on desktop and the web the press
     // unfocuses the field first, the clear button (shown only while focused)
     // disappears, and the release lands on nothing: the field is not cleared
     // and loses focus.
-    return TextFieldTapRegion(
-      child: Padding(
-        padding: EdgeInsets.only(right: tokens.paddingH),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children:
-              parts
-                  .expand((w) => [w, const SizedBox(width: D3Spacing.s8)])
-                  .toList()
-                ..removeLast(),
+    return Focus(
+      canRequestFocus: false,
+      onFocusChange: (value) => setState(() => _suffixFocused = value),
+      child: TextFieldTapRegion(
+        child: Padding(
+          padding: EdgeInsetsDirectional.only(
+            end: lastPartIsAction ? 0 : tokens.paddingH,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: isMultiline
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
+            children: [
+              for (var i = 0; i < parts.length; i++) ...[
+                if (i > 0)
+                  SizedBox(
+                    width: isAction(parts[i - 1]) && isAction(parts[i])
+                        ? 0
+                        : D3Spacing.s8,
+                  ),
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: isMultiline
+                        ? math.max(
+                            0,
+                            verticalPadding +
+                                (lineHeight -
+                                        (isAction(parts[i])
+                                            ? 48
+                                            : lineHeight)) /
+                                    2,
+                          )
+                        : 0,
+                  ),
+                  child: isAction(parts[i])
+                      ? parts[i]
+                      : SizedBox(
+                          height: lineHeight,
+                          child: Center(child: parts[i]),
+                        ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -662,6 +854,7 @@ class _LabelRow extends StatelessWidget {
     required this.tokens,
     required this.colors,
     required this.isEnabled,
+    required this.isFocused,
   });
 
   final String label;
@@ -672,6 +865,7 @@ class _LabelRow extends StatelessWidget {
   final D3InputTokens tokens;
   final D3ColorTokens colors;
   final bool isEnabled;
+  final bool isFocused;
 
   @override
   Widget build(BuildContext context) {
@@ -688,25 +882,30 @@ class _LabelRow extends StatelessWidget {
         // A long label (or a large system text size) wraps rather than
         // overflowing; the required asterisk stays with the last word.
         Flexible(
-          child: Text.rich(
-            TextSpan(
-              text: label,
-              style: TextStyle(
-                fontSize: tokens.labelSize,
-                fontWeight: FontWeight.w600,
-                color: colors.onSurfaceVariant,
-                letterSpacing: -0.1,
-              ),
-              children: [
-                if (isRequired)
-                  TextSpan(
-                    text: ' *',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: colors.error,
-                    ),
+          child: ExcludeSemantics(
+            child: Text.rich(
+              TextSpan(
+                text: label,
+                style: TextStyle(
+                  fontSize: tokens.labelSize,
+                  fontWeight: FontWeight.w600,
+                  color: d3EnsureContrast(
+                    isFocused ? colors.primary : colors.onSurfaceVariant,
+                    colors.surface,
                   ),
-              ],
+                  letterSpacing: -0.1,
+                ),
+                children: [
+                  if (isRequired)
+                    TextSpan(
+                      text: ' *',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: colors.error,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -800,12 +999,18 @@ class _TooltipOverlayState extends State<_TooltipOverlay>
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: D3Motion.fast);
-    _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _opacity = CurvedAnimation(parent: _ctrl, curve: D3Motion.decelerate);
     _slide = Tween<Offset>(
       begin: const Offset(0, -0.05),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    ).animate(CurvedAnimation(parent: _ctrl, curve: D3Motion.decelerate));
     _ctrl.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) _ctrl.value = 1;
   }
 
   @override
@@ -904,35 +1109,44 @@ class _BottomRow extends StatelessWidget {
     required this.helperText,
     required this.isError,
     required this.isSuccess,
+    required this.isWarning,
     required this.maxLength,
     required this.currentLength,
     required this.tokens,
     required this.colors,
     required this.warnThreshold,
+    required this.topGap,
   });
 
   final String? helperText;
   final bool isError;
   final bool isSuccess;
+  final bool isWarning;
   final int? maxLength;
   final int currentLength;
   final D3InputTokens tokens;
   final D3ColorTokens colors;
   final double warnThreshold;
+  final double topGap;
 
   @override
   Widget build(BuildContext context) {
-    final helperColor = isError
-        ? colors.error
-        : isSuccess
-        ? colors.success
-        : colors.onSurfaceVariant;
+    final helperColor = d3EnsureContrast(
+      isError
+          ? colors.error
+          : isWarning
+          ? colors.warning
+          : isSuccess
+          ? colors.success
+          : colors.onSurfaceVariant,
+      colors.surface,
+    );
 
     Color counterColor = colors.onSurfaceVariant;
     if (maxLength != null) {
       final ratio = currentLength / maxLength!;
-      if (ratio >= 1.0) {
-        counterColor = colors.error;
+      if (ratio > 1.0) {
+        counterColor = d3EnsureContrast(colors.error, colors.surface);
       } else if (ratio >= warnThreshold) {
         // Amber is ~2:1 on white; keep its hue but make the digits readable.
         counterColor = d3EnsureContrast(colors.warning, colors.surface);
@@ -940,16 +1154,19 @@ class _BottomRow extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: D3Spacing.s4),
+      padding: EdgeInsets.only(top: topGap),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (helperText != null)
             Expanded(
               child: Semantics(
-                liveRegion: isError, // announce errors immediately
+                liveRegion:
+                    isError ||
+                    isWarning ||
+                    isSuccess, // announce errors immediately
                 child: Padding(
-                  padding: EdgeInsets.only(left: tokens.paddingH),
+                  padding: EdgeInsetsDirectional.only(start: tokens.paddingH),
                   child: Text(
                     helperText!,
                     style: TextStyle(
@@ -965,7 +1182,7 @@ class _BottomRow extends StatelessWidget {
             const Spacer(),
           if (maxLength != null)
             Padding(
-              padding: EdgeInsets.only(right: tokens.paddingH),
+              padding: EdgeInsetsDirectional.only(end: tokens.paddingH),
               child: Text(
                 '$currentLength / $maxLength',
                 style: TextStyle(

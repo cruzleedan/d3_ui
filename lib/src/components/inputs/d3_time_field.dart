@@ -1,7 +1,6 @@
 import 'package:d3_ui/d3_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../sheets/d3_time_picker.dart';
 import 'helpers/d3_field_status.dart';
 import 'helpers/d3_field_styling_mixin.dart';
 
@@ -29,6 +28,7 @@ class D3TimeField extends StatefulWidget {
     this.errorText,
     this.isRequired = false,
     this.isEnabled = true,
+    this.isCompact,
     this.isReadOnly = false,
     this.onChanged,
     this.semanticsLabel,
@@ -44,6 +44,9 @@ class D3TimeField extends StatefulWidget {
   final String? errorText;
   final bool isRequired;
   final bool isEnabled;
+
+  /// Overrides the theme's compact-density default for this field.
+  final bool? isCompact;
   final bool isReadOnly;
   final ValueChanged<TimeOfDay>? onChanged;
   final String? semanticsLabel;
@@ -108,6 +111,7 @@ class _D3TimeFieldState extends State<D3TimeField> with D3FieldStylingMixin {
   @override
   Widget build(BuildContext context) {
     final tokens = context.d3InputTokens;
+    final isCompact = widget.isCompact ?? tokens.compactByDefault;
     final colors = context.d3Colors;
     final style = resolveFieldStyle(_status, colors, tokens);
 
@@ -151,61 +155,74 @@ class _D3TimeFieldState extends State<D3TimeField> with D3FieldStylingMixin {
             ],
           ),
         ),
-        const SizedBox(height: D3Spacing.s6),
-        AnimatedContainer(
-          duration: tokens.borderAnimDuration,
-          decoration: BoxDecoration(
-            color: style.backgroundColor,
-            borderRadius: BorderRadius.circular(tokens.radius),
-            border: Border.all(
-              color: style.borderColor,
-              width: style.borderWidth,
-              strokeAlign: BorderSide.strokeAlignInside,
-            ),
-          ),
-          child: InkWell(
-            onTap: widget.isEnabled && !widget.isReadOnly ? _pick : null,
-            onHighlightChanged: (v) => setState(() => _isFocused = v),
-            borderRadius: BorderRadius.circular(tokens.radius),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: tokens.minHeight < kMinInteractiveDimension
-                    ? kMinInteractiveDimension
-                    : tokens.minHeight,
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: tokens.paddingH,
-                  vertical: tokens.paddingV,
+        SizedBox(height: isCompact ? D3Spacing.s2 : D3Spacing.s4),
+        Stack(
+          children: [
+            Positioned.fill(
+              top: isCompact ? D3Spacing.s4 : 0,
+              bottom: isCompact ? D3Spacing.s4 : 0,
+              child: IgnorePointer(
+                child: AnimatedContainer(
+                  duration: tokens.borderAnimDuration,
+                  decoration: BoxDecoration(
+                    color: style.backgroundColor,
+                    borderRadius: BorderRadius.circular(tokens.radius),
+                    border: Border.all(
+                      color: style.borderColor,
+                      width: style.borderWidth,
+                      strokeAlign: BorderSide.strokeAlignInside,
+                    ),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        displayText ?? (widget.hintText ?? ''),
-                        style: TextStyle(
-                          fontSize: tokens.textSize,
-                          color: displayText != null
-                              ? colors.onSurface
-                              : colors.onSurfaceVariant,
-                          height: 1.4,
+              ),
+            ),
+            InkWell(
+              onTap: widget.isEnabled && !widget.isReadOnly ? _pick : null,
+              onHighlightChanged: (v) => setState(() => _isFocused = v),
+              borderRadius: BorderRadius.circular(tokens.radius),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: tokens.minHeight < kMinInteractiveDimension
+                      ? kMinInteractiveDimension
+                      : tokens.minHeight,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: tokens.paddingH,
+                    vertical: tokens.paddingV,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          displayText ?? (widget.hintText ?? ''),
+                          style: TextStyle(
+                            fontSize: tokens.textSize,
+                            color: displayText != null
+                                ? colors.onSurface
+                                : colors.onSurfaceVariant,
+                            height: 1.4,
+                          ),
                         ),
                       ),
-                    ),
-                    Icon(
-                      Icons.schedule_outlined,
-                      size: tokens.iconSize,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ],
+                      Icon(
+                        Icons.schedule_outlined,
+                        size: tokens.iconSize,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
         if (widget.errorText != null || widget.helperText != null)
           Padding(
-            padding: EdgeInsets.only(top: D3Spacing.s4, left: tokens.paddingH),
+            padding: EdgeInsets.only(
+              top: isCompact ? 0 : D3Spacing.s2,
+              left: tokens.paddingH,
+            ),
             child: Text(
               widget.errorText ?? widget.helperText!,
               style: TextStyle(

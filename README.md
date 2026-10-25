@@ -2,6 +2,9 @@
 
 A minimal, flat Flutter design system built for personal mobile apps. Ships with semantic color tokens, adaptive typography, motion tokens, and 20+ ready-to-use Material 3 components — all in a single import.
 
+Read [DESIGN.md](DESIGN.md) for the visual system and token sources, and
+[UX_GUIDELINES.md](UX_GUIDELINES.md) for interaction and navigation conventions.
+
 ## Features
 
 - **Design tokens** — color primitives + semantic tokens, spacing (4dp grid), border radius, motion durations + curves, typography scale
@@ -584,6 +587,31 @@ D3Image(
 ```
 
 ---
+
+## Text field density and feedback
+
+Text, decimal, dropdown, date, and time fields paint a 40 dp surface inside a
+minimum 48 dp interaction row by default. OTP cells are 40 dp tall by default
+with 48 dp touch rows. Default and split buttons also use compact visual
+heights while retaining 48 dp touch targets. These controls grow with larger
+text or multiline content. Set `isCompact: false` on an individual field or
+button to restore its regular visual height, or set
+`inputTokens: D3InputTokens.defaults.copyWith(compactByDefault: false)` on
+`D3AppTheme.light` or `.dark` to change the default for all form fields and
+buttons.
+
+Fields use a constant 1 dp default border. A focused label uses the primary
+color so focus remains visible when error, warning, or success owns the
+border color.
+`D3InputVariant.filled` uses a tinted surface and a bottom border.
+
+Use `warningText` for non-blocking feedback and `successText` for confirmation.
+Message precedence is error, warning, success, then helper text. `onSubmit`
+validation waits for submission or an explicit `validate()` call. Passwords
+can be revealed when read-only, but all built-in actions are inert when disabled.
+Validation status icons sit in the leading inset without shifting the input or
+custom prefix. Custom suffix content and clear/password actions remain at the
+trailing edge.
 
 ## Customising Tokens
 

@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- **Form fields** default to compact density (40 dp painted surface, minimum
+  48 dp touch row) across text, decimal, dropdown, date, time, and OTP inputs.
+  Theme input tokens can opt back into regular height, and `isCompact` can
+  override density per field or button. Standard and split buttons use the
+  same theme density. Text fields also add explicit `warningText` and real
+  filled styling.
+  Borders stay 1 dp by default without focus layout shifts; multiline slots
+  align with the first line, and leading/trailing padding resolves separately.
+- **Accessibility and feedback** improve field contrast, focus indication,
+  reduced-motion behavior, named keyboard-operable clear/password controls,
+  and label semantics. Disabled password controls are inert, success messages
+  render, submit-only validation waits for submission, and reaching the
+  character limit no longer shows an error.
+
 - **Fix** `showD3CalendarPicker` (and `D3DateField(useD3CalendarPicker: true)`)
   cut off the last week of the month on phone-width dialogs. The month grid was
   sized for 40 dp rows while its square cells are a seventh of the grid's width

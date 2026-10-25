@@ -26,11 +26,11 @@ class TextFieldPage extends StatelessWidget {
           exampleCard('Variants', 'text_field/variants.dart',
               const TextFieldVariantsExample(),
               description:
-                  'Outlined is the default; filled suits inline or search-like fields.'),
+                  'Outlined is the default. Fields use compact visual height by default; set isCompact: false to compare the regular height. Touch targets stay full size.'),
           exampleCard('States', 'text_field/states.dart',
               const TextFieldStatesExample(),
               description:
-                  'The password field validates on blur, then live once an error shows.'),
+                  'The email field shows how an error indicator sits beside a custom mail prefix. The password field validates on blur, then live once an error shows.'),
         ],
       );
 }

@@ -167,6 +167,39 @@ parts.
   required/label handling) rather than relying on a submit-time error
   alone to communicate that a field is mandatory.
 
+## Text field density and feedback
+
+- Keep `D3TextField` border geometry constant across states (1 dp by default).
+  Its focused label uses the primary color, including while a validation
+  color owns the border; focus must not depend solely on changing border
+  thickness.
+- Text, decimal, dropdown, date, and time fields default to a 40 dp painted
+  surface within a minimum 48 dp
+  interaction row. `isCompact` can override the theme per field, and
+  `D3InputTokens.compactByDefault` can change the application default. Do not
+  overlap that row with nearby labels, fields, or helper text. Allow the
+  surface to grow for system text scaling, multiline content, and slots.
+- Keep labels and helper/error messages visually close to the painted field:
+  compact fields use a 2 dp label gap and place feedback immediately after
+  the 48 dp interaction row (4 dp from the 40 dp surface). Regular fields use
+  4 dp and 2 dp gaps respectively. Preserve the minimum touch row.
+- OTP cells follow the same theme density, painting at 40 dp with a minimum
+  48 dp interactive row; their per-widget `isCompact` value can override it.
+- Buttons use compact visual heights under the same theme setting, with the
+  same minimum 48 dp tap targets. Keep size variants distinct and allow
+  per-button `isCompact` overrides when a larger visual action is needed.
+- Preserve the actual 48×48 dp built-in action targets. Test corner taps,
+  rather than inferring target size from screen-reader bounds.
+- `warningText` is non-blocking. Message precedence is error, warning,
+  success, helper; do not show a success message over an error. Reaching a
+  character limit is a warning; exceeding it is an error.
+- Place warning, error, and success indicators in the leading inset without
+  shifting the input or custom prefix. Keep clear, password visibility, and
+  custom suffix content at the trailing edge.
+- Read-only password visibility is available for inspecting an existing
+  value. Disabled password visibility is inert. Read-only styling otherwise
+  retains the shared disabled-surface convention described below.
+
 ## Read-only / locked state
 
 - **One widget, one visual language, gated by a flag — never two

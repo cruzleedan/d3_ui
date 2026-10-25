@@ -27,7 +27,15 @@ class TextFieldVariantsExample extends StatelessWidget {
           initialValue: 'ada_l',
         ),
         D3TextField(
+          label: 'Regular height',
+          hintText: 'Per-field density override',
+          isCompact: false,
+          prefixIcon: Icons.search,
+        ),
+        D3TextField(
           label: 'Bio',
+          prefixIcon: Icons.notes,
+          suffixIcon: Icons.info_outline,
           hintText: 'A few words about you',
           maxLines: 3,
           maxLength: 120,

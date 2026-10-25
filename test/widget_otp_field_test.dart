@@ -98,10 +98,10 @@ void main() {
     expect(first.width, greaterThanOrEqualTo(40));
   });
 
-  testWidgets('cells are 48x56 at default width', (tester) async {
+  testWidgets('compact OTP cell touch targets stay 48x48', (tester) async {
     await tester.pumpWidget(_wrap(const D3OtpField()));
     final size = tester.getSize(find.byType(InkWell).first);
-    expect(size, const Size(48, 56));
+    expect(size, const Size(48, 48));
   });
 
   testWidgets('semantics is one text field with a label', (tester) async {

@@ -15,34 +15,30 @@ class D3FieldClearButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
-    return Semantics(
-      button: true,
-      label: 'Clear',
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minWidth: kMinInteractiveDimension,
-            minHeight: kMinInteractiveDimension,
-          ),
-          child: Center(
-            widthFactor: 1,
-            heightFactor: 1,
-            child: Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colors.onSurfaceVariant.withValues(alpha: 0.15),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.close_rounded,
-                size: 12,
-                color: colors.onSurfaceVariant,
-              ),
-            ),
+    return IconButton(
+      tooltip: 'Clear',
+      onPressed: onTap,
+      constraints: const BoxConstraints(
+        minWidth: kMinInteractiveDimension,
+        minHeight: kMinInteractiveDimension,
+      ),
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.standard,
+      icon: Container(
+        width: 18,
+        height: 18,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: colors.onSurfaceVariant.withValues(alpha: 0.15),
+        ),
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.close_rounded,
+          semanticLabel: 'Clear',
+          size: 12,
+          color: d3EnsureContrast(
+            colors.onSurfaceVariant,
+            colors.surfaceVariant,
           ),
         ),
       ),

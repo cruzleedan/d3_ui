@@ -38,6 +38,7 @@ class D3DropdownField<T, V> extends StatefulWidget {
     this.prefixIcon,
     this.isRequired = false,
     this.isEnabled = true,
+    this.isCompact,
     this.mode = D3DropdownMode.popup,
     this.searchable = false,
     this.searchHint = 'Search…',
@@ -69,6 +70,9 @@ class D3DropdownField<T, V> extends StatefulWidget {
   final IconData? prefixIcon;
   final bool isRequired;
   final bool isEnabled;
+
+  /// Overrides the theme's compact-density default for this field.
+  final bool? isCompact;
 
   /// Controls whether tapping opens a popup menu or a bottom sheet.
   final D3DropdownMode mode;
@@ -173,6 +177,7 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>>
   @override
   Widget build(BuildContext context) {
     final tokens = context.d3InputTokens;
+    final isCompact = widget.isCompact ?? tokens.compactByDefault;
     final colors = context.d3Colors;
 
     final status = _status;
@@ -225,56 +230,66 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>>
       ),
     );
 
-    final inputContainer = AnimatedContainer(
-      duration: tokens.borderAnimDuration,
-      decoration: BoxDecoration(
-        color: style.backgroundColor,
-        borderRadius: BorderRadius.circular(tokens.radius),
-        border: Border.all(
-          color: style.borderColor,
-          width: style.borderWidth,
-          strokeAlign: BorderSide.strokeAlignInside,
-        ),
-      ),
-      child: Focus(
-        focusNode: _focusNode,
-        child: widget.mode == D3DropdownMode.popup
-            ? PopupMenuButton<T>(
-                enabled: widget.isEnabled,
+    final inputContainer = Stack(
+      children: [
+        Positioned.fill(
+          top: isCompact ? D3Spacing.s4 : 0,
+          bottom: isCompact ? D3Spacing.s4 : 0,
+          child: IgnorePointer(
+            child: AnimatedContainer(
+              duration: tokens.borderAnimDuration,
+              decoration: BoxDecoration(
+                color: style.backgroundColor,
                 borderRadius: BorderRadius.circular(tokens.radius),
-                position: PopupMenuPosition.under,
-                onOpened: () {
-                  _focusNode.requestFocus();
-                  setState(() => _isFocused = true);
-                },
-                onCanceled: () => setState(() => _isFocused = false),
-                onSelected: (item) {
-                  setState(() {
-                    _selected = item;
-                    _isFocused = false;
-                  });
-                  widget.onChanged?.call(item);
-                },
-                itemBuilder: (_) => widget.items.map((item) {
-                  return PopupMenuItem<T>(
-                    value: item,
-                    child: Text(
-                      widget.itemLabel(item),
-                      style: TextStyle(
-                        fontSize: tokens.textSize,
-                        color: colors.onSurface,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                child: fieldContent,
-              )
-            : GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: widget.isEnabled ? _openSheet : null,
-                child: fieldContent,
+                border: Border.all(
+                  color: style.borderColor,
+                  width: style.borderWidth,
+                  strokeAlign: BorderSide.strokeAlignInside,
+                ),
               ),
-      ),
+            ),
+          ),
+        ),
+        Focus(
+          focusNode: _focusNode,
+          child: widget.mode == D3DropdownMode.popup
+              ? PopupMenuButton<T>(
+                  enabled: widget.isEnabled,
+                  borderRadius: BorderRadius.circular(tokens.radius),
+                  position: PopupMenuPosition.under,
+                  onOpened: () {
+                    _focusNode.requestFocus();
+                    setState(() => _isFocused = true);
+                  },
+                  onCanceled: () => setState(() => _isFocused = false),
+                  onSelected: (item) {
+                    setState(() {
+                      _selected = item;
+                      _isFocused = false;
+                    });
+                    widget.onChanged?.call(item);
+                  },
+                  itemBuilder: (_) => widget.items.map((item) {
+                    return PopupMenuItem<T>(
+                      value: item,
+                      child: Text(
+                        widget.itemLabel(item),
+                        style: TextStyle(
+                          fontSize: tokens.textSize,
+                          color: colors.onSurface,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  child: fieldContent,
+                )
+              : GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: widget.isEnabled ? _openSheet : null,
+                  child: fieldContent,
+                ),
+        ),
+      ],
     );
 
     Widget field = Column(
@@ -289,11 +304,14 @@ class _D3DropdownFieldState<T, V> extends State<D3DropdownField<T, V>>
             fontSize: tokens.labelSize,
           ),
         ),
-        const SizedBox(height: D3Spacing.s6),
+        SizedBox(height: isCompact ? D3Spacing.s2 : D3Spacing.s4),
         inputContainer,
         if (widget.errorText != null || widget.helperText != null)
           Padding(
-            padding: EdgeInsets.only(top: D3Spacing.s4, left: tokens.paddingH),
+            padding: EdgeInsets.only(
+              top: isCompact ? 0 : D3Spacing.s2,
+              left: tokens.paddingH,
+            ),
             child: Text(
               widget.errorText ?? widget.helperText!,
               style: TextStyle(

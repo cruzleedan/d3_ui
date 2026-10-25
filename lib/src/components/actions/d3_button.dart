@@ -23,7 +23,8 @@ enum D3ButtonState { idle, loading, success, error }
 /// - Hybrid foundation: [InkWell] for gesture + ripple + semantics;
 ///   [DecoratedBox] + [ConstrainedBox] for the custom visual shell.
 /// - Height is driven by vertical padding + a `minHeight` floor, NOT a fixed
-///   value — so it adapts naturally to the device's text scale setting.
+///   value — so it adapts naturally to the device's text scale setting. The
+///   theme compact default shortens visual sizes while preserving 48 dp targets.
 /// - Press feedback: ripple from tap origin + haptic. No scale transform.
 /// - Icons are fixed at 16dp and do not scale with text size.
 ///
@@ -52,6 +53,7 @@ class D3Button extends StatefulWidget {
     this.onPressed,
     this.variant = D3ButtonVariant.filled,
     this.size = D3ButtonSize.md,
+    this.isCompact,
     this.buttonState = D3ButtonState.idle,
     this.loadingLabel,
     this.leadingIcon,
@@ -71,6 +73,7 @@ class D3Button extends StatefulWidget {
     this.onPressed,
     this.variant = D3ButtonVariant.filled,
     this.size = D3ButtonSize.md,
+    this.isCompact,
     this.buttonState = D3ButtonState.idle,
     this.semanticsLabel,
     this.autofocus = false,
@@ -88,6 +91,9 @@ class D3Button extends StatefulWidget {
   final VoidCallback? onPressed;
   final D3ButtonVariant variant;
   final D3ButtonSize size;
+
+  /// Overrides the theme's compact-density default for this button.
+  final bool? isCompact;
   final D3ButtonState buttonState;
   final String? loadingLabel;
   final IconData? leadingIcon;
@@ -127,11 +133,15 @@ class _D3ButtonState extends State<D3Button> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.d3ButtonTokens;
+    final compact = widget.isCompact ?? context.d3InputTokens.compactByDefault;
     final colors = context.d3Colors;
     final effectiveState = widget.buttonState;
 
     // ── Sizing ──────────────────────────────────────────────────────────────
-    final (hPad, vPad, minH, radius, fontSize) = _sizeValues(tokens);
+    final (hPad, vPad, minH, radius, fontSize) = _sizeValues(
+      tokens,
+      compact: compact,
+    );
 
     // ── Colors ──────────────────────────────────────────────────────────────
     final (bgColor, fgColor, borderColor) = _variantColors(
@@ -209,9 +219,9 @@ class _D3ButtonState extends State<D3Button> {
     }
 
     // ── Tap region ───────────────────────────────────────────────────────────
-    // The smaller sizes are visually 30 to 46 dp tall but always have a 48 x 48
-    // dp tap region (as Material's buttons do). The ripple stays inside the
-    // button's own shape.
+    // Buttons always have a 48 x 48 dp tap region (as Material's buttons do).
+    // In compact mode their visual shell is shorter; the ripple stays inside
+    // the button's own shape.
     shell = D3PaddedTapTarget(child: shell);
 
     // ── Full width ───────────────────────────────────────────────────────────
@@ -325,40 +335,45 @@ class _D3ButtonState extends State<D3Button> {
   }
 
   /// Returns (hPad, vPad, minHeight, radius, fontSize) for the current size.
-  (double, double, double, double, double) _sizeValues(D3ButtonTokens t) {
+  (double, double, double, double, double) _sizeValues(
+    D3ButtonTokens t, {
+    required bool compact,
+  }) {
+    double height(double value) => compact ? value - 6 : value;
+
     return switch (widget.size) {
       D3ButtonSize.xs => (
         t.hPaddingXs,
         t.vPaddingXs,
-        t.minHeightXs,
+        height(t.minHeightXs),
         t.radiusXs,
         D3TypeScale.btnXsSize,
       ),
       D3ButtonSize.sm => (
         t.hPaddingXs + 4,
         t.vPaddingXs + 2,
-        t.minHeightSm,
+        height(t.minHeightSm),
         t.radiusSm,
         D3TypeScale.btnSmSize,
       ),
       D3ButtonSize.md => (
         t.hPaddingMd,
         t.vPaddingMd,
-        t.minHeightMd,
+        height(t.minHeightMd),
         t.radiusMd,
         D3TypeScale.btnMdSize,
       ),
       D3ButtonSize.lg => (
         t.hPaddingLg,
         t.vPaddingLg,
-        t.minHeightLg,
+        height(t.minHeightLg),
         t.radiusLg,
         D3TypeScale.btnLgSize,
       ),
       D3ButtonSize.xl => (
         t.hPaddingLg + 8,
         t.vPaddingLg + 2,
-        t.minHeightXl,
+        height(t.minHeightXl),
         t.radiusLg,
         D3TypeScale.btnXlSize,
       ),
