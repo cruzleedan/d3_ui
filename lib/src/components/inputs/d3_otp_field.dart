@@ -22,8 +22,9 @@ enum D3OtpType {
 /// Backspace deletes the last character. A pasted code that is too long is
 /// truncated, and characters that [type] does not allow are dropped.
 ///
-/// Cells are 48 wide and 56 tall, and shrink (down to 40 wide) so six of them
-/// fit a 320dp screen. [onCompleted] fires each time the last cell is filled.
+/// Cells paint 40 dp tall by default (56 dp when [isCompact] is false) inside
+/// at least 48 dp touch targets. They shrink (down to 40 dp wide) so six fit a
+/// 320 dp screen. [onCompleted] fires each time the last cell is filled.
 /// When [errorText] is set the cells turn to the error colour, the message
 /// shows below, and the cells shake once unless reduced motion is on.
 ///
@@ -49,6 +50,7 @@ class D3OtpField extends StatefulWidget {
     this.errorText,
     this.obscureText = false,
     this.enabled = true,
+    this.isCompact,
     this.autofocus = false,
     this.label = 'Verification code',
     this.autofillHints = const [AutofillHints.oneTimeCode],
@@ -76,6 +78,9 @@ class D3OtpField extends StatefulWidget {
 
   final bool enabled;
 
+  /// Overrides the theme's compact-density default for the OTP cells.
+  final bool? isCompact;
+
   final bool autofocus;
 
   /// Names the field for screen readers.
@@ -91,7 +96,7 @@ class _D3OtpFieldState extends State<D3OtpField>
     with SingleTickerProviderStateMixin {
   static const double _cellWidth = 48;
   static const double _cellMinWidth = 40;
-  static const double _cellHeight = 56;
+  static const double _regularCellHeight = 56;
 
   late final AnimationController _shake = AnimationController(
     vsync: this,
@@ -165,6 +170,9 @@ class _D3OtpFieldState extends State<D3OtpField>
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
+    final compact = widget.isCompact ?? context.d3InputTokens.compactByDefault;
+    final cellHeight = compact ? 40.0 : _regularCellHeight;
+    final touchHeight = math.max(kMinInteractiveDimension, cellHeight);
     final dim = context.d3ButtonTokens.disabledOpacity;
     final text = _controller.text;
     final hasError = widget.errorText != null;
@@ -218,22 +226,32 @@ class _D3OtpFieldState extends State<D3OtpField>
       } else {
         content = const SizedBox.shrink();
       }
-      return Material(
-        color: colors.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: context.d3Shape.circularMd,
-          side: BorderSide(
-            color: borderColor,
-            width: isActive || hasError ? 2 : 1,
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: _focusField,
-          child: SizedBox(
-            width: width,
-            height: _cellHeight,
-            child: Center(child: content),
+      return SizedBox(
+        width: width,
+        height: touchHeight,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _focusField,
+            borderRadius: context.d3Shape.circularMd,
+            child: Center(
+              child: Material(
+                color: colors.surfaceContainerLow,
+                shape: RoundedRectangleBorder(
+                  borderRadius: context.d3Shape.circularMd,
+                  side: BorderSide(
+                    color: borderColor,
+                    width: isActive || hasError ? 2 : 1,
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: SizedBox(
+                  width: width,
+                  height: cellHeight,
+                  child: Center(child: content),
+                ),
+              ),
+            ),
           ),
         ),
       );
@@ -325,7 +343,7 @@ class _D3OtpFieldState extends State<D3OtpField>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: _cellHeight,
+          height: touchHeight,
           child: ExcludeSemantics(child: field),
         ),
         if (hasError)

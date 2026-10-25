@@ -3,6 +3,7 @@ import 'package:d3_ui/src/tokens/d3_radius.dart';
 import 'package:d3_ui/src/tokens/d3_shape.dart';
 import 'package:d3_ui/src/tokens/d3_status.dart';
 import 'package:d3_ui/src/tokens/d3_spacing.dart';
+import 'package:d3_ui/src/tokens/d3_motion.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Custom ThemeExtension carrying all design system tokens.
@@ -220,6 +221,7 @@ class D3InputTokens {
     required this.tooltipMaxWidth,
     required this.tooltipPaddingH,
     required this.tooltipPaddingV,
+    this.compactByDefault = true,
   });
 
   /// Horizontal padding — label, input text, helper, counter all align to this.
@@ -231,7 +233,10 @@ class D3InputTokens {
   /// Border width in idle/disabled/filled state.
   final double borderWidth;
 
-  /// Border width when focused, in error, or in success state.
+  /// Emphasized border width for fields using the shared state resolver.
+  ///
+  /// Defaults to the regular width. D3TextField uses [borderWidth] for every
+  /// state to keep its stroke consistent.
   final double focusedBorderWidth;
 
   final double textSize;
@@ -252,24 +257,29 @@ class D3InputTokens {
   final double tooltipPaddingH;
   final double tooltipPaddingV;
 
+  /// Whether D3 form fields and standard buttons use compact density unless
+  /// overridden on the widget.
+  final bool compactByDefault;
+
   static const defaults = D3InputTokens(
     paddingH: D3Spacing.s16,
     paddingV: D3Spacing.s12,
     minHeight: 48,
     radius: D3Radius.md,
     borderWidth: 1.0,
-    focusedBorderWidth: 1.5,
+    focusedBorderWidth: 1.0,
     textSize: 14,
     labelSize: 12,
     helperSize: 11,
     iconSize: 18,
     disabledOpacity: 0.38,
     counterWarnThreshold: 0.80,
-    borderAnimDuration: Duration(milliseconds: 150),
+    borderAnimDuration: D3Motion.fast,
     tooltipRadius: 10,
     tooltipMaxWidth: 240,
     tooltipPaddingH: D3Spacing.s12,
     tooltipPaddingV: D3Spacing.s10,
+    compactByDefault: true,
   );
 
   D3InputTokens copyWith({
@@ -290,6 +300,7 @@ class D3InputTokens {
     double? tooltipMaxWidth,
     double? tooltipPaddingH,
     double? tooltipPaddingV,
+    bool? compactByDefault,
   }) {
     return D3InputTokens(
       paddingH: paddingH ?? this.paddingH,
@@ -309,6 +320,7 @@ class D3InputTokens {
       tooltipMaxWidth: tooltipMaxWidth ?? this.tooltipMaxWidth,
       tooltipPaddingH: tooltipPaddingH ?? this.tooltipPaddingH,
       tooltipPaddingV: tooltipPaddingV ?? this.tooltipPaddingV,
+      compactByDefault: compactByDefault ?? this.compactByDefault,
     );
   }
 }

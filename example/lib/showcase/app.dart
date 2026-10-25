@@ -77,7 +77,9 @@ class _ShowcaseAppState extends State<ShowcaseApp> {
         if (mounted) setState(() {});
       });
     } else {
-      setState(() {});
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        setState(() {});
+      });
     }
   }
 

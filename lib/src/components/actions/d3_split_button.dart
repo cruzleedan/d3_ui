@@ -41,6 +41,7 @@ class D3SplitButton extends StatefulWidget {
     this.icon,
     this.variant = D3SplitButtonVariant.filled,
     this.size = D3ButtonSize.md,
+    this.isCompact,
     this.enabled = true,
   }) : assert(items.length > 0, 'D3SplitButton requires at least one item.');
 
@@ -50,6 +51,9 @@ class D3SplitButton extends StatefulWidget {
   final IconData? icon;
   final D3SplitButtonVariant variant;
   final D3ButtonSize size;
+
+  /// Overrides the theme's compact-density default for this button.
+  final bool? isCompact;
   final bool enabled;
 
   @override
@@ -151,10 +155,19 @@ class _D3SplitButtonState extends State<D3SplitButton>
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
+    final compact = widget.isCompact ?? context.d3InputTokens.compactByDefault;
     final isEnabled = widget.enabled && widget.onPressed != null;
     final (bg, fg, borderColor) = _resolveColors(colors);
 
-    final height = _heights[widget.size]!;
+    final regularHeight = _heights[widget.size]!;
+    final height = !compact
+        ? regularHeight
+        : switch (widget.size) {
+            D3ButtonSize.xs || D3ButtonSize.sm => regularHeight,
+            D3ButtonSize.md => regularHeight,
+            D3ButtonSize.lg => regularHeight - 8,
+            D3ButtonSize.xl => regularHeight - 6,
+          };
     final pL = _leadingPadL[widget.size]!;
     final pR = _leadingPadR[widget.size]!;
     final tL = _trailingPadL[widget.size]!;
@@ -447,7 +460,7 @@ class _TrailingButtonState extends State<_TrailingButton>
                   end: widget.chevronTurns,
                 ),
                 duration: Duration.zero,
-                builder: (_, turns, __) => RotationTransition(
+                builder: (_, turns, _) => RotationTransition(
                   turns: AlwaysStoppedAnimation(turns),
                   child: Icon(
                     Icons.keyboard_arrow_down_rounded,

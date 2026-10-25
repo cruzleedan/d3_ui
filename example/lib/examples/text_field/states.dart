@@ -14,11 +14,17 @@ class TextFieldStatesExample extends StatelessWidget {
           label: 'Email',
           initialValue: 'ada@',
           errorText: 'Enter a valid email address',
+          prefixIcon: Icons.mail_outline_rounded,
         ),
         const D3TextField(
           label: 'Username',
           initialValue: 'ada_l',
           successText: 'Username is available',
+        ),
+        const D3TextField(
+          label: 'Delivery note',
+          initialValue: 'Leave by the gate',
+          warningText: 'This location is exposed to weather.',
         ),
         const D3TextField(label: 'Company', isRequired: true),
         const D3TextField(

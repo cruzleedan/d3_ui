@@ -7,12 +7,17 @@ Widget? buildD3FieldSlot({
   required D3InputTokens tokens,
   required D3ColorTokens colors,
   Widget? child,
+  Color? foregroundColor,
   IconData? icon,
   String? text,
 }) {
   if (child != null) return child;
   if (icon != null) {
-    return Icon(icon, size: tokens.iconSize, color: colors.onSurfaceVariant);
+    return Icon(
+      icon,
+      size: tokens.iconSize,
+      color: foregroundColor ?? colors.onSurfaceVariant,
+    );
   }
   if (text != null) {
     return Text(
@@ -20,7 +25,7 @@ Widget? buildD3FieldSlot({
       style: TextStyle(
         fontSize: tokens.textSize,
         fontWeight: FontWeight.w600,
-        color: colors.onSurfaceVariant,
+        color: foregroundColor ?? colors.onSurfaceVariant,
       ),
     );
   }

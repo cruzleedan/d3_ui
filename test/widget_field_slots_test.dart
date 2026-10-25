@@ -86,14 +86,21 @@ void main() {
           expect(rendered.size, 24);
           expect(
             rendered.color,
-            tester.element(find.byIcon(icon)).d3Colors.onSurfaceVariant,
+            decimal
+                ? tester.element(find.byIcon(icon)).d3Colors.onSurfaceVariant
+                : d3EnsureContrast(
+                    tester.element(find.byIcon(icon)).d3Colors.onSurfaceVariant,
+                    tester.element(find.byIcon(icon)).d3Colors.surfaceVariant,
+                  ),
           );
         }
         expect(find.text('USD'), findsNothing);
         expect(find.text('kg'), findsNothing);
         expect(
           tester.getTopLeft(find.byIcon(Icons.add)).dx,
-          tester.getTopLeft(find.byType(AnimatedContainer).first).dx + 21,
+          tester.getTopLeft(find.byType(AnimatedContainer).first).dx +
+              tokens.paddingH +
+              (decimal ? tokens.borderWidth : 0),
         );
 
         await tester.pumpWidget(
@@ -116,7 +123,7 @@ void main() {
   }
 
   testWidgets(
-    'text custom suffix stays after clear, validation and password controls',
+    'status icon leads the field and suffix follows clear and password actions',
     (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -134,7 +141,6 @@ void main() {
       await tester.pumpAndSettle();
       final icons = [
         Icons.close_rounded,
-        Icons.warning_amber_rounded,
         Icons.visibility_outlined,
         Icons.help_outline,
       ];
@@ -144,6 +150,10 @@ void main() {
           greaterThan(tester.getCenter(find.byIcon(icons[i - 1])).dx),
         );
       }
+      expect(
+        tester.getCenter(find.byIcon(Icons.warning_amber_rounded)).dx,
+        lessThan(tester.getCenter(find.text('ID')).dx),
+      );
       expect(find.text('ID'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },

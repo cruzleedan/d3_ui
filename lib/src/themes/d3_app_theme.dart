@@ -15,8 +15,11 @@ abstract final class D3AppTheme {
   /// Default light theme.
   ///
   /// [colors] overrides the default [D3ColorTokens.light] palette.
-  /// [inputTokens] overrides individual input field tokens — applied on top of
-  /// [D3InputTokens.defaults] via copyWith, so only set what you want to change.
+  /// [inputTokens] overrides individual form field tokens and shared compact
+  /// density for inputs/buttons — applied on top of [D3InputTokens.defaults]
+  /// via copyWith, so only set what you want to change.
+  /// Use `inputTokens: D3InputTokens.defaults.copyWith(compactByDefault: false)`
+  /// to make regular-height text fields the theme default.
   /// [buttonTokens] overrides individual button tokens similarly.
   /// [overrides] replaces the entire [D3TokensExtension] — prefer the above
   /// targeted parameters unless you need to replace everything at once.
