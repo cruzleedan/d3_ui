@@ -96,11 +96,12 @@ void main() {
         }
         expect(find.text('USD'), findsNothing);
         expect(find.text('kg'), findsNothing);
+        // Both fields paint their border inside the box without moving the
+        // content, so the prefix sits paddingH from the box edge in each.
         expect(
           tester.getTopLeft(find.byIcon(Icons.add)).dx,
           tester.getTopLeft(find.byType(AnimatedContainer).first).dx +
-              tokens.paddingH +
-              (decimal ? tokens.borderWidth : 0),
+              tokens.paddingH,
         );
 
         await tester.pumpWidget(
