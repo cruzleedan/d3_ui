@@ -16,6 +16,11 @@
   render, submit-only validation waits for submission, and reaching the
   character limit no longer shows an error.
 
+- **Fix** `D3Screen`'s compact title bar drew the title over wide trailing
+  actions (a status label, or any action at a large text scale): the title was
+  inset a fixed 56 dp on each side whatever the actions' width. The bar now lays
+  out with `NavigationToolbar`, so the title stays centred when it fits and
+  otherwise sits between leading and trailing, ending in an ellipsis.
 - **Fix** `showD3CalendarPicker` (and `D3DateField(useD3CalendarPicker: true)`)
   cut off the last week of the month on phone-width dialogs. The month grid was
   sized for 40 dp rows while its square cells are a seventh of the grid's width
