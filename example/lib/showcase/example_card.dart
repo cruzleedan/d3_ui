@@ -328,11 +328,13 @@ class PageHeader extends StatelessWidget {
     required this.title,
     required this.summary,
     this.importLine = "import 'package:d3_ui/d3_ui.dart';",
+    this.showImportLine = true,
   });
 
   final String title;
   final String summary;
   final String importLine;
+  final bool showImportLine;
 
   @override
   Widget build(BuildContext context) {
@@ -354,22 +356,24 @@ class PageHeader extends StatelessWidget {
           summary,
           style: TextStyle(fontSize: 15, color: colors.onSurfaceVariant),
         ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: colors.surfaceVariant,
-            borderRadius: context.d3Shape.circularMd,
-          ),
-          child: SelectableText(
-            importLine,
-            style: TextStyle(
-              fontFamily: 'RobotoMono',
-              fontSize: 12.5,
-              color: colors.onSurface,
+        if (showImportLine) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: colors.surfaceVariant,
+              borderRadius: context.d3Shape.circularMd,
+            ),
+            child: SelectableText(
+              importLine,
+              style: TextStyle(
+                fontFamily: 'RobotoMono',
+                fontSize: 12.5,
+                color: colors.onSurface,
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

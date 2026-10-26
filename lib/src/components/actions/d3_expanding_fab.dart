@@ -49,12 +49,18 @@ class D3ExpandingFab extends StatefulWidget {
     this.icon = Icons.add_rounded,
     this.openIcon = Icons.close_rounded,
     this.semanticsLabel = 'Open actions menu',
+    this.closeSemanticsLabel = 'Close actions menu',
   });
 
   final List<D3FabAction> actions;
   final IconData icon;
   final IconData openIcon;
+
+  /// Label announced while the menu is closed.
   final String semanticsLabel;
+
+  /// Label announced while the menu is open.
+  final String closeSemanticsLabel;
 
   static const double _size = 56;
 
@@ -104,6 +110,7 @@ class _D3ExpandingFabState extends State<D3ExpandingFab>
         icon: widget.icon,
         openIcon: widget.openIcon,
         semanticsLabel: widget.semanticsLabel,
+        closeSemanticsLabel: widget.closeSemanticsLabel,
         onActionSelected: (action) {
           _close();
           action.onPressed();
@@ -142,6 +149,7 @@ class _D3ExpandingFabState extends State<D3ExpandingFab>
               icon: widget.icon,
               openIcon: widget.openIcon,
               semanticsLabel: widget.semanticsLabel,
+              closeSemanticsLabel: widget.closeSemanticsLabel,
               onTap: _toggle,
             ),
     );
@@ -159,6 +167,7 @@ class _D3FabButton extends StatelessWidget {
     required this.icon,
     required this.openIcon,
     required this.semanticsLabel,
+    required this.closeSemanticsLabel,
     required this.onTap,
   });
 
@@ -166,6 +175,7 @@ class _D3FabButton extends StatelessWidget {
   final IconData icon;
   final IconData openIcon;
   final String semanticsLabel;
+  final String closeSemanticsLabel;
   final VoidCallback onTap;
 
   @override
@@ -174,7 +184,8 @@ class _D3FabButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: semanticsLabel,
+      expanded: isOpen,
+      label: isOpen ? closeSemanticsLabel : semanticsLabel,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -208,6 +219,7 @@ class _ExpandingFabOverlay extends StatelessWidget {
     required this.icon,
     required this.openIcon,
     required this.semanticsLabel,
+    required this.closeSemanticsLabel,
     required this.onActionSelected,
     required this.onToggleClose,
   });
@@ -218,6 +230,7 @@ class _ExpandingFabOverlay extends StatelessWidget {
   final IconData icon;
   final IconData openIcon;
   final String semanticsLabel;
+  final String closeSemanticsLabel;
   final ValueChanged<D3FabAction> onActionSelected;
   final VoidCallback onToggleClose;
 
@@ -261,6 +274,7 @@ class _ExpandingFabOverlay extends StatelessWidget {
                 icon: icon,
                 openIcon: openIcon,
                 semanticsLabel: semanticsLabel,
+                closeSemanticsLabel: closeSemanticsLabel,
                 onTap: onToggleClose,
               ),
             ),

@@ -138,6 +138,14 @@ parts.
   a selection the user has been assembling is the more costly surprise,
   and the indicator gives them an unambiguous target for changing it.
 
+## Accessible actions
+
+- Give every icon-only action a meaningful, action-oriented screen-reader
+  label. `D3Button.icon` requires `semanticsLabel`; do not leave it empty.
+- For controls that expand or collapse content, update the accessible label
+  with the available action and expose the expanded state (as
+  `D3ExpandingFab` does).
+
 ## Forms
 
 - **Validation timing: `D3ValidationMode.onBlurThenChange`** (the default

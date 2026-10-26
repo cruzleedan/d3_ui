@@ -125,5 +125,6 @@ Widget d3ButtonFullWidthPreview() {
 
 @D3Preview(name: 'Icon only', group: 'D3Button')
 Widget d3ButtonIconOnlyPreview() {
-  return D3Button.icon(icon: Icons.add, onPressed: () {});
+  return D3Button.icon(
+      icon: Icons.add, semanticsLabel: 'Add item', onPressed: () {});
 }

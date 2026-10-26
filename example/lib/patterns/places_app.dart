@@ -43,7 +43,10 @@ class _PlacesHome extends StatefulWidget {
 class _PlacesHomeState extends State<_PlacesHome> {
   final List<Place> _places = [...seedPlaces];
   final Set<String> _saved = {'p1'};
+  final TextEditingController _addNameController = TextEditingController();
+  final ValueNotifier<bool> _canSavePlace = ValueNotifier<bool>(false);
   Set<String> _cuisineFilter = {};
+  String? _addCuisine;
   String? _selectedId = 'p1';
   bool _loading = true;
   int _tab = 0;
@@ -55,9 +58,22 @@ class _PlacesHomeState extends State<_PlacesHome> {
   @override
   void initState() {
     super.initState();
+    _addNameController.addListener(_updateCanSavePlace);
     Future<void>.delayed(const Duration(milliseconds: 700), () {
       if (mounted) setState(() => _loading = false);
     });
+  }
+
+  @override
+  void dispose() {
+    _addNameController.removeListener(_updateCanSavePlace);
+    _addNameController.dispose();
+    _canSavePlace.dispose();
+    super.dispose();
+  }
+
+  void _updateCanSavePlace() {
+    _canSavePlace.value = _addNameController.text.trim().isNotEmpty;
   }
 
   // ── Data ───────────────────────────────────────────────────────────────────
@@ -118,11 +134,9 @@ class _PlacesHomeState extends State<_PlacesHome> {
   }
 
   Future<void> _add() async {
-    final name = TextEditingController();
-    final canSave = ValueNotifier<bool>(false);
+    _addNameController.clear();
+    _addCuisine = null;
     final bodyKey = GlobalKey();
-    String? cuisine;
-    name.addListener(() => canSave.value = name.text.trim().isNotEmpty);
 
     final added = await D3FormSheet.show<Place>(
       context,
@@ -130,14 +144,14 @@ class _PlacesHomeState extends State<_PlacesHome> {
       title: 'Add a place',
       primaryAction: D3FormSheetAction(
         label: 'Add',
-        listenable: canSave,
-        enabledBuilder: () => canSave.value,
+        listenable: _canSavePlace,
+        enabledBuilder: () => _canSavePlace.value,
         onPressed: () => D3FormSheet.pop(
           bodyKey.currentContext!,
           Place(
             id: 'new-${_places.length}',
-            name: name.text.trim(),
-            cuisine: cuisine ?? 'Brunch',
+            name: _addNameController.text.trim(),
+            cuisine: _addCuisine ?? 'Brunch',
             area: 'Near you',
             rating: 0,
             distanceKm: 0.3,
@@ -153,7 +167,11 @@ class _PlacesHomeState extends State<_PlacesHome> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              D3TextField(label: 'Name', controller: name, isRequired: true),
+              D3TextField(
+                label: 'Name',
+                controller: _addNameController,
+                isRequired: true,
+              ),
               const SizedBox(height: 12),
               D3DropdownField<String, String>(
                 label: 'Cuisine',
@@ -161,15 +179,13 @@ class _PlacesHomeState extends State<_PlacesHome> {
                 itemLabel: (c) => c,
                 itemValue: (c) => c,
                 hintText: 'Choose one',
-                onChanged: (c) => cuisine = c,
+                onChanged: (c) => _addCuisine = c,
               ),
             ],
           ),
         ),
       ),
     );
-    name.dispose();
-    canSave.dispose();
     if (added != null && mounted) {
       setState(() {
         _places.insert(0, added);

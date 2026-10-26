@@ -153,13 +153,18 @@ class _ButtonGalleryState extends State<ButtonGallery> {
                       leadingIcon: Icons.tune_rounded,
                       variant: D3ButtonVariant.outlined,
                       onPressed: () {}),
-                  D3Button.icon(icon: Icons.add_rounded, onPressed: () {}),
+                  D3Button.icon(
+                      icon: Icons.add_rounded,
+                      semanticsLabel: 'Add item',
+                      onPressed: () {}),
                   D3Button.icon(
                       icon: Icons.bookmark_outline_rounded,
+                      semanticsLabel: 'Save bookmark',
                       variant: D3ButtonVariant.tonal,
                       onPressed: () {}),
                   D3Button.icon(
                       icon: Icons.more_horiz_rounded,
+                      semanticsLabel: 'More options',
                       variant: D3ButtonVariant.outlined,
                       onPressed: () {}),
                 ],

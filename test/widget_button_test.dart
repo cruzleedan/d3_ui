@@ -69,10 +69,30 @@ void main() {
 
     testWidgets('icon-only variant renders without label', (tester) async {
       await tester.pumpWidget(
-        _wrap(D3Button.icon(icon: Icons.add, onPressed: () {})),
+        _wrap(
+          D3Button.icon(
+            icon: Icons.add,
+            semanticsLabel: 'Add item',
+            onPressed: () {},
+          ),
+        ),
       );
-      // Should render an Icon widget
+      // Should render an Icon widget and expose the required action label.
       expect(find.byIcon(Icons.add), findsOneWidget);
+      expect(find.bySemanticsLabel('Add item'), findsOneWidget);
+    });
+
+    testWidgets('rejects a blank icon-only semantics label', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          D3Button.icon(
+            icon: Icons.add,
+            semanticsLabel: '   ',
+            onPressed: () {},
+          ),
+        ),
+      );
+      expect(tester.takeException(), isA<FlutterError>());
     });
 
     testWidgets('isFullWidth stretches to available width', (tester) async {

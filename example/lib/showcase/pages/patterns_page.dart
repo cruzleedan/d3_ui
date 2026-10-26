@@ -62,12 +62,9 @@ class _PatternsPageState extends State<PatternsPage> {
           child: const PageHeader(
             title: 'Places',
             summary:
-                'A small app with made-up data, built only from d3_ui parts, and '
-                'laid out the way Material asks for each window size: a bottom bar '
-                'on a phone, a rail on a tablet, and a rail with list and detail '
-                'side by side on a desktop. It has a search anchor with filters, a '
-                'loading state, a details sheet, a form sheet, swipe to remove '
-                'with a confirm dialog and an undo toast, and settings.',
+                'A small places app showing how d3_ui adapts lists, forms, and '
+                'navigation from phone to desktop.',
+            showImportLine: false,
           ),
         ),
         const SizedBox(height: 16),
