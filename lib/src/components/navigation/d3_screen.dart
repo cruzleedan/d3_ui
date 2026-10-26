@@ -555,51 +555,43 @@ class _CompactBar extends StatelessWidget {
         padding: EdgeInsets.only(top: topPadding),
         child: SizedBox(
           height: 48,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // ── Center title ─────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 56),
-                child: AnimatedOpacity(
-                  opacity: titleOpacity,
-                  duration: D3Motion.base,
-                  curve: D3Motion.standard,
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: D3TypeScale.titleLgSize,
-                      fontWeight: FontWeight.w600,
-                      color: colors.onSurface,
-                      height: D3TypeFace.tight,
-                    ),
-                  ),
+          // NavigationToolbar centres the title when it fits and otherwise
+          // keeps it between the leading and trailing widgets, so a wide
+          // action (a status label, or any action at a large text scale)
+          // shortens the title with an ellipsis instead of drawing over it.
+          child: NavigationToolbar(
+            centerMiddle: true,
+            middleSpacing: D3Spacing.s8,
+            // ── Leading ─────────────────────────────────────────────────────
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: isCancel
+                  ? _CancelButton(colors: colors)
+                  : _LeadingWidget(leading: leading, colors: colors),
+            ),
+            // ── Center title ────────────────────────────────────────────────
+            middle: AnimatedOpacity(
+              opacity: titleOpacity,
+              duration: D3Motion.base,
+              curve: D3Motion.standard,
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: D3TypeScale.titleLgSize,
+                  fontWeight: FontWeight.w600,
+                  color: colors.onSurface,
+                  height: D3TypeFace.tight,
                 ),
               ),
-
-              // ── Leading ───────────────────────────────────────────────────
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: isCancel
-                      ? _CancelButton(colors: colors)
-                      : _LeadingWidget(leading: leading, colors: colors),
-                ),
-              ),
-
-              // ── Trailing actions ─────────────────────────────────────────
-              Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: _ActionsRow(actions: actions, colors: colors),
-                ),
-              ),
-            ],
+            ),
+            // ── Trailing actions ────────────────────────────────────────────
+            trailing: Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: _ActionsRow(actions: actions, colors: colors),
+            ),
           ),
         ),
       ),
