@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:d3_ui/d3_ui.dart';
 
@@ -9,7 +10,7 @@ import 'package:d3_ui/d3_ui.dart';
 /// A single option in a [D3SegmentedControl].
 ///
 /// At least one of [label] or [icon] must be provided.
-class D3Segment<T> {
+class D3Segment<T extends Object> {
   const D3Segment({
     required this.value,
     this.label,
@@ -41,7 +42,9 @@ class D3Segment<T> {
 
 /// A horizontal row of 2–4 mutually exclusive options.
 ///
-/// The active segment slides a white pill indicator under the selection.
+/// The active segment slides under the selection using Flutter's
+/// [CupertinoSlidingSegmentedControl] interaction and motion. D3 semantic
+/// colors, typography, and spacing define its appearance.
 /// Supports text-only, icon-only, and icon+text segments.
 ///
 /// ```dart
@@ -78,7 +81,7 @@ class D3Segment<T> {
 ///   onChanged: (i) => setState(() => _view = i),
 /// )
 /// ```
-class D3SegmentedControl<T> extends StatefulWidget {
+class D3SegmentedControl<T extends Object> extends StatefulWidget {
   const D3SegmentedControl({
     super.key,
     required this.segments,
@@ -102,203 +105,92 @@ class D3SegmentedControl<T> extends StatefulWidget {
   final ValueChanged<T> onChanged;
 
   /// When true the control stretches to fill its parent's width, with each
-  /// segment taking equal space.
+  /// segment taking equal space. Otherwise, segments use their content width
+  /// and the control is centered.
   final bool expand;
 
   @override
   State<D3SegmentedControl<T>> createState() => _D3SegmentedControlState<T>();
 }
 
-class _D3SegmentedControlState<T> extends State<D3SegmentedControl<T>>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _position;
-
-  int _previousIndex = 0;
-
-  int get _selectedIndex => widget.selected == null
-      ? -1
-      : widget.segments.indexWhere((s) => s.value == widget.selected);
-
-  @override
-  void initState() {
-    super.initState();
-    _previousIndex = _selectedIndex;
-    _controller = AnimationController(vsync: this, duration: D3Motion.fast);
-    _position = Tween<double>(
-      begin: _selectedIndex.toDouble(),
-      end: _selectedIndex.toDouble(),
-    ).animate(CurvedAnimation(parent: _controller, curve: D3Motion.standard));
-  }
-
-  @override
-  void didUpdateWidget(D3SegmentedControl<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final newIndex = _selectedIndex;
-    final oldIndex = oldWidget.selected == null
-        ? -1
-        : oldWidget.segments.indexWhere((s) => s.value == oldWidget.selected);
-    if (oldIndex != newIndex) {
-      _position = Tween<double>(
-        begin: _previousIndex.toDouble(),
-        end: newIndex.toDouble(),
-      ).animate(CurvedAnimation(parent: _controller, curve: D3Motion.standard));
-      _previousIndex = newIndex;
-      _controller
-        ..reset()
-        ..forward();
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onTap(int index) {
-    if (index == _selectedIndex) return;
-    HapticFeedback.selectionClick();
-    widget.onChanged(widget.segments[index].value);
-  }
-
+class _D3SegmentedControlState<T extends Object>
+    extends State<D3SegmentedControl<T>> {
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
-
-    Widget track = AnimatedBuilder(
-      animation: _position,
-      builder: (context, _) {
-        return _SegmentTrack(
-          segments: widget.segments,
-          selectedIndex: _selectedIndex,
-          animatedPosition: _position.value,
-          colors: colors,
-          onTap: _onTap,
-        );
-      },
-    );
-
-    if (widget.expand) {
-      track = SizedBox(width: double.infinity, child: track);
-    }
-
-    return track;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Track layout via CustomMultiChildLayout
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _SegmentTrack extends StatelessWidget {
-  const _SegmentTrack({
-    required this.segments,
-    required this.selectedIndex,
-    required this.animatedPosition,
-    required this.colors,
-    required this.onTap,
-  });
-
-  final List<D3Segment<Object?>> segments;
-  final int selectedIndex;
-  final double animatedPosition;
-  final D3ColorTokens colors;
-  final ValueChanged<int> onTap;
-
-  static const double _trackPadding = 3.0;
-  static const double _pillRadius = 8.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final count = segments.length;
-
+    final selected =
+        widget.segments.any((segment) => segment.value == widget.selected)
+        ? widget.selected
+        : null;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final minWidth =
-            count * kMinInteractiveDimension + _trackPadding * (count + 1);
-        final width =
-            constraints.hasBoundedWidth && constraints.maxWidth > minWidth
-            ? constraints.maxWidth
-            : minWidth;
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(
-            width: width,
-            child: Container(
-              padding: const EdgeInsets.all(_trackPadding),
-              decoration: BoxDecoration(
-                color: colors.onSurface.withValues(alpha: 0.07),
-                borderRadius: BorderRadius.circular(
-                  D3Radius.sm + _trackPadding,
-                ),
-              ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final totalWidth = constraints.maxWidth;
-                  // Each segment gets equal space minus the shared padding.
-                  final segWidth =
-                      totalWidth / count - _trackPadding * (count - 1) / count;
-                  // Pill x offset interpolated from animated position.
-                  final pillLeft =
-                      animatedPosition * (segWidth + _trackPadding);
-
-                  // At least 48 dp, taller when large system text wraps a label.
-                  return Stack(
-                    children: [
-                      // ── Animated pill (hidden when nothing is selected) ───────────
-                      if (selectedIndex >= 0 && animatedPosition >= 0)
-                        Positioned(
-                          left: pillLeft,
-                          top: 0,
-                          bottom: 0,
-                          width: segWidth,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: colors.surface,
-                              borderRadius: BorderRadius.circular(_pillRadius),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.10),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      // ── Segment tap targets ────────────────────────────────────────
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minHeight: kMinInteractiveDimension,
-                        ),
-                        child: IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              for (int i = 0; i < count; i++) ...[
-                                if (i > 0) const SizedBox(width: _trackPadding),
-                                Expanded(
-                                  child: _SegmentItem(
-                                    segment: segments[i],
-                                    isSelected: i == selectedIndex,
-                                    colors: colors,
-                                    onTap: () => onTap(i),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+        final segmentWidth = widget.expand && constraints.hasBoundedWidth
+            ? (constraints.maxWidth -
+                      D3Spacing.s8 -
+                      D3Spacing.s2 * (widget.segments.length - 1)) /
+                  widget.segments.length
+            : null;
+        final children = <T, Widget>{
+          for (final segment in widget.segments)
+            segment.value: _D3SegmentContent(
+              segment: segment,
+              isSelected: segment.value == selected,
+              colors: colors,
+              maxLabelWidth: segmentWidth == null
+                  ? null
+                  : (segmentWidth -
+                            D3Spacing.s8 -
+                            (segment.icon == null ? 0 : 18 + D3Spacing.s6))
+                        .clamp(0.0, double.infinity)
+                        .toDouble(),
             ),
-          ),
-        );
+        };
+        if (segmentWidth != null) {
+          for (final segment in widget.segments) {
+            children[segment.value] = SizedBox(
+              width: segmentWidth,
+              child: children[segment.value],
+            );
+          }
+        }
+
+        void onValueChanged(T? value) {
+          if (value == null || value == widget.selected) return;
+          HapticFeedback.selectionClick();
+          widget.onChanged(value);
+        }
+
+        final reducedMotion = MediaQuery.disableAnimationsOf(context);
+        final control = reducedMotion
+            ? CupertinoSegmentedControl<T>(
+                groupValue: selected,
+                onValueChanged: onValueChanged,
+                selectedColor: colors.primaryContainer,
+                unselectedColor: colors.surfaceContainerHigh,
+                borderColor: colors.outlineVariant,
+                pressedColor: colors.surfaceContainer,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: D3Spacing.s4,
+                  vertical: D3Spacing.s2,
+                ),
+                children: children,
+              )
+            : CupertinoSlidingSegmentedControl<T>(
+                groupValue: selected,
+                onValueChanged: onValueChanged,
+                backgroundColor: colors.surfaceContainerHigh,
+                thumbColor: colors.primaryContainer,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: D3Spacing.s4,
+                  vertical: D3Spacing.s2,
+                ),
+                proportionalWidth: !widget.expand,
+                children: children,
+              );
+
+        return widget.expand
+            ? SizedBox(width: double.infinity, child: control)
+            : Center(child: control);
       },
     );
   }
@@ -308,64 +200,77 @@ class _SegmentTrack extends StatelessWidget {
 // Individual segment
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _SegmentItem extends StatelessWidget {
-  const _SegmentItem({
+class _D3SegmentContent<T extends Object> extends StatelessWidget {
+  const _D3SegmentContent({
     required this.segment,
     required this.isSelected,
     required this.colors,
-    required this.onTap,
+    required this.maxLabelWidth,
   });
 
-  final D3Segment<Object?> segment;
+  final D3Segment<T> segment;
   final bool isSelected;
   final D3ColorTokens colors;
-  final VoidCallback onTap;
+  final double? maxLabelWidth;
 
   @override
   Widget build(BuildContext context) {
-    final labelColor = isSelected ? colors.onSurface : colors.onSurfaceVariant;
-
-    Widget inner = Row(
+    final labelColor = isSelected
+        ? colors.onPrimaryContainer
+        : colors.onSurfaceVariant;
+    final content = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         if (segment.icon != null)
-          Icon(segment.icon, size: 15, color: labelColor),
+          TweenAnimationBuilder<Color?>(
+            tween: ColorTween(begin: labelColor, end: labelColor),
+            duration: D3Motion.base,
+            curve: D3Motion.decelerate,
+            builder: (context, color, _) =>
+                Icon(segment.icon, size: 18, color: color),
+          ),
         if (segment.icon != null && segment.label != null)
-          const SizedBox(width: 5),
+          const SizedBox(width: D3Spacing.s6),
         if (segment.label != null)
-          Flexible(
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: maxLabelWidth ?? double.infinity,
+            ),
             child: Text(
               segment.label!,
-              // Wraps to a second line rather than cutting the label.
               maxLines: 2,
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: labelColor,
-                height: 1,
-              ),
             ),
           ),
       ],
     );
 
     return Semantics(
-      label: segment.semanticsLabel ?? segment.label,
-      button: true,
-      selected: isSelected,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(D3Radius.sm),
-          splashColor: colors.primary.withValues(alpha: 0.14),
-          highlightColor: colors.primary.withValues(alpha: 0.08),
-          onTap: onTap,
+      label: segment.semanticsLabel,
+      child: ExcludeSemantics(
+        excluding: segment.semanticsLabel != null,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: kMinInteractiveDimension,
+          ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Center(child: inner),
+            padding: const EdgeInsets.symmetric(
+              horizontal: D3Spacing.s4,
+              vertical: D3Spacing.s8,
+            ),
+            child: Center(
+              child: AnimatedDefaultTextStyle(
+                style:
+                    (Theme.of(context).textTheme.labelMedium ??
+                            const TextStyle())
+                        .copyWith(color: labelColor),
+                duration: D3Motion.base,
+                curve: D3Motion.decelerate,
+                child: content,
+              ),
+            ),
           ),
         ),
       ),

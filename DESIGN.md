@@ -92,6 +92,15 @@ sheet, menu, and navigation components for their respective tasks.
 [D3TokensExtension](lib/src/themes/d3_theme_extension.dart) provides
 button, input, gallery, shape, status, and color configuration.
 
+`D3SegmentedControl` uses Flutter's `CupertinoSlidingSegmentedControl` for
+its drag interaction and sliding thumb, while replacing the default iOS
+palette and typography with D3 semantic tokens. The framework's subtle thumb
+shadow and critically damped spring are intentional exceptions to the otherwise
+flat, restrained surface and motion defaults. When reduced motion is enabled,
+it switches to the non-sliding Cupertino segmented control. Keep its segments
+at Android's 48 dp minimum touch height and keep the spring's motion functional
+rather than decorative.
+
 Follow [UX_GUIDELINES.md](UX_GUIDELINES.md) when choosing modal surfaces
 and placing primary actions. Represent loading, empty, error, and
 populated states explicitly. Preserve the field components' validation
