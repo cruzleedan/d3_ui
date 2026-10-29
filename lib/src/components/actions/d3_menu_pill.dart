@@ -92,7 +92,7 @@ class D3MenuPill<T> extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: colors.onSurfaceVariant,
+                          color: colors.onSurface,
                         ),
                       ),
                       const SizedBox(width: D3Spacing.s2),

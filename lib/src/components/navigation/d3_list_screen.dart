@@ -792,60 +792,69 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
                     children: [
                       // Filter pill — taps open popup menu
                       if (widget.filterOptions.isNotEmpty)
-                        GestureDetector(
-                          key: _pillKey,
-                          onTap: _openFilterMenu,
-                          behavior: HitTestBehavior.opaque,
-                          child: SizedBox(
-                            height: 48,
-                            child: Center(
-                              child: AnimatedContainer(
-                                duration: D3Motion.fast,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: D3Spacing.s12,
-                                  vertical: D3Spacing.s6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isFiltered
-                                      ? colors.primary.withValues(alpha: 0.12)
-                                      : colors.onSurface.withValues(
-                                          alpha: 0.06,
-                                        ),
-                                  borderRadius: BorderRadius.circular(
-                                    D3Radius.full,
+                        Semantics(
+                          button: true,
+                          label:
+                              'Filter: ${activeLabel ?? widget.filterOptions.first.label}',
+                          excludeSemantics: true,
+                          child: GestureDetector(
+                            key: _pillKey,
+                            onTap: _openFilterMenu,
+                            behavior: HitTestBehavior.opaque,
+                            child: SizedBox(
+                              height: 48,
+                              child: Center(
+                                child: AnimatedContainer(
+                                  duration: D3Motion.fast,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: D3Spacing.s12,
+                                    vertical: D3Spacing.s6,
                                   ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.filter_list_rounded,
-                                      size: 14,
-                                      color: isFiltered
-                                          ? colors.primary
-                                          : colors.onSurfaceVariant,
+                                  decoration: BoxDecoration(
+                                    color: isFiltered
+                                        ? colors.primary.withValues(alpha: 0.12)
+                                        : colors.onSurface.withValues(
+                                            alpha: 0.06,
+                                          ),
+                                    borderRadius: BorderRadius.circular(
+                                      D3Radius.full,
                                     ),
-                                    const SizedBox(width: D3Spacing.s4),
-                                    Text(
-                                      activeLabel ??
-                                          widget.filterOptions.first.label,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.filter_list_rounded,
+                                        size: 14,
                                         color: isFiltered
                                             ? colors.primary
                                             : colors.onSurfaceVariant,
                                       ),
-                                    ),
-                                    const SizedBox(width: D3Spacing.s2),
-                                    Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                      size: 14,
-                                      color: isFiltered
-                                          ? colors.primary
-                                          : colors.onSurfaceVariant,
-                                    ),
-                                  ],
+                                      const SizedBox(width: D3Spacing.s4),
+                                      Text(
+                                        activeLabel ??
+                                            widget.filterOptions.first.label,
+                                        // Full-strength text when not filtered:
+                                        // the muted role fell under 4.5:1 on
+                                        // the pill's tint in the light theme.
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: isFiltered
+                                              ? colors.primary
+                                              : colors.onSurface,
+                                        ),
+                                      ),
+                                      const SizedBox(width: D3Spacing.s2),
+                                      Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        size: 14,
+                                        color: isFiltered
+                                            ? colors.primary
+                                            : colors.onSurfaceVariant,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
