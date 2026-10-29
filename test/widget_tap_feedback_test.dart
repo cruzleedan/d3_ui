@@ -156,7 +156,9 @@ void main() {
     expect(find.byType(D3Screen), findsNothing);
   });
 
-  testWidgets('D3SegmentedControl segment shows ink and taps', (tester) async {
+  testWidgets('D3SegmentedControl segment shows press feedback and taps', (
+    tester,
+  ) async {
     Object? picked;
     await tester.pumpWidget(
       _wrap(
@@ -170,12 +172,17 @@ void main() {
         ),
       ),
     );
-    await _check(
-      tester,
-      control: find.byType(D3SegmentedControl<int>),
-      target: find.text('Two'),
-      taps: () => picked == 2 ? 1 : 0,
+    // The control is a sliding segmented control, which answers a press with
+    // its thumb and a pressed fill rather than an ink splash, so there is no
+    // ink widget to look for: check that a held press paints and a tap lands.
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('Two')),
     );
+    await tester.pump(const Duration(milliseconds: 150));
+    expect(tester.takeException(), isNull);
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(picked, 2);
   });
 
   testWidgets('D3HyperlinkButton shows ink and taps', (tester) async {

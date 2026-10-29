@@ -188,9 +188,21 @@ class _D3SegmentedControlState<T extends Object>
                 children: children,
               );
 
-        return widget.expand
-            ? SizedBox(width: double.infinity, child: control)
-            : Center(child: control);
+        if (widget.expand) {
+          return SizedBox(width: double.infinity, child: control);
+        }
+        // Segments take their content width: centred when they fit, scrolling
+        // sideways when they do not (a narrow parent or large text), instead of
+        // overflowing.
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: constraints.hasBoundedWidth ? constraints.maxWidth : 0,
+            ),
+            child: Center(child: control),
+          ),
+        );
       },
     );
   }
@@ -252,7 +264,9 @@ class _D3SegmentContent<T extends Object> extends StatelessWidget {
       child: ExcludeSemantics(
         excluding: segment.semanticsLabel != null,
         child: ConstrainedBox(
+          // A segment is at least a 48 dp square, taller when large text wraps.
           constraints: const BoxConstraints(
+            minWidth: kMinInteractiveDimension,
             minHeight: kMinInteractiveDimension,
           ),
           child: Padding(

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **`D3SegmentedControl`** no longer overflows when its segments are wider than
+  the space it is given (a narrow parent or large text): a control that is not
+  `expand`ed now scrolls sideways instead, centred when it fits. Each segment is
+  a 48 dp square at least. The tests that described the previous ink-based
+  structure now describe the sliding control: 48 dp segments, and a held press
+  that paints, in place of an ink-splash check.
+
 - **`D3SegmentSwitch`** is a compact two-option switch with both labels visible
   ("Snore | Not snore"), for a choice on one row of a list. The pill is 32 dp tall
   with 48 dp touch halves, and screen readers get one button per option in a
