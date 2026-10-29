@@ -4,8 +4,9 @@
 
 - **`D3MenuPill`** shows the current choice of a single-choice setting and opens a
   menu of the others, styled like the filter pill of `D3ListScreen`. `D3ListScreen`
-  gains `leading` (for a root list with no back button) and `subHeaderLeading`
-  (a control such as a sort pill, opposite the filter pill). The filter pill is
+  gains `leading` (for a root list with no back button), `subHeaderLeading` (a
+  control such as a sort pill, opposite the filter pill) and `listHeader` (a
+  banner or hint between the sub-header and the list). The filter pill is
   announced as a button ("Filter: All"), its text uses the full-strength role for
   4.5:1 contrast in the light theme, and it no longer touches the screen edge.
 

@@ -23,6 +23,7 @@ Widget _wrap({
   ValueChanged<String>? onSearchChanged,
   List<D3ListScreenAction> selectionActions = const [],
   Widget? subHeaderLeading,
+  Widget? listHeader,
   D3ScreenLeading? leading,
 }) {
   return MaterialApp(
@@ -39,6 +40,7 @@ Widget _wrap({
       onSearchChanged: onSearchChanged,
       selectionActions: selectionActions,
       subHeaderLeading: subHeaderLeading,
+      listHeader: listHeader,
       leading: leading,
       itemBuilder: (
         context,
@@ -404,6 +406,15 @@ void main() {
     testWidgets('a leading control alone shows the sub-header row', (t) async {
       await t.pumpWidget(_wrap(subHeaderLeading: const Text('Newest first')));
       expect(find.text('Newest first'), findsOneWidget);
+    });
+
+    testWidgets('a list header sits above the list', (t) async {
+      await t.pumpWidget(_wrap(listHeader: const Text('A hint')));
+      expect(find.text('A hint'), findsOneWidget);
+      expect(
+        t.getTopLeft(find.text('A hint')).dy,
+        lessThan(t.getTopLeft(find.text('Item a')).dy),
+      );
     });
 
     testWidgets('the leading control gives way to select-all while selecting', (

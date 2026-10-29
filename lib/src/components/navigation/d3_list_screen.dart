@@ -113,6 +113,7 @@ class D3ListScreen<T, F> extends StatefulWidget {
     this.actions = const [],
     this.leading,
     this.subHeaderLeading,
+    this.listHeader,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
     this.bottomNavigationBar,
@@ -192,6 +193,11 @@ class D3ListScreen<T, F> extends StatefulWidget {
   /// pill, while nothing is selected (a sort pill, for example). Giving one
   /// makes the row appear even when there are no filter options.
   final Widget? subHeaderLeading;
+
+  /// A widget shown between the sub-header and the list, such as a [D3Banner]
+  /// with a one-time hint. It takes its own height and scrolls with nothing;
+  /// pass null to give the space to the list.
+  final Widget? listHeader;
   final Widget? floatingActionButton;
   final FloatingActionButtonLocation? floatingActionButtonLocation;
   final Widget? bottomNavigationBar;
@@ -387,6 +393,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
       body: Column(
         children: [
           searchAnchor,
+          ?widget.listHeader,
           Expanded(child: list),
         ],
       ),
