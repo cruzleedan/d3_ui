@@ -448,6 +448,10 @@ class _TrailingButtonState extends State<_TrailingButton>
         menuAnimation: _menuCtrl,
         onItemSelected: (item) {
           _closeMenu();
+          // A selected item may navigate to another route while this overlay
+          // remains attached to its parent navigator. Remove it immediately
+          // so it cannot cover the destination while the close animation runs.
+          _removeOverlay();
           HapticFeedback.selectionClick();
           item.onPressed();
         },
