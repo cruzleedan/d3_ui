@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
@@ -367,9 +369,12 @@ class _D3BottomSheetContentState<T> extends State<_D3BottomSheetContent<T>> {
           final height = _measureKey.currentContext?.size?.height;
           if (height == null || constraints.maxHeight <= 0) return;
           final header = widget.style.showHeader
-              ? (widget.style.showDragHandle
-                    ? _kStickyHeaderHeight
-                    : _kStickyHeaderHeight - 20)
+              ? _SheetHeader.preferredHeight(
+                      context,
+                      title: widget.title,
+                      subtitle: widget.subtitle,
+                    ) +
+                    (widget.style.showDragHandle ? _kDragHandleHeight : 0)
               : 0.0;
           final total =
               height + header + MediaQuery.viewPaddingOf(context).bottom;
@@ -508,6 +513,11 @@ class _SheetSurface extends StatelessWidget {
         style.borderRadius ??
         BorderRadius.vertical(top: Radius.circular(context.d3Shape.xl));
     final background = style.backgroundColor ?? colors.surfaceContainerLow;
+    final headerHeight = _SheetHeader.preferredHeight(
+      context,
+      title: title,
+      subtitle: subtitle,
+    );
 
     // The sheet is dragged through this scroll view. Flutter's default scroll
     // behaviour leaves a mouse (and some trackpads and styluses) out of the
@@ -537,6 +547,7 @@ class _SheetSurface extends StatelessWidget {
                 subtitle: subtitle,
                 headerAction: headerAction,
                 onClose: onClose,
+                headerHeight: headerHeight,
               ),
             ),
           SliverFillRemaining(child: child),
@@ -623,9 +634,8 @@ class _SheetSurface extends StatelessWidget {
 // Sticky header delegate
 // ─────────────────────────────────────────────────────────────────────────────
 
-// _DragHandle height:  padding-top(10) + bar(4) + padding-bottom(6) = 20
-// _SheetHeader height: 48
-const double _kStickyHeaderHeight = 68.0;
+// _DragHandle height: padding-top(10) + bar(4) + padding-bottom(6) = 20.
+const double _kDragHandleHeight = 20.0;
 
 class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   const _StickySheetHeaderDelegate({
@@ -637,6 +647,7 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
     this.subtitle,
     this.headerAction,
     required this.onClose,
+    required this.headerHeight,
   });
 
   final D3ColorTokens colors;
@@ -647,6 +658,7 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String? subtitle;
   final Widget? headerAction;
   final VoidCallback onClose;
+  final double headerHeight;
 
   @override
   double get minExtent => _extent;
@@ -654,10 +666,9 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get maxExtent => _extent;
 
-  // Handle (20) + header (48), or just the header without a handle.
+  // Keep the pinned extent aligned with the text-scaled header below.
   double get _extent =>
-      (showDragHandle ? _kStickyHeaderHeight : _kStickyHeaderHeight - 20) +
-      topPadding;
+      (showDragHandle ? _kDragHandleHeight : 0) + headerHeight + topPadding;
 
   @override
   Widget build(
@@ -681,6 +692,7 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
             headerAction: headerAction,
             colors: colors,
             onClose: onClose,
+            height: headerHeight,
           ),
         ],
       ),
@@ -694,7 +706,8 @@ class _StickySheetHeaderDelegate extends SliverPersistentHeaderDelegate {
       old.title != title ||
       old.subtitle != subtitle ||
       old.topPadding != topPadding ||
-      old.headerAction != headerAction;
+      old.headerAction != headerAction ||
+      old.headerHeight != headerHeight;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -734,6 +747,7 @@ class _SheetHeader extends StatelessWidget {
     this.headerAction,
     required this.colors,
     required this.onClose,
+    required this.height,
   });
 
   final String? title;
@@ -741,11 +755,71 @@ class _SheetHeader extends StatelessWidget {
   final Widget? headerAction;
   final D3ColorTokens colors;
   final VoidCallback onClose;
+  final double height;
+
+  static const _largeTextThreshold = 1.3;
+
+  static double preferredHeight(
+    BuildContext context, {
+    String? title,
+    String? subtitle,
+  }) {
+    final textScaler = MediaQuery.textScalerOf(context);
+    if (textScaler.scale(1) <= _largeTextThreshold) {
+      return 48;
+    }
+
+    const closeStyle = TextStyle(fontSize: D3TypeScale.titleMdSize);
+    final closePainter = TextPainter(
+      text: const TextSpan(text: 'Cancel', style: closeStyle),
+      textDirection: Directionality.of(context),
+      textScaler: textScaler,
+    )..layout();
+    final width = MediaQuery.sizeOf(context).width;
+    final titleMaxWidth = math.max(0.0, width - 24).toDouble();
+
+    double measure(String? value, TextStyle style) {
+      if (value == null) return 0;
+      final painter = TextPainter(
+        text: TextSpan(text: value, style: style),
+        textDirection: Directionality.of(context),
+        textScaler: textScaler,
+        maxLines: 2,
+        ellipsis: '…',
+      )..layout(maxWidth: titleMaxWidth);
+      return painter.height;
+    }
+
+    final titleHeight = measure(
+      title,
+      const TextStyle(
+        fontSize: D3TypeScale.titleLgSize,
+        fontWeight: FontWeight.w600,
+        height: D3TypeFace.tight,
+      ),
+    );
+    final subtitleHeight = measure(
+      subtitle,
+      const TextStyle(fontSize: D3TypeScale.labelMdSize),
+    );
+    final textGap = title != null && subtitle != null ? 1.0 : 0.0;
+    // Large text gets its own title row and a separate 48 dp action row.
+    // This keeps both the heading and Cancel readable without overlap.
+    final actionHeight = math.max(48.0, closePainter.height + 8);
+    return math
+        .max(
+          72.0,
+          titleHeight + subtitleHeight + textGap + 10 + actionHeight + 16,
+        )
+        .toDouble();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final largeText =
+        MediaQuery.textScalerOf(context).scale(1) > _largeTextThreshold;
     return Container(
-      height: 48,
+      height: height,
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -754,33 +828,29 @@ class _SheetHeader extends StatelessWidget {
           ),
         ),
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // ── Center: title + subtitle ──────────────────────────────────
-          if (title != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 80),
+      child: largeText
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    title!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: D3TypeScale.titleLgSize,
-                      fontWeight: FontWeight.w600,
-                      color: colors.onSurface,
-                      height: D3TypeFace.tight,
+                  if (title != null)
+                    Text(
+                      title!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: D3TypeScale.titleLgSize,
+                        fontWeight: FontWeight.w600,
+                        color: colors.onSurface,
+                        height: D3TypeFace.tight,
+                      ),
                     ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 1),
+                  if (subtitle != null)
                     Text(
                       subtitle!,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -788,49 +858,123 @@ class _SheetHeader extends StatelessWidget {
                         color: colors.onSurfaceVariant,
                       ),
                     ),
-                  ],
+                  if (title != null || subtitle != null)
+                    const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      if (headerAction != null)
+                        headerAction!
+                      else
+                        const SizedBox(width: 48, height: 48),
+                      const Spacer(),
+                      _CloseAction(
+                        colors: colors,
+                        onClose: onClose,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  if (headerAction != null)
+                    SizedBox(
+                      width: 80,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: headerAction!,
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 80),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (title != null)
+                          Text(
+                            title!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: D3TypeScale.titleLgSize,
+                              fontWeight: FontWeight.w600,
+                              color: colors.onSurface,
+                              height: D3TypeFace.tight,
+                            ),
+                          ),
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: D3TypeScale.labelMdSize,
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  _CloseAction(
+                    colors: colors,
+                    onClose: onClose,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
+    );
+  }
+}
 
-          // ── Left: optional headerAction ───────────────────────────────
-          if (headerAction != null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 12),
-                child: headerAction!,
-              ),
-            ),
+class _CloseAction extends StatelessWidget {
+  const _CloseAction({
+    required this.colors,
+    required this.onClose,
+    required this.padding,
+  });
 
-          // ── Right: Cancel ─────────────────────────────────────────────
-          Align(
-            alignment: Alignment.centerRight,
-            child: Semantics(
-              button: true,
-              label: 'Cancel',
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: onClose,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      fontSize: D3TypeScale.titleMdSize,
-                      fontWeight: FontWeight.w400,
-                      color: colors.primary,
-                    ),
-                  ),
-                ),
+  final D3ColorTokens colors;
+  final VoidCallback onClose;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: 'Cancel',
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onClose,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Padding(
+          padding: padding,
+          child: Center(
+            child: Text(
+              'Cancel',
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: D3TypeScale.titleMdSize,
+                fontWeight: FontWeight.w400,
+                color: colors.primary,
               ),
             ),
           ),
-        ],
+        ),
       ),
-    );
-  }
+    ),
+  );
 }
