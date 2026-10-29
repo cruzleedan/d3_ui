@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **`D3SegmentSwitch`** is a compact two-option switch with both labels visible
+  ("Snore | Not snore"), for a choice on one row of a list. The pill is 32 dp tall
+  with 48 dp touch halves, and screen readers get one button per option in a
+  mutually exclusive group.
+
 - **`D3MenuPill`** shows the current choice of a single-choice setting and opens a
   menu of the others, styled like the filter pill of `D3ListScreen`. `D3ListScreen`
   gains `leading` (for a root list with no back button), `subHeaderLeading` (a

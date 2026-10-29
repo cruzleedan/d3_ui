@@ -35,6 +35,7 @@ export 'src/components/inputs/d3_dropdown_field.dart';
 export 'src/components/inputs/d3_decimal_field.dart';
 export 'src/components/inputs/d3_numeric_controller.dart';
 export 'src/components/inputs/d3_segmented_control.dart';
+export 'src/components/inputs/d3_segment_switch.dart';
 export 'src/components/inputs/d3_search_bar.dart';
 export 'src/components/inputs/d3_toggle.dart';
 export 'src/components/inputs/d3_checkbox.dart';
