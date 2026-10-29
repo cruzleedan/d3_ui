@@ -22,6 +22,8 @@ Widget _wrap({
   filterItems,
   ValueChanged<String>? onSearchChanged,
   List<D3ListScreenAction> selectionActions = const [],
+  Widget? subHeaderLeading,
+  D3ScreenLeading? leading,
 }) {
   return MaterialApp(
     theme: D3AppTheme.light(),
@@ -36,6 +38,8 @@ Widget _wrap({
       filterItems: filterItems,
       onSearchChanged: onSearchChanged,
       selectionActions: selectionActions,
+      subHeaderLeading: subHeaderLeading,
+      leading: leading,
       itemBuilder: (
         context,
         item,
@@ -393,6 +397,60 @@ void main() {
 
       expect(_selectAllCheckbox, findsNothing);
       expect(find.text('Select all'), findsNothing);
+    });
+  });
+
+  group('D3ListScreen subHeaderLeading and leading', () {
+    testWidgets('a leading control alone shows the sub-header row', (t) async {
+      await t.pumpWidget(_wrap(subHeaderLeading: const Text('Newest first')));
+      expect(find.text('Newest first'), findsOneWidget);
+    });
+
+    testWidgets('the leading control gives way to select-all while selecting', (
+      t,
+    ) async {
+      await t.pumpWidget(_wrap(subHeaderLeading: const Text('Newest first')));
+      await t.longPress(find.text('Item a'));
+      await t.pumpAndSettle();
+      expect(find.text('Newest first'), findsNothing);
+      expect(find.text('Select all'), findsOneWidget);
+    });
+
+    testWidgets('leading none removes the back button on a pushed screen', (
+      t,
+    ) async {
+      await t.pumpWidget(
+        MaterialApp(
+          theme: D3AppTheme.light(),
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => D3ListScreen<String, _Filter>(
+                    title: 'Root list',
+                    items: const ['a'],
+                    getItemId: (i) => i,
+                    leading: D3ScreenLeading.none,
+                    itemBuilder: (
+                      c,
+                      i,
+                      n, {
+                      bool isSelected = false,
+                      bool inSelectionMode = false,
+                      VoidCallback? onAvatarTap,
+                    }) => Text('Item $i'),
+                  ),
+                ),
+              ),
+              child: const Text('go'),
+            ),
+          ),
+        ),
+      );
+      await t.tap(find.text('go'));
+      await t.pumpAndSettle();
+      expect(find.byType(BackButton), findsNothing);
+      expect(find.byIcon(Icons.arrow_back), findsNothing);
     });
   });
 }

@@ -89,4 +89,5 @@ export 'src/components/inputs/d3_time_field.dart';
 export 'src/components/inputs/d3_rating.dart';
 export 'src/components/inputs/d3_otp_field.dart';
 export 'src/components/actions/d3_menu.dart';
+export 'src/components/actions/d3_menu_pill.dart';
 export 'src/components/feedback/d3_tooltip.dart';

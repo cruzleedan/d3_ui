@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **`D3MenuPill`** shows the current choice of a single-choice setting and opens a
+  menu of the others, styled like the filter pill of `D3ListScreen`. `D3ListScreen`
+  gains `leading` (for a root list with no back button) and `subHeaderLeading`
+  (a control such as a sort pill, opposite the filter pill).
+
 - **Accessibility:** `D3Button.icon` now requires a non-empty `semanticsLabel`;
   update icon-only button call sites when upgrading. `D3ExpandingFab` announces
   its open and close actions and exposes its expanded state. The Patterns

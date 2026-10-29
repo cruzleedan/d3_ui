@@ -111,6 +111,8 @@ class D3ListScreen<T, F> extends StatefulWidget {
     this.selectionActions = const [],
     // Screen chrome
     this.actions = const [],
+    this.leading,
+    this.subHeaderLeading,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
     this.bottomNavigationBar,
@@ -180,6 +182,16 @@ class D3ListScreen<T, F> extends StatefulWidget {
   // ── Screen chrome ────────────────────────────────────────────────────────────
   /// Actions shown in the normal title bar (e.g. sync status indicator).
   final List<D3ScreenAction> actions;
+
+  /// The title bar's leading slot. Null keeps [D3Screen]'s own choice (a back
+  /// button when the screen can pop); pass [D3ScreenLeading.none] for a root
+  /// list.
+  final D3ScreenLeading? leading;
+
+  /// A control shown at the start of the sub-header row, opposite the filter
+  /// pill, while nothing is selected (a sort pill, for example). Giving one
+  /// makes the row appear even when there are no filter options.
+  final Widget? subHeaderLeading;
   final Widget? floatingActionButton;
   final FloatingActionButtonLocation? floatingActionButtonLocation;
   final Widget? bottomNavigationBar;
@@ -332,7 +344,8 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
     // selection mode on such a screen therefore shifts the list down by
     // 48dp — a deliberate trade, see root context/work/0041.
     final hasFilters = widget.filterOptions.isNotEmpty;
-    final showSubHeader = hasFilters || _inSelectionMode;
+    final showSubHeader =
+        hasFilters || widget.subHeaderLeading != null || _inSelectionMode;
     final subHeader = _SubHeaderRow<T, F>(
       inSelectionMode: _inSelectionMode,
       selectedCount: _selectedIds.length,
@@ -344,6 +357,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
       defaultFilters: widget.defaultFilters,
       onFiltersChanged: _onFiltersChanged,
       colors: colors,
+      leading: widget.subHeaderLeading,
     );
 
     // Search action goes first so it renders outermost-right in the title
@@ -361,6 +375,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
 
     return D3Screen(
       title: widget.title,
+      leading: widget.leading,
       actions: titleBarActions,
       floatingActionButton: _inSelectionMode
           ? null
@@ -569,8 +584,10 @@ class _SubHeaderRow<T, F> extends StatefulWidget {
     this.activeFilters = const {},
     this.defaultFilters,
     this.onFiltersChanged,
+    this.leading,
   });
 
+  final Widget? leading;
   final bool inSelectionMode;
   final int selectedCount;
   final int totalCount;
@@ -748,6 +765,11 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
                   ),
                 ),
               )
+            else if (widget.leading != null)
+              Padding(
+                padding: const EdgeInsets.only(left: D3Spacing.s16),
+                child: widget.leading,
+              )
             else
               // Keeps the filter pill on the trailing edge when the
               // select-all control isn't present.
@@ -761,69 +783,76 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
               duration: D3Motion.moderate,
               child: IgnorePointer(
                 ignoring: widget.inSelectionMode,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Filter pill — taps open popup menu
-                    if (widget.filterOptions.isNotEmpty)
-                      GestureDetector(
-                        key: _pillKey,
-                        onTap: _openFilterMenu,
-                        behavior: HitTestBehavior.opaque,
-                        child: SizedBox(
-                          height: 48,
-                          child: Center(
-                            child: AnimatedContainer(
-                              duration: D3Motion.fast,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: D3Spacing.s12,
-                                vertical: D3Spacing.s6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isFiltered
-                                    ? colors.primary.withValues(alpha: 0.12)
-                                    : colors.onSurface.withValues(alpha: 0.06),
-                                borderRadius: BorderRadius.circular(
-                                  D3Radius.full,
+                // Same inset as the leading control, so neither pill touches
+                // the screen edge.
+                child: Padding(
+                  padding: const EdgeInsets.only(right: D3Spacing.s16),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Filter pill — taps open popup menu
+                      if (widget.filterOptions.isNotEmpty)
+                        GestureDetector(
+                          key: _pillKey,
+                          onTap: _openFilterMenu,
+                          behavior: HitTestBehavior.opaque,
+                          child: SizedBox(
+                            height: 48,
+                            child: Center(
+                              child: AnimatedContainer(
+                                duration: D3Motion.fast,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: D3Spacing.s12,
+                                  vertical: D3Spacing.s6,
                                 ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.filter_list_rounded,
-                                    size: 14,
-                                    color: isFiltered
-                                        ? colors.primary
-                                        : colors.onSurfaceVariant,
+                                decoration: BoxDecoration(
+                                  color: isFiltered
+                                      ? colors.primary.withValues(alpha: 0.12)
+                                      : colors.onSurface.withValues(
+                                          alpha: 0.06,
+                                        ),
+                                  borderRadius: BorderRadius.circular(
+                                    D3Radius.full,
                                   ),
-                                  const SizedBox(width: D3Spacing.s4),
-                                  Text(
-                                    activeLabel ??
-                                        widget.filterOptions.first.label,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.filter_list_rounded,
+                                      size: 14,
                                       color: isFiltered
                                           ? colors.primary
                                           : colors.onSurfaceVariant,
                                     ),
-                                  ),
-                                  const SizedBox(width: D3Spacing.s2),
-                                  Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    size: 14,
-                                    color: isFiltered
-                                        ? colors.primary
-                                        : colors.onSurfaceVariant,
-                                  ),
-                                ],
+                                    const SizedBox(width: D3Spacing.s4),
+                                    Text(
+                                      activeLabel ??
+                                          widget.filterOptions.first.label,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: isFiltered
+                                            ? colors.primary
+                                            : colors.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    const SizedBox(width: D3Spacing.s2),
+                                    Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 14,
+                                      color: isFiltered
+                                          ? colors.primary
+                                          : colors.onSurfaceVariant,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
