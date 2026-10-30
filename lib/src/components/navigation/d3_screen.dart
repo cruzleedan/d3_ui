@@ -764,13 +764,11 @@ class _BarIconButton extends StatelessWidget {
             HapticFeedback.lightImpact();
             onPressed();
           },
-          // A 48 dp square at least (it was 38 wide), so neighbouring icons are
-          // not mis-tapped; the glyph stays 22.
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minWidth: kMinInteractiveDimension,
-              minHeight: kMinInteractiveDimension,
-            ),
+          // A 48 dp square (it was 38 wide), so neighbouring icons are not
+          // mis-tapped; the glyph stays 22. A fixed size, not a minimum: a
+          // minimum around a Center would stretch to the width it is offered.
+          child: SizedBox.square(
+            dimension: kMinInteractiveDimension,
             child: Center(child: Icon(icon, size: 22, color: colors.onSurface)),
           ),
         ),
