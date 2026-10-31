@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **`D3ScreenAction.icon`** buttons in the app bar are now at least 48 dp wide
+  (they were 38 wide), so adjacent icons are no longer easy to mis-tap. The
+  glyph size is unchanged; each icon takes about 10 dp more of the bar.
+
 - **`D3SegmentSwitch`** is a compact two-option switch with both labels visible
   ("Snore | Not snore"), for a choice on one row of a list. The pill is 32 dp tall
   with 48 dp touch halves, and screen readers get one button per option in a
