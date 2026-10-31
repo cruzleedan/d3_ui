@@ -154,6 +154,7 @@ void main() {
           D3TextField(
             label: 'Email',
             focusNode: focusNode,
+            validationMode: D3ValidationMode.onBlur,
             validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
           ),
         ),
@@ -165,6 +166,88 @@ void main() {
       await tester.pump();
 
       expect(find.text('Required'), findsOneWidget);
+    });
+
+    testWidgets('onBlurThenChange does not validate an untouched field', (
+      tester,
+    ) async {
+      final focusNode = FocusNode();
+      await tester.pumpWidget(
+        _wrap(
+          D3TextField(
+            label: 'Password',
+            focusNode: focusNode,
+            validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+          ),
+        ),
+      );
+
+      focusNode.requestFocus();
+      await tester.pump();
+      focusNode.unfocus();
+      await tester.pump();
+
+      expect(find.text('Required'), findsNothing);
+    });
+
+    testWidgets('controller updates do not count as user edits', (
+      tester,
+    ) async {
+      final focusNode = FocusNode();
+      final controller = TextEditingController();
+      var validatorCalls = 0;
+      await tester.pumpWidget(
+        _wrap(
+          D3TextField(
+            label: 'Email',
+            focusNode: focusNode,
+            controller: controller,
+            validator: (v) {
+              validatorCalls++;
+              return (v == null || !v.contains('@')) ? 'Invalid' : null;
+            },
+          ),
+        ),
+      );
+
+      controller.text = 'programmatic value';
+      focusNode.requestFocus();
+      await tester.pump();
+      focusNode.unfocus();
+      await tester.pump();
+
+      expect(validatorCalls, 0);
+      expect(find.text('Invalid'), findsNothing);
+      controller.dispose();
+    });
+
+    testWidgets('onBlurThenChange validates edited fields and clears live', (
+      tester,
+    ) async {
+      final focusNode = FocusNode();
+      await tester.pumpWidget(
+        _wrap(
+          D3TextField(
+            label: 'Email',
+            focusNode: focusNode,
+            validator: (v) => (v == null || !v.contains('@'))
+                ? 'Enter a valid email'
+                : null,
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField), 'invalid');
+      await tester.pump();
+      focusNode.unfocus();
+      await tester.pump();
+      expect(find.text('Enter a valid email'), findsOneWidget);
+
+      focusNode.requestFocus();
+      await tester.pump();
+      await tester.enterText(find.byType(TextField), 'valid@example.com');
+      await tester.pump();
+      expect(find.text('Enter a valid email'), findsNothing);
     });
 
     testWidgets('validate() can be called imperatively via GlobalKey', (

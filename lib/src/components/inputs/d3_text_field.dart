@@ -210,6 +210,10 @@ class D3TextFieldState extends State<D3TextField>
   /// for [D3ValidationMode.onBlurThenChange].
   bool _hasBeenBlurred = false;
 
+  /// True only after the user changes the text through the inner TextField.
+  /// Controller updates from parents do not count as user interaction.
+  bool _hasUserEdited = false;
+
   bool _obscured = false;
 
   // Tooltip overlay
@@ -277,7 +281,12 @@ class D3TextFieldState extends State<D3TextField>
       if (widget.isEnabled &&
           !widget.isReadOnly &&
           widget.validationMode != D3ValidationMode.onSubmit) {
-        _runValidation(_controller.text);
+        final shouldValidateOnBlur = switch (widget.validationMode) {
+          D3ValidationMode.onBlurThenChange =>
+            _hasUserEdited || _validationError != null,
+          _ => true,
+        };
+        if (shouldValidateOnBlur) _runValidation(_controller.text);
       }
     }
   }
@@ -603,6 +612,7 @@ class D3TextFieldState extends State<D3TextField>
                             autofillHints: widget.autofillHints,
                             autocorrect: widget.autocorrect,
                             inputFormatters: widget.inputFormatters,
+                            onChanged: (_) => _hasUserEdited = true,
                             onTap: widget.onTap,
                             onSubmitted: (v) {
                               if (widget.validationMode ==

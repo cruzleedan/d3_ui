@@ -150,10 +150,12 @@ parts.
 
 - **Validation timing: `D3ValidationMode.onBlurThenChange`** (the default
   on `D3TextField` — don't override it without a specific reason). A
-  field validates once the user leaves it, then re-validates live only
-  once an error is already showing, so users aren't interrupted mid-typing
-  on their first pass through a field but get immediate feedback once
-  they're fixing a mistake. Reserve `onSubmit` for cases where validating
+  field validates on blur after the user has changed its text, then
+  re-validates live only once an error is already showing, so users aren't
+  interrupted mid-typing on their first pass through a field and aren't
+  shown an error just for exploring an untouched field. Explicit form
+  submission still validates every field, including untouched required
+  fields. Reserve `onSubmit` for cases where validating
   earlier would be actively unhelpful (e.g. a field that depends on
   another field submitted later in the same form); reserve `onChange` for
   rare cases needing instant feedback (e.g. a live character counter
