@@ -111,6 +111,7 @@ class D3ListScreen<T, F> extends StatefulWidget {
     this.selectionActions = const [],
     // Screen chrome
     this.actions = const [],
+    this.trailingActions = const [],
     this.leading,
     this.subHeaderLeading,
     this.listHeader,
@@ -181,8 +182,14 @@ class D3ListScreen<T, F> extends StatefulWidget {
   final List<D3ListScreenAction> selectionActions;
 
   // ── Screen chrome ────────────────────────────────────────────────────────────
-  /// Actions shown in the normal title bar (e.g. sync status indicator).
+  /// Actions shown in the normal title bar (e.g. sync status indicator). They
+  /// sit left of the Search action.
   final List<D3ScreenAction> actions;
+
+  /// Actions shown after (right of) the Search action, at the trailing edge of
+  /// the title bar: an overflow menu, for example. Search is then second from
+  /// the edge instead of the outermost action.
+  final List<D3ScreenAction> trailingActions;
 
   /// The title bar's leading slot. Null keeps [D3Screen]'s own choice (a back
   /// button when the screen can pop); pass [D3ScreenLeading.none] for a root
@@ -367,8 +374,9 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
     );
 
     // D3Screen lays its actions out left to right, so the last one is the
-    // outermost right. Search goes last, after any caller-provided actions, so
-    // it sits at the trailing edge of the title bar, where people look for it.
+    // outermost right. Search goes after the caller's [actions] and before any
+    // [trailingActions]: at the trailing edge unless the caller asks for
+    // something to sit beyond it.
     final titleBarActions = [
       ...widget.actions,
       if (widget.onSearchChanged != null)
@@ -377,6 +385,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
           semanticsLabel: 'Search',
           onPressed: _searchCtrl.open,
         ),
+      ...widget.trailingActions,
     ];
 
     return D3Screen(

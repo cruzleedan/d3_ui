@@ -26,6 +26,7 @@ Widget _wrap({
   Widget? listHeader,
   D3ScreenLeading? leading,
   List<D3ScreenAction> actions = const [],
+  List<D3ScreenAction> trailingActions = const [],
 }) {
   return MaterialApp(
     theme: D3AppTheme.light(),
@@ -44,6 +45,7 @@ Widget _wrap({
       listHeader: listHeader,
       leading: leading,
       actions: actions,
+      trailingActions: trailingActions,
       itemBuilder: (
         context,
         item,
@@ -312,6 +314,29 @@ void main() {
         expect(archive.dy, search.dy, reason: 'all on the title bar row');
       },
     );
+
+    testWidgets('trailing actions sit right of search, at the edge', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          onSearchChanged: (_) {},
+          actions: [
+            D3ScreenAction.icon(Icons.archive_outlined, onPressed: () {}),
+          ],
+          trailingActions: [
+            D3ScreenAction.icon(Icons.settings_outlined, onPressed: () {}),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final archive = tester.getCenter(find.byIcon(Icons.archive_outlined));
+      final search = tester.getCenter(find.byIcon(Icons.search_rounded).first);
+      final trailing = tester.getCenter(find.byIcon(Icons.settings_outlined));
+      expect(archive.dx, lessThan(search.dx));
+      expect(search.dx, lessThan(trailing.dx));
+    });
 
     testWidgets('a screen without search keeps its own actions in order', (
       tester,
