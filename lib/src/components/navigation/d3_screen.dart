@@ -177,7 +177,8 @@ class D3Screen extends StatelessWidget {
   /// shows a back arrow when [Navigator.canPop] is true, nothing otherwise.
   final D3ScreenLeading? leading;
 
-  /// Trailing actions. Rendered right-to-left (first item is outermost right).
+  /// Trailing actions, laid out left to right: the last item is the outermost
+  /// right, so put the primary action (Save, a menu) last.
   /// Can be combined with [D3ScreenLeading.cancel] — cancel occupies the
   /// leading slot, leaving this free for a primary action like Save.
   final List<D3ScreenAction> actions;

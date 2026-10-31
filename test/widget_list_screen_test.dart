@@ -25,6 +25,7 @@ Widget _wrap({
   Widget? subHeaderLeading,
   Widget? listHeader,
   D3ScreenLeading? leading,
+  List<D3ScreenAction> actions = const [],
 }) {
   return MaterialApp(
     theme: D3AppTheme.light(),
@@ -42,6 +43,7 @@ Widget _wrap({
       subHeaderLeading: subHeaderLeading,
       listHeader: listHeader,
       leading: leading,
+      actions: actions,
       itemBuilder: (
         context,
         item,
@@ -280,6 +282,53 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Item active'), findsOneWidget);
       expect(find.text('Item archived'), findsOneWidget);
+    });
+
+    testWidgets(
+      'search is the outermost right action, after the caller\'s own',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            onSearchChanged: (_) {},
+            actions: [
+              D3ScreenAction.icon(Icons.archive_outlined, onPressed: () {}),
+              D3ScreenAction.icon(Icons.settings_outlined, onPressed: () {}),
+            ],
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final archive = tester.getCenter(find.byIcon(Icons.archive_outlined));
+        final settings = tester.getCenter(find.byIcon(Icons.settings_outlined));
+        final search = tester.getCenter(
+          find.byIcon(Icons.search_rounded).first,
+        );
+        expect(archive.dx, lessThan(settings.dx));
+        expect(
+          settings.dx,
+          lessThan(search.dx),
+          reason: 'search sits at the trailing edge of the title bar',
+        );
+        expect(archive.dy, search.dy, reason: 'all on the title bar row');
+      },
+    );
+
+    testWidgets('a screen without search keeps its own actions in order', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          actions: [
+            D3ScreenAction.icon(Icons.archive_outlined, onPressed: () {}),
+            D3ScreenAction.icon(Icons.settings_outlined, onPressed: () {}),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.getCenter(find.byIcon(Icons.archive_outlined)).dx,
+        lessThan(tester.getCenter(find.byIcon(Icons.settings_outlined)).dx),
+      );
     });
 
     testWidgets('search can switch filters over the full source list', (

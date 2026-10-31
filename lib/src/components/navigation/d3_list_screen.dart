@@ -366,17 +366,17 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
       leading: widget.subHeaderLeading,
     );
 
-    // Search action goes first so it renders outermost-right in the title
-    // bar (D3Screen.actions: "first item is outermost right"), ahead of
-    // any caller-provided actions.
+    // D3Screen lays its actions out left to right, so the last one is the
+    // outermost right. Search goes last, after any caller-provided actions, so
+    // it sits at the trailing edge of the title bar, where people look for it.
     final titleBarActions = [
+      ...widget.actions,
       if (widget.onSearchChanged != null)
         D3ScreenAction.icon(
           Icons.search_rounded,
           semanticsLabel: 'Search',
           onPressed: _searchCtrl.open,
         ),
-      ...widget.actions,
     ];
 
     return D3Screen(
