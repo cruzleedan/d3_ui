@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Outlined `D3Chip` border reaches 3:1** (was `outline` at about 1.5:1, 0.5 dp),
+  on the page and on card surfaces. An unselected Pass/Fail chip no longer fades
+  into its card.
 - **`D3InfoButton`** — a "?"/"i" icon button (48 dp) that opens a bottom sheet
   explaining the control beside it, so a non-obvious setting is documented where
   it lives. `D3InfoButton.show` opens the same sheet from your own control.

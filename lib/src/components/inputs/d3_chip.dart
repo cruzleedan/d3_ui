@@ -197,7 +197,19 @@ class D3Chip extends StatelessWidget {
       case D3ChipVariant.outlined:
         bg = backgroundColor ?? Colors.transparent;
         fg = foregroundColor ?? colors.onSurfaceVariant;
-        side = BorderSide(color: foregroundColor ?? colors.outline, width: 0.5);
+        // The outline is the chip's only boundary, so it reaches 3:1 on the page
+        // and on the card surface it often sits on (WCAG 1.4.11); `outline`
+        // alone is about 1.5:1.
+        side = BorderSide(
+          color:
+              foregroundColor ??
+              d3EnsureContrast(
+                d3EnsureContrast(colors.outline, colors.surface, minRatio: 3),
+                colors.surfaceContainerLow,
+                minRatio: 3,
+              ),
+          width: 1,
+        );
     }
 
     // The chip is a Material in the chip's own shape, with the ink inside it, so
