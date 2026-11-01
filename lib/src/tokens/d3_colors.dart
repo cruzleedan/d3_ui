@@ -151,9 +151,10 @@ class D3ColorTokens {
     onSurfaceVariant: D3ColorPrimitives.neutral450,
     outline: D3ColorPrimitives.neutral200,
     success: D3ColorPrimitives.green500,
-    onSuccess: D3ColorPrimitives.white,
+    // Dark text on the mid green/amber fills: ~7:1. White was 2.5:1 and 2.2:1.
+    onSuccess: D3ColorPrimitives.neutral900,
     warning: D3ColorPrimitives.amber500,
-    onWarning: D3ColorPrimitives.white,
+    onWarning: D3ColorPrimitives.neutral900,
     error: D3ColorPrimitives.red600,
     onError: D3ColorPrimitives.white,
     errorContainer: Color(0x1FDC2626), // red600 @ 12%

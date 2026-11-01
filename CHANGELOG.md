@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Contrast audit (Site Inspector WORK-0065):** the border of an enabled text,
+  dropdown, date, time or decimal field is now at least 3:1 against `surface`
+  (WCAG 1.4.11); it was `outline` at about 1.5:1. It is computed with
+  `d3EnsureContrast`, so custom palettes get it too. Cards, dividers and the
+  rest of the system keep the quiet `outline`. `onSuccess` and `onWarning` in the
+  light palette are now `neutral900` (about 7:1 on the green and amber fills,
+  from 2.5:1 and 2.2:1). `success` and `warning` themselves are unchanged: as
+  text on a light surface they still need `d3EnsureContrast` at the use site.
 - **Empty fields no longer look disabled:** an idle (empty, enabled) `D3TextField`,
   `D3DropdownField` and `D3DateField` fill with `surface` instead of
   `surfaceVariant`. Only disabled and read-only fields keep the grey fill, so grey

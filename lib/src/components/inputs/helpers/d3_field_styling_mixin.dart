@@ -34,8 +34,14 @@ mixin D3FieldStylingMixin {
         D3FieldStatus.focused => colors.primary,
         D3FieldStatus.error => colors.error,
         D3FieldStatus.success => colors.success,
+        // Disabled controls are exempt from contrast rules and keep the quiet
+        // line.
         D3FieldStatus.disabled => colors.outline,
-        _ => colors.outline,
+        // The boundary of an enabled control is what tells the user where to
+        // tap, so it must reach 3:1 against the surface (WCAG 1.4.11). The
+        // palette's `outline` is a quiet line for cards and dividers (about
+        // 1.5:1), so darken (or, in dark mode, lighten) it for fields only.
+        _ => d3EnsureContrast(colors.outline, colors.surface, minRatio: 3),
       };
 
   /// Only a disabled (or read-only) field is filled grey. An empty, enabled
