@@ -620,7 +620,7 @@ class _LeadingWidget extends StatelessWidget {
         // build (e.g. a redirect firing between builds) and popping an
         // empty stack crashes GoRouter's assertion.
         onPressed: () {
-          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+          if (Navigator.of(context).canPop()) Navigator.of(context).maybePop();
         },
         colors: colors,
         semanticsLabel: 'Back',
@@ -652,7 +652,7 @@ class _CancelButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(D3Radius.full),
           splashColor: colors.primary.withValues(alpha: 0.14),
           highlightColor: colors.primary.withValues(alpha: 0.08),
-          onTap: () => Navigator.of(context).pop(),
+          onTap: () => Navigator.of(context).maybePop(),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Text(
