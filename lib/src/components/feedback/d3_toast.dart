@@ -118,6 +118,25 @@ class D3Toast {
 
   // ── Convenience shorthands ────────────────────────────────────────────────
 
+  /// Confirms a reversible action and offers to take it back: "Visit deleted
+  /// · Undo". Stays up 6 s, longer than a plain success toast, so a thumb has
+  /// time to reach it. Prefer this over an "Are you sure?" dialog whenever the
+  /// action can be undone (UX_GUIDELINES.md, error recovery).
+  static void undo(
+    BuildContext context, {
+    required String title,
+    required VoidCallback onUndo,
+    String? message,
+    String undoLabel = 'Undo',
+  }) => show(
+    context,
+    title: title,
+    message: message,
+    variant: D3ToastVariant.neutral,
+    action: D3ToastAction(label: undoLabel, onPressed: onUndo),
+    duration: const Duration(seconds: 6),
+  );
+
   static void success(
     BuildContext context, {
     required String title,

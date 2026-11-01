@@ -48,6 +48,7 @@ export 'src/components/inputs/schema_form/form_schema.dart';
 export 'src/components/inputs/schema_form/field_renderer.dart';
 export 'src/components/inputs/schema_form/schema_form.dart';
 export 'src/components/sheets/d3_bottom_sheet.dart';
+export 'src/components/actions/d3_info_button.dart';
 export 'src/components/sheets/d3_form_sheet.dart';
 export 'src/components/navigation/d3_nav_bar.dart';
 export 'src/components/navigation/d3_nav_rail.dart';

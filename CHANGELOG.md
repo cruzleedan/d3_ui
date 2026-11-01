@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **`D3InfoButton`** — a "?"/"i" icon button (48 dp) that opens a bottom sheet
+  explaining the control beside it, so a non-obvious setting is documented where
+  it lives. `D3InfoButton.show` opens the same sheet from your own control.
+- **`D3Toast.undo`** — "Visit deleted · Undo" for reversible actions, up for
+  6 s. Prefer it to an "Are you sure?" dialog whenever the action can be undone.
 - **Off switches are visible:** `D3AppTheme` now sets a `switchTheme` whose
   unselected track outline and thumb are at least 3:1 against `surface`
   (WCAG 1.4.11); Material's default drew them in `outline` at about 1.5:1, so an
