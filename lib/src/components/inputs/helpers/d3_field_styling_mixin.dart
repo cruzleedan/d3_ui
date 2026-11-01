@@ -41,7 +41,13 @@ mixin D3FieldStylingMixin {
         // tap, so it must reach 3:1 against the surface (WCAG 1.4.11). The
         // palette's `outline` is a quiet line for cards and dividers (about
         // 1.5:1), so darken (or, in dark mode, lighten) it for fields only.
-        _ => d3EnsureContrast(colors.outline, colors.surface, minRatio: 3),
+        // Checked on the page surface and on the card surface a field often
+        // sits in, so it holds on both.
+        _ => d3EnsureContrast(
+          d3EnsureContrast(colors.outline, colors.surface, minRatio: 3),
+          colors.surfaceContainerLow,
+          minRatio: 3,
+        ),
       };
 
   /// Only a disabled (or read-only) field is filled grey. An empty, enabled

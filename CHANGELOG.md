@@ -3,7 +3,7 @@
 ## Unreleased
 
 - **Contrast audit (Site Inspector WORK-0065):** the border of an enabled text,
-  dropdown, date, time or decimal field is now at least 3:1 against `surface`
+  dropdown, date, time or decimal field is now at least 3:1 against `surface` and `surfaceContainerLow`
   (WCAG 1.4.11); it was `outline` at about 1.5:1. It is computed with
   `d3EnsureContrast`, so custom palettes get it too. Cards, dividers and the
   rest of the system keep the quiet `outline`. `onSuccess` and `onWarning` in the
