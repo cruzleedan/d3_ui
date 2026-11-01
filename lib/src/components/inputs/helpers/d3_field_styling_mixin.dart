@@ -38,14 +38,13 @@ mixin D3FieldStylingMixin {
         _ => colors.outline,
       };
 
+  /// Only a disabled (or read-only) field is filled grey. An empty, enabled
+  /// field keeps the surface fill so it does not read as unavailable; its
+  /// outline and placeholder already say it is waiting for input.
   Color _resolveBackgroundColor(D3FieldStatus status, D3ColorTokens colors) =>
       switch (status) {
         D3FieldStatus.disabled => colors.surfaceVariant,
-        D3FieldStatus.focused => colors.surface,
-        D3FieldStatus.filled => colors.surface,
-        D3FieldStatus.error => colors.surface,
-        D3FieldStatus.success => colors.surface,
-        _ => colors.surfaceVariant,
+        _ => colors.surface,
       };
 
   /// Border width widens for focused/error/success — matches the
