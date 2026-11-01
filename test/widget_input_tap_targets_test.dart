@@ -27,6 +27,19 @@ void _minimum(Rect rect) {
 Finder _gesture(Finder child) =>
     find.ancestor(of: child, matching: find.byType(GestureDetector)).first;
 
+/// A segment of a D3SegmentedControl: the box that carries its 48 dp minimum.
+Finder _segment(Finder label) => find
+    .ancestor(
+      of: label,
+      matching: find.byWidgetPredicate(
+        (w) =>
+            w is ConstrainedBox &&
+            w.constraints.minHeight == kMinInteractiveDimension &&
+            w.constraints.minWidth == kMinInteractiveDimension,
+      ),
+    )
+    .first;
+
 void main() {
   testWidgets('compact input tokens cannot shrink date/dropdown actions', (
     tester,
@@ -244,7 +257,7 @@ void main() {
       ),
     );
     for (final label in ['A', 'B', 'C']) {
-      final target = _gesture(find.text(label));
+      final target = _segment(find.text(label));
       _minimum(tester.getRect(target));
       await tester.ensureVisible(target);
       await tester.pumpAndSettle();
