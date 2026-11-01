@@ -45,7 +45,7 @@ class D3InfoButton extends StatelessWidget {
     return D3BottomSheet.show<void>(
       context,
       title: title,
-      snapPoints: const [D3SnapPoint.half],
+      snapPoints: const [D3SnapPoint(0.35), D3SnapPoint.half],
       child: _InfoBody(message: message, extra: extra),
     );
   }
