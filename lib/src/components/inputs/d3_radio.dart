@@ -15,9 +15,13 @@ import 'helpers/d3_tap_target.dart';
 ///
 /// Selected when `value == groupValue`. Pass `onChanged: null` to disable.
 ///
+/// In a [Column], set `crossAxisAlignment: CrossAxisAlignment.start`: the rows
+/// are as wide as their labels, and the default centring would stagger them.
+///
 /// ```dart
 /// // In a group
 /// Column(
+///   crossAxisAlignment: CrossAxisAlignment.start,
 ///   children: [
 ///     D3Radio<String>(
 ///       value: 'light',
