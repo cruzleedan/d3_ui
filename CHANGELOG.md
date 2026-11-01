@@ -6,6 +6,11 @@
   `D3DropdownField` and `D3DateField` fill with `surface` instead of
   `surfaceVariant`. Only disabled and read-only fields keep the grey fill, so grey
   now means unavailable. Visible in screenshots and golden images of empty forms.
+
+- **`D3Screen` Cancel and Back respect `PopScope`:** both now call
+  `Navigator.maybePop`, so a screen that guards unsaved edits with
+  `PopScope(canPop: false)` is asked before Cancel closes it. Unguarded screens
+  pop as before.
 - **Light-theme contrast (WORK-0097):** `onSurfaceVariant` is now `#556376` (was
   `#64748B`) and `onErrorContainer` `#B91C1C`, so secondary text and tonal labels
   reach 4.5:1 on every surface step; `onPrimaryContainer` is `#3F4FA5` in light and
