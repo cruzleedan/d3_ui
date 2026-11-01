@@ -102,6 +102,17 @@ void main() {
       expect(style.borderWidth, tokens.borderWidth);
     });
 
+    test('idle fill is the surface, so only disabled reads as grey', () {
+      final idle = field.resolveFieldStyle(D3FieldStatus.idle, colors, tokens);
+      final disabled = field.resolveFieldStyle(
+        D3FieldStatus.disabled,
+        colors,
+        tokens,
+      );
+      expect(idle.backgroundColor, colors.surface);
+      expect(disabled.backgroundColor, colors.surfaceVariant);
+    });
+
     test('success status widens the border like focused/error', () {
       final style = field.resolveFieldStyle(
         D3FieldStatus.success,
