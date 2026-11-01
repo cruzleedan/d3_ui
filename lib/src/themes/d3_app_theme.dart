@@ -3,6 +3,7 @@ import 'package:d3_ui/src/tokens/d3_colors.dart';
 import 'package:d3_ui/src/tokens/d3_shape.dart';
 import 'package:d3_ui/src/tokens/d3_status.dart';
 import 'package:d3_ui/src/themes/d3_theme_extension.dart';
+import 'package:d3_ui/src/utils/d3_contrast.dart';
 
 /// Factory that builds [ThemeData] from design system tokens.
 /// This is the single entry point for theming — apps never construct
@@ -132,6 +133,27 @@ abstract final class D3AppTheme {
       ),
       outlinedButtonTheme: const OutlinedButtonThemeData(
         style: ButtonStyle(elevation: WidgetStatePropertyAll(0)),
+      ),
+
+      // An off switch drew its track outline and thumb in `outline` (about
+      // 1.5:1), so it read as disabled. Lift the unselected outline and thumb
+      // to 3:1 against the surface (WCAG 1.4.11); selected and disabled states
+      // keep the Material defaults.
+      switchTheme: SwitchThemeData(
+        trackOutlineColor: WidgetStateProperty.resolveWith(
+          (states) =>
+              states.contains(WidgetState.selected) ||
+                  states.contains(WidgetState.disabled)
+              ? null
+              : d3EnsureContrast(colors.outline, colors.surface, minRatio: 3),
+        ),
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) =>
+              states.contains(WidgetState.selected) ||
+                  states.contains(WidgetState.disabled)
+              ? null
+              : d3EnsureContrast(colors.outline, colors.surface, minRatio: 3),
+        ),
       ),
 
       splashFactory: isDark

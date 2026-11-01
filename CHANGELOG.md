@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Off switches are visible:** `D3AppTheme` now sets a `switchTheme` whose
+  unselected track outline and thumb are at least 3:1 against `surface`
+  (WCAG 1.4.11); Material's default drew them in `outline` at about 1.5:1, so an
+  off switch looked disabled. Selected and disabled switches are unchanged.
 - **Contrast audit (Site Inspector WORK-0065):** the border of an enabled text,
   dropdown, date, time or decimal field is now at least 3:1 against `surface` and `surfaceContainerLow`
   (WCAG 1.4.11); it was `outline` at about 1.5:1. It is computed with
