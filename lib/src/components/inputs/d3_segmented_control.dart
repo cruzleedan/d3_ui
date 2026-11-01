@@ -160,12 +160,19 @@ class _D3SegmentedControlState<T extends Object>
           widget.onChanged(value);
         }
 
+        // The tonal fill is translucent (a tint of the primary). Painted as it is,
+        // the thumb's own shadow showed through it: a muddy grey with the label at
+        // 2.6:1 in the light theme. Blend it over the track so the fill is opaque.
+        final thumb = Color.alphaBlend(
+          colors.primaryContainer,
+          colors.surfaceContainerHigh,
+        );
         final reducedMotion = MediaQuery.disableAnimationsOf(context);
         final control = reducedMotion
             ? CupertinoSegmentedControl<T>(
                 groupValue: selected,
                 onValueChanged: onValueChanged,
-                selectedColor: colors.primaryContainer,
+                selectedColor: thumb,
                 unselectedColor: colors.surfaceContainerHigh,
                 borderColor: colors.outlineVariant,
                 pressedColor: colors.surfaceContainer,
@@ -179,7 +186,7 @@ class _D3SegmentedControlState<T extends Object>
                 groupValue: selected,
                 onValueChanged: onValueChanged,
                 backgroundColor: colors.surfaceContainerHigh,
-                thumbColor: colors.primaryContainer,
+                thumbColor: thumb,
                 padding: const EdgeInsets.symmetric(
                   horizontal: D3Spacing.s4,
                   vertical: D3Spacing.s2,

@@ -57,4 +57,47 @@ void main() {
       greaterThanOrEqualTo(4.5),
     );
   });
+
+  group('secondary text and tonal labels clear AA on every surface step', () {
+    for (final entry in {
+      'light': D3ColorTokens.light,
+      'dark': D3ColorTokens.dark,
+    }.entries) {
+      final c = entry.value;
+      final surfaces = {
+        'surface': c.surface,
+        'surfaceContainerLow': c.surfaceContainerLow,
+        'surfaceContainer': c.surfaceContainer,
+        'surfaceContainerHigh': c.surfaceContainerHigh,
+        'surfaceContainerHighest': c.surfaceContainerHighest,
+      };
+      for (final s in surfaces.entries) {
+        test('${entry.key}: onSurfaceVariant on ${s.key}', () {
+          expect(
+            d3ContrastRatio(c.onSurfaceVariant, s.value),
+            greaterThanOrEqualTo(4.5),
+          );
+        });
+        test(
+          '${entry.key}: onPrimaryContainer on the tonal fill over ${s.key}',
+          () {
+            final fill = Color.alphaBlend(c.primaryContainer, s.value);
+            expect(
+              d3ContrastRatio(c.onPrimaryContainer, fill),
+              greaterThanOrEqualTo(4.5),
+            );
+          },
+        );
+      }
+    }
+
+    test('light: onErrorContainer on the tonal red', () {
+      final c = D3ColorTokens.light;
+      final fill = Color.alphaBlend(c.errorContainer, c.surface);
+      expect(
+        d3ContrastRatio(c.onErrorContainer, fill),
+        greaterThanOrEqualTo(4.5),
+      );
+    });
+  });
 }

@@ -14,6 +14,11 @@ abstract final class D3ColorPrimitives {
   /// [blue500] is 4.15:1 on white and 3.56:1 on `neutral75`.
   static const blue700 = Color(0xFF4D62C5);
 
+  /// The light theme's `onPrimaryContainer`: 4.7:1 or better on the tonal
+  /// primary fill over every surface step, up to `surfaceContainerHighest`.
+  /// [blue700] gave 3.8:1 on the segmented control's thumb.
+  static const blue800 = Color(0xFF3F4FA5);
+
   // Greens
   static const green400 = Color(0xFF34D399);
   static const green500 = Color(0xFF10B981);
@@ -22,6 +27,9 @@ abstract final class D3ColorPrimitives {
   static const red400 = Color(0xFFF87171);
   static const red500 = Color(0xFFEF4444);
   static const red600 = Color(0xFFDC2626);
+
+  /// The light theme's `onErrorContainer`: [red600] was 4.0:1 on the tonal red.
+  static const red700 = Color(0xFFB91C1C);
 
   // Ambers
   static const amber400 = Color(0xFFFBBF24);
@@ -37,6 +45,11 @@ abstract final class D3ColorPrimitives {
   static const neutral600 = Color(0xFF2A2F45);
   static const neutral500 = Color(0xFF2E3350);
   static const neutral400 = Color(0xFF64748B);
+
+  /// The light theme's `onSurfaceVariant`: 4.5:1 or better on every surface
+  /// step from `surface` to `surfaceContainerHighest` ([neutral400] gave 4.3 on
+  /// the card tone and 3.5 on the highest).
+  static const neutral450 = Color(0xFF556376);
   static const neutral300 = Color(0xFF94A3B8);
   static const neutral200 = Color(0xFFCBD5E1);
   static const neutral150 = Color(0xFFD6DEE8);
@@ -125,7 +138,7 @@ class D3ColorTokens {
     primary: D3ColorPrimitives.blue700,
     onPrimary: D3ColorPrimitives.white,
     primaryContainer: Color(0x1F4D62C5), // blue700 @ 12%
-    onPrimaryContainer: D3ColorPrimitives.blue700,
+    onPrimaryContainer: D3ColorPrimitives.blue800,
     secondary: D3ColorPrimitives.neutral400,
     onSecondary: D3ColorPrimitives.white,
     surface: D3ColorPrimitives.white,
@@ -135,7 +148,7 @@ class D3ColorTokens {
     surfaceContainerHigh: D3ColorPrimitives.neutral100,
     surfaceContainerHighest: D3ColorPrimitives.neutral150,
     onSurface: D3ColorPrimitives.neutral900,
-    onSurfaceVariant: D3ColorPrimitives.neutral400,
+    onSurfaceVariant: D3ColorPrimitives.neutral450,
     outline: D3ColorPrimitives.neutral200,
     success: D3ColorPrimitives.green500,
     onSuccess: D3ColorPrimitives.white,
@@ -144,7 +157,7 @@ class D3ColorTokens {
     error: D3ColorPrimitives.red600,
     onError: D3ColorPrimitives.white,
     errorContainer: Color(0x1FDC2626), // red600 @ 12%
-    onErrorContainer: D3ColorPrimitives.red600,
+    onErrorContainer: D3ColorPrimitives.red700,
     scrim: Color(0x80000000),
   );
 
@@ -155,7 +168,7 @@ class D3ColorTokens {
     // Dark text on the light blue: 6.3:1. White was 3.0:1.
     onPrimary: D3ColorPrimitives.neutral900,
     primaryContainer: Color(0x266C8FFF), // blue400 @ 15%
-    onPrimaryContainer: D3ColorPrimitives.blue400,
+    onPrimaryContainer: D3ColorPrimitives.blue300,
     secondary: D3ColorPrimitives.neutral300,
     onSecondary: D3ColorPrimitives.neutral900,
     surface: D3ColorPrimitives.neutral900,

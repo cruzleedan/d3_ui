@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Light-theme contrast (WORK-0097):** `onSurfaceVariant` is now `#556376` (was
+  `#64748B`) and `onErrorContainer` `#B91C1C`, so secondary text and tonal labels
+  reach 4.5:1 on every surface step; `onPrimaryContainer` is `#3F4FA5` in light and
+  `#93AEFF` in dark. `primary` is unchanged. **`D3SegmentedControl`**'s selected
+  fill is now opaque (the translucent fill let the thumb's shadow through and the
+  label read at 2.6:1 in light). `D3Radio` docs say to start-align a `Column` of
+  radios.
+
 - **`D3ScreenAction.icon`** buttons in the app bar are now at least 48 dp wide
   (they were 38 wide), so adjacent icons are no longer easy to mis-tap. The
   glyph size is unchanged; each icon takes about 10 dp more of the bar.
