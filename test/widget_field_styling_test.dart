@@ -95,12 +95,22 @@ void main() {
       expect(style.borderWidth, tokens.focusedBorderWidth);
     });
 
-    test('idle status uses outline/onSurfaceVariant, thin border', () {
-      final style = field.resolveFieldStyle(D3FieldStatus.idle, colors, tokens);
-      expect(style.borderColor, colors.outline);
-      expect(style.labelColor, colors.onSurfaceVariant);
-      expect(style.borderWidth, tokens.borderWidth);
-    });
+    test(
+      'idle status uses a 3:1 outline and onSurfaceVariant, thin border',
+      () {
+        final style = field.resolveFieldStyle(
+          D3FieldStatus.idle,
+          colors,
+          tokens,
+        );
+        expect(
+          d3ContrastRatio(style.borderColor, colors.surface),
+          greaterThanOrEqualTo(3.0),
+        );
+        expect(style.labelColor, colors.onSurfaceVariant);
+        expect(style.borderWidth, tokens.borderWidth);
+      },
+    );
 
     test('idle fill is the surface, so only disabled reads as grey', () {
       final idle = field.resolveFieldStyle(D3FieldStatus.idle, colors, tokens);
