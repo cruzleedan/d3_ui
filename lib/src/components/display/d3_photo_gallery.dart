@@ -237,8 +237,19 @@ class _D3AddPhotoTile extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onTap,
-            child: Center(
-              child: Icon(Icons.add, color: colors.onSurfaceVariant),
+            // A caption under the plus: a bare plus does not say what it adds.
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add, color: colors.onSurfaceVariant),
+                const SizedBox(height: D3Spacing.s4),
+                Text(
+                  'Add photo',
+                  style: Theme.of(context).textTheme.labelSmall
+                      ?.copyWith(color: colors.onSurfaceVariant),
+                ),
+              ],
             ),
           ),
         ),
