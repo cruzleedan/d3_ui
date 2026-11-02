@@ -83,6 +83,17 @@ class D3ListScreenAction {
 ///   floatingActionButton: _fab,
 /// )
 /// ```
+/// One way to order a [D3ListScreen]'s rows.
+class D3SortOption<T> {
+  const D3SortOption({required this.label, required this.compare});
+
+  /// Shown in the sort menu, for example "Newest first".
+  final String label;
+
+  /// Standard comparator, as for [List.sort].
+  final int Function(T a, T b) compare;
+}
+
 class D3ListScreen<T, F> extends StatefulWidget {
   const D3ListScreen({
     super.key,
@@ -107,6 +118,9 @@ class D3ListScreen<T, F> extends StatefulWidget {
     this.defaultFilters,
     this.onFiltersChanged,
     this.multiSelectFilters = false,
+    // Sort
+    this.sortOptions = const [],
+    this.onSortChanged,
     // CAB
     this.selectionActions = const [],
     // Screen chrome
@@ -161,6 +175,16 @@ class D3ListScreen<T, F> extends StatefulWidget {
   filterItems;
 
   // ── Filters ─────────────────────────────────────────────────────────────────
+  /// Ways to order the list. The first entry is the default order. With two or
+  /// more entries a sort action appears in the title bar, before search.
+  ///
+  /// While a non-default order is active the list is flat: [sectionBuilder]
+  /// groups consecutive rows, which only makes sense in the default order.
+  final List<D3SortOption<T>> sortOptions;
+
+  /// Called with the index of the chosen [sortOptions] entry.
+  final ValueChanged<int>? onSortChanged;
+
   final List<D3FilterOption<F>> filterOptions;
 
   /// The caller-supplied active filters. Non-empty values take precedence over
@@ -220,6 +244,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
 
   final _searchCtrl = D3SearchController();
   late Set<F> _activeFilters;
+  int _sortIndex = 0;
 
   @override
   void initState() {
@@ -258,9 +283,51 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
   bool _sameSet(Set<F> first, Set<F> second) =>
       first.length == second.length && first.every(second.contains);
 
-  List<T> _visibleItems() =>
-      widget.filterItems?.call(widget.items, '', _activeFilters) ??
-      widget.items;
+  List<T> _sorted(List<T> items) {
+    if (widget.sortOptions.length < 2 || _sortIndex == 0) return items;
+    final index = _sortIndex.clamp(0, widget.sortOptions.length - 1);
+    return [...items]..sort(widget.sortOptions[index].compare);
+  }
+
+  List<T> _visibleItems() => _sorted(
+    widget.filterItems?.call(widget.items, '', _activeFilters) ?? widget.items,
+  );
+
+  void _openSortMenu() {
+    final colors = context.d3Colors;
+    final box = context.findRenderObject() as RenderBox?;
+    final size = box?.size ?? MediaQuery.sizeOf(context);
+    showMenu<int>(
+      context: context,
+      useRootNavigator: false,
+      position: RelativeRect.fromLTRB(size.width - 220, 96, 16, 0),
+      items: [
+        for (var i = 0; i < widget.sortOptions.length; i++)
+          PopupMenuItem<int>(
+            value: i,
+            child: Row(
+              children: [
+                if (i == _sortIndex)
+                  Icon(Icons.check_rounded, size: 16, color: colors.primary)
+                else
+                  const SizedBox(width: 16),
+                const SizedBox(width: D3Spacing.s8),
+                Text(widget.sortOptions[i].label),
+              ],
+            ),
+          ),
+      ],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(D3Radius.md),
+      ),
+      color: colors.surfaceContainerHigh,
+      elevation: 3,
+    ).then((chosen) {
+      if (!mounted || chosen == null || chosen == _sortIndex) return;
+      setState(() => _sortIndex = chosen);
+      widget.onSortChanged?.call(chosen);
+    });
+  }
 
   void _onFiltersChanged(Set<F> filters) {
     setState(() => _activeFilters = Set<F>.from(filters));
@@ -293,9 +360,11 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
         items: widget.items,
         filterItems: (items, query, activeFilters) {
           widget.onSearchChanged?.call(query);
-          return widget.filterItems != null
-              ? widget.filterItems!(items, query, activeFilters)
-              : items;
+          return _sorted(
+            widget.filterItems != null
+                ? widget.filterItems!(items, query, activeFilters)
+                : items,
+          );
         },
         resultBuilder: (context, results, query) => D3List<T>(
           items: results,
@@ -306,7 +375,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
           selectedIds: _selectedIds,
           onSelectionChanged: _onSelectionChanged,
           emptyState: widget.emptyState,
-          sectionBuilder: widget.sectionBuilder,
+          sectionBuilder: _sortIndex == 0 ? widget.sectionBuilder : null,
           separatorBuilder: widget.separatorBuilder,
           onRefresh: widget.onRefresh,
           padding: widget.padding,
@@ -328,7 +397,7 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
       selectedIds: _selectedIds,
       onSelectionChanged: _onSelectionChanged,
       emptyState: widget.emptyState,
-      sectionBuilder: widget.sectionBuilder,
+      sectionBuilder: _sortIndex == 0 ? widget.sectionBuilder : null,
       separatorBuilder: widget.separatorBuilder,
       onRefresh: widget.onRefresh,
       onLoadMore: widget.onLoadMore,
@@ -379,6 +448,12 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
     // something to sit beyond it.
     final titleBarActions = [
       ...widget.actions,
+      if (widget.sortOptions.length >= 2)
+        D3ScreenAction.icon(
+          Icons.sort_rounded,
+          semanticsLabel: 'Sort',
+          onPressed: _openSortMenu,
+        ),
       if (widget.onSearchChanged != null)
         D3ScreenAction.icon(
           Icons.search_rounded,
