@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **`D3PhotoGallery`'s add tile** shows the caption "Add photo" under its plus.
 - **Outlined `D3Chip` border reaches 3:1** (was `outline` at about 1.5:1, 0.5 dp),
   on the page and on card surfaces. An unselected Pass/Fail chip no longer fades
   into its card.
