@@ -79,7 +79,9 @@ class D3Toast {
   /// the user dismisses it manually.
   ///
   /// [bottomOffset] lifts the toast above something pinned to the bottom
-  /// corner, such as a floating action button.
+  /// corner, such as a floating action button. When null, a toast with an
+  /// [action] is lifted by 64 dp so the action is not under a FAB, and one
+  /// without stays at the bottom.
   static void show(
     BuildContext context, {
     required String title,
@@ -87,7 +89,7 @@ class D3Toast {
     D3ToastVariant variant = D3ToastVariant.neutral,
     D3ToastAction? action,
     Duration? duration,
-    double bottomOffset = 0,
+    double? bottomOffset,
   }) {
     HapticFeedback.lightImpact();
 
@@ -107,7 +109,9 @@ class D3Toast {
           D3Spacing.s16,
           0,
           D3Spacing.s16,
-          D3Spacing.s16 + bottomOffset,
+          // A toast with an action keeps it reachable above a FAB.
+          D3Spacing.s16 +
+              (bottomOffset ?? (action != null ? _fabClearance : 0)),
         ),
         // Dismiss on swipe in any direction
         dismissDirection: DismissDirection.horizontal,
@@ -137,7 +141,7 @@ class D3Toast {
     required VoidCallback onUndo,
     String? message,
     String undoLabel = 'Undo',
-    double bottomOffset = _fabClearance,
+    double? bottomOffset,
   }) => show(
     context,
     title: title,
