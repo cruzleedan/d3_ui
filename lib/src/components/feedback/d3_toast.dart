@@ -57,6 +57,11 @@ class D3Toast {
 
   // ── Durations ──────────────────────────────────────────────────────────────
 
+  /// A 56 dp FAB plus a gap. The Undo action sits in the bottom-right corner,
+  /// where a FAB lives, and the FAB won the taps; Undo toasts clear it by default
+  /// (pass 0 on a screen with no FAB).
+  static const double _fabClearance = 64;
+
   static const _shortDuration = Duration(seconds: 3);
   static const _longDuration = Duration(seconds: 5);
 
@@ -72,6 +77,9 @@ class D3Toast {
   /// [duration] defaults to 3 s for success/info/neutral and 5 s for
   /// error/warning. Pass `Duration.zero` to keep the toast on screen until
   /// the user dismisses it manually.
+  ///
+  /// [bottomOffset] lifts the toast above something pinned to the bottom
+  /// corner, such as a floating action button.
   static void show(
     BuildContext context, {
     required String title,
@@ -79,6 +87,7 @@ class D3Toast {
     D3ToastVariant variant = D3ToastVariant.neutral,
     D3ToastAction? action,
     Duration? duration,
+    double bottomOffset = 0,
   }) {
     HapticFeedback.lightImpact();
 
@@ -94,11 +103,11 @@ class D3Toast {
         padding: EdgeInsets.zero,
         // Floating above the nav bar with horizontal margin
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.fromLTRB(
+        margin: EdgeInsets.fromLTRB(
           D3Spacing.s16,
           0,
           D3Spacing.s16,
-          D3Spacing.s16,
+          D3Spacing.s16 + bottomOffset,
         ),
         // Dismiss on swipe in any direction
         dismissDirection: DismissDirection.horizontal,
@@ -128,6 +137,7 @@ class D3Toast {
     required VoidCallback onUndo,
     String? message,
     String undoLabel = 'Undo',
+    double bottomOffset = _fabClearance,
   }) => show(
     context,
     title: title,
@@ -135,6 +145,7 @@ class D3Toast {
     variant: D3ToastVariant.neutral,
     action: D3ToastAction(label: undoLabel, onPressed: onUndo),
     duration: const Duration(seconds: 6),
+    bottomOffset: bottomOffset,
   );
 
   static void success(

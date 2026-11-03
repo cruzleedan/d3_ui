@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **`D3Toast.undo` clears a floating action button:** it now sits 64 dp higher by default (`bottomOffset`, also on `D3Toast.show`). On a screen with a FAB the button covered the toast's Undo and took its taps, so Undo could not be tapped. Pass `bottomOffset: 0` on a screen with no FAB.
 - **`D3ListScreen` sorting:** `sortOptions` (a list of `D3SortOption(label, compare)`, first entry is the default order) adds a Sort action to the title bar, before search. A non-default order is flat: `sectionBuilder` groups only apply in the default order. `onSortChanged` reports the chosen index.
 - **`D3PhotoGallery`'s add tile** shows the caption "Add photo" under its plus.
 - **Outlined `D3Chip` border reaches 3:1** (was `outline` at about 1.5:1, 0.5 dp),
