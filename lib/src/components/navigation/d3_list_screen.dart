@@ -317,11 +317,6 @@ class _D3ListScreenState<T, F> extends State<D3ListScreen<T, F>> {
             ),
           ),
       ],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(D3Radius.md),
-      ),
-      color: colors.surfaceContainerHigh,
-      elevation: 3,
     ).then((chosen) {
       if (!mounted || chosen == null || chosen == _sortIndex) return;
       setState(() => _sortIndex = chosen);
@@ -757,17 +752,7 @@ class _SubHeaderRowState<T, F> extends State<_SubHeaderRow<T, F>> {
             ),
           )
           .toList(),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(D3Radius.md),
-      ),
-      // Tonal elevation rather than relying on elevation's shadow alone —
-      // against a near-black dark theme, colors.surface painted on
-      // colors.surface reads as flat, with the popup indistinguishable
-      // from the screen behind it. See root context/work/0007-d3-ui-
-      // tonal-elevation-surface-ladder.md (this was the original,
-      // one-off fix that item's ladder generalizes).
-      color: colors.surfaceContainerHigh,
-      elevation: 3,
+      // Fill, outline and flatness come from the theme's popupMenuTheme.
     ).then((selected) {
       if (mounted && selected != null) {
         widget.onFiltersChanged?.call({selected});

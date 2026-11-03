@@ -256,7 +256,7 @@ void main() {
       final text = tester.widget<Text>(find.text('Delete'));
       final colors = tester.element(find.text('Delete')).d3Colors;
       expect(
-        d3ContrastRatio(text.style!.color!, colors.surfaceContainerHigh),
+        d3ContrastRatio(text.style!.color!, colors.surfaceContainerLow),
         greaterThanOrEqualTo(4.5),
       );
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);

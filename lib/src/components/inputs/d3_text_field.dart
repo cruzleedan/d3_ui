@@ -1079,13 +1079,6 @@ class _TooltipOverlayState extends State<_TooltipOverlay>
                         color: widget.colors.primary.withValues(alpha: 0.3),
                         width: 1,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.35),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
                     ),
                     padding: EdgeInsets.symmetric(
                       horizontal: widget.tokens.tooltipPaddingH,
