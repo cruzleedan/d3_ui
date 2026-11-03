@@ -9,18 +9,25 @@ import 'package:d3_ui/d3_ui.dart';
 Future<void> _open(
   WidgetTester tester, {
   D3FormSheetAction? primaryAction,
+  double textScale = 1,
   // A loading action spins forever, so pumpAndSettle would never return.
   bool settle = true,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
       theme: D3AppTheme.light(),
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: TextScaler.linear(textScale)),
+        child: child!,
+      ),
       home: Scaffold(
         body: Builder(
           builder: (context) => ElevatedButton(
             onPressed: () => D3FormSheet.show<void>(
               context,
               title: 'New Project',
+              subtitle: textScale > 1 ? 'Add it to your list' : null,
               primaryAction: primaryAction,
               child: const SizedBox(height: 120, child: Text('form body')),
             ),
@@ -71,6 +78,34 @@ void main() {
 
       expect(cancelX, lessThan(titleX), reason: 'Cancel moved to the left');
       expect(saveX, greaterThan(titleX), reason: 'Save trails');
+    });
+
+    testWidgets('header grows to fit title and actions at 2× text scale', (
+      tester,
+    ) async {
+      await _open(
+        tester,
+        textScale: 2,
+        primaryAction: D3FormSheetAction(label: 'Save', onPressed: () {}),
+      );
+
+      final header = find
+          .ancestor(of: find.text('Cancel'), matching: find.byType(Stack))
+          .first;
+      final headerRect = tester.getRect(header);
+
+      expect(headerRect.height, greaterThan(48));
+      for (final label in [
+        'New Project',
+        'Add it to your list',
+        'Cancel',
+        'Save',
+      ]) {
+        final textRect = tester.getRect(find.text(label));
+        expect(textRect.top, greaterThanOrEqualTo(headerRect.top));
+        expect(textRect.bottom, lessThanOrEqualTo(headerRect.bottom));
+      }
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('the primary action fires on tap', (tester) async {

@@ -7,7 +7,7 @@ import 'package:d3_ui/d3_ui.dart';
 
 /// A modal bottom sheet sized to its content, for forms with text fields.
 ///
-/// Unlike [D3BottomSheet] (drag-between-explicit-snap-points, built on
+/// Unlike `D3BottomSheet` (drag-between-explicit-snap-points, built on
 /// [DraggableScrollableSheet]), this sizes to its child's intrinsic
 /// content height (up to [maxHeightFraction] of the screen) via a plain
 /// `showModalBottomSheet`, and handles keyboard avoidance the standard
@@ -16,7 +16,7 @@ import 'package:d3_ui/d3_ui.dart';
 ///
 /// Use this for a single-purpose form (a handful of fields, one submit
 /// action) that doesn't need multiple explicit snap heights to drag
-/// between. Use [D3BottomSheet] when the content genuinely benefits from
+/// between. Use `D3BottomSheet` when the content genuinely benefits from
 /// dragging between two or more declared heights (e.g. a filter panel, a
 /// history/detail view) — see root `context/work/0008-d3-bottom-sheet-
 /// keyboard-inset.md` for why the two components exist side by side
@@ -394,8 +394,61 @@ class _FormSheetHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const actionVerticalPadding = D3Spacing.s12;
+    final titleStyle = TextStyle(
+      fontSize: D3TypeScale.titleLgSize,
+      fontWeight: FontWeight.w600,
+      color: colors.onSurface,
+      height: D3TypeFace.tight,
+    );
+    final subtitleStyle = TextStyle(
+      fontSize: D3TypeScale.labelMdSize,
+      color: colors.onSurfaceVariant,
+    );
+    final actionStyle = TextStyle(
+      fontSize: D3TypeScale.titleMdSize,
+      fontWeight: FontWeight.w400,
+      color: colors.primary,
+    );
+    final primaryActionStyle = actionStyle.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+    final textScaler = MediaQuery.textScalerOf(context);
+
+    double lineHeight(String text, TextStyle style) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: Directionality.of(context),
+        textScaler: textScaler,
+        maxLines: 1,
+      )..layout(maxWidth: MediaQuery.sizeOf(context).width);
+      return painter.height;
+    }
+
+    final titleHeight = title == null
+        ? 0.0
+        : lineHeight(title!, titleStyle) +
+              (subtitle == null
+                  ? 0
+                  : 1 + lineHeight(subtitle!, subtitleStyle)) +
+              // Text widgets include font leading in their layout box;
+              // TextPainter's glyph bounds above do not include all of it.
+              (subtitle == null ? 0 : D3Spacing.s12);
+    final cancelHeight =
+        lineHeight('Cancel', actionStyle) + actionVerticalPadding * 2;
+    final primaryHeight = primaryAction == null
+        ? 0.0
+        : lineHeight(primaryAction!.label, primaryActionStyle) +
+              actionVerticalPadding * 2;
+    final headerHeight = [
+      48.0,
+      titleHeight,
+      cancelHeight,
+      primaryHeight,
+    ].reduce((height, candidate) => height > candidate ? height : candidate);
+
     return Container(
-      height: 48,
+      height: headerHeight,
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -418,12 +471,7 @@ class _FormSheetHeader extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: D3TypeScale.titleLgSize,
-                      fontWeight: FontWeight.w600,
-                      color: colors.onSurface,
-                      height: D3TypeFace.tight,
-                    ),
+                    style: titleStyle,
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 1),
@@ -432,10 +480,7 @@ class _FormSheetHeader extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: D3TypeScale.labelMdSize,
-                        color: colors.onSurfaceVariant,
-                      ),
+                      style: subtitleStyle,
                     ),
                   ],
                 ],
@@ -471,16 +516,9 @@ class _FormSheetHeader extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 12,
+                    vertical: actionVerticalPadding,
                   ),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      fontSize: D3TypeScale.titleMdSize,
-                      fontWeight: FontWeight.w400,
-                      color: colors.primary,
-                    ),
-                  ),
+                  child: Text('Cancel', style: actionStyle),
                 ),
               ),
             ),
