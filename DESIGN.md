@@ -72,6 +72,12 @@ The system is deliberately shadow-free. Use the tonal ladder
 `surfaceContainerHighest` to distinguish raised surfaces from the base
 `surface`. Do not add decorative shadows to simulate elevation.
 
+Popups (menus, dropdown lists, popovers, tooltips) follow the same rule: a
+`surfaceContainerLow` fill and a 1 px `outlineVariant` border, elevation 0, no
+shadow or surface tint. `D3AppTheme` sets this for `PopupMenuButton`,
+`showMenu`, `DropdownMenu` and `MenuAnchor`, so do not pass `elevation`,
+`color` or `shape` to them.
+
 `D3Card` offers elevated and tonal variants; “elevated” refers to tonal
 separation, not a drop shadow. Reuse the component's border treatment and
 theme shape tokens instead of styling a second card system in app code.

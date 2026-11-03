@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/src/tokens/d3_colors.dart';
+import 'package:d3_ui/src/tokens/d3_radius.dart';
 import 'package:d3_ui/src/tokens/d3_shape.dart';
 import 'package:d3_ui/src/tokens/d3_status.dart';
 import 'package:d3_ui/src/themes/d3_theme_extension.dart';
@@ -90,6 +91,21 @@ abstract final class D3AppTheme {
     );
   }
 
+  /// Flat popup surface for [MenuAnchor] / [DropdownMenu]: tonal fill, 1 px
+  /// outline, no shadow or surface tint.
+  static MenuStyle _flatMenuStyle(D3ColorTokens colors) => MenuStyle(
+    backgroundColor: WidgetStatePropertyAll(colors.surfaceContainerLow),
+    surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+    shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+    elevation: const WidgetStatePropertyAll(0),
+    shape: WidgetStatePropertyAll(
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(D3Radius.md),
+        side: BorderSide(color: colors.outlineVariant),
+      ),
+    ),
+  );
+
   static ThemeData _build({
     required Brightness brightness,
     required D3ColorTokens colors,
@@ -139,6 +155,24 @@ abstract final class D3AppTheme {
       // 1.5:1), so it read as disabled. Lift the unselected outline and thumb
       // to 3:1 against the surface (WCAG 1.4.11); selected and disabled states
       // keep the Material defaults.
+      // Popups are flat: a tonal fill and a 1 px outline, no shadow or tint,
+      // so raw PopupMenuButton / showMenu / DropdownMenu / MenuAnchor in an
+      // app match D3Menu without restyling.
+      popupMenuTheme: PopupMenuThemeData(
+        color: colors.surfaceContainerLow,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(D3Radius.md),
+          side: BorderSide(color: colors.outlineVariant),
+        ),
+      ),
+      menuTheme: MenuThemeData(style: _flatMenuStyle(colors)),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        menuStyle: _flatMenuStyle(colors),
+      ),
+
       switchTheme: SwitchThemeData(
         trackOutlineColor: WidgetStateProperty.resolveWith(
           (states) =>

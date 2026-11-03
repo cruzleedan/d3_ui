@@ -431,7 +431,7 @@ class _D3InfoTipState extends State<D3InfoTip>
     final colors = overlayContext.d3Colors;
     final shape = overlayContext.d3Shape;
     final text = Theme.of(overlayContext).textTheme;
-    final fill = colors.surfaceContainerHigh;
+    final fill = colors.surfaceContainerLow;
     final target = _target;
     if (target == null) return const SizedBox.shrink();
 
@@ -454,8 +454,7 @@ class _D3InfoTipState extends State<D3InfoTip>
                 container: true,
                 child: Material(
                   color: fill,
-                  elevation: 3,
-                  shadowColor: colors.scrim,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: shape.circularMd,
                     side: BorderSide(color: colors.outlineVariant),

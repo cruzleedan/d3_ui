@@ -252,7 +252,7 @@ class _D3MenuState extends State<D3Menu> with SingleTickerProviderStateMixin {
   Widget _buildOverlay(BuildContext overlayContext) {
     final colors = overlayContext.d3Colors;
     final shape = overlayContext.d3Shape;
-    final fill = colors.surfaceContainerHigh;
+    final fill = colors.surfaceContainerLow;
 
     final entries = widget.entries;
     var firstEnabled = -1;
@@ -284,8 +284,7 @@ class _D3MenuState extends State<D3Menu> with SingleTickerProviderStateMixin {
 
     final panel = Material(
       color: fill,
-      elevation: 3,
-      shadowColor: colors.scrim,
+      elevation: 0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: shape.circularMd,
