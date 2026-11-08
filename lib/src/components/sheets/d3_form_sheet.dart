@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:d3_ui/d3_ui.dart';
 
@@ -225,6 +227,23 @@ class _D3FormSheetContentState<T> extends State<_D3FormSheetContent<T>> {
     final colors = context.d3Colors;
     final screenHeight = MediaQuery.sizeOf(context).height;
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    // The system's top inset (status bar, cutout), read from the view itself:
+    // a modal route can strip it from this subtree's MediaQuery.
+    final topInset = MediaQueryData.fromView(View.of(context)).padding.top;
+    // The tallest the sheet can be and still sit fully on screen. The keyboard
+    // pads the sheet up from the bottom, so a tall form plus a keyboard would
+    // otherwise push its header (Cancel, Save) under the status bar, where taps
+    // do not reach it (root WORK-0099). The body scrolls, so a capped sheet
+    // stays usable.
+    final availableHeight =
+        (screenHeight - keyboardInset - topInset - D3Spacing.s8).clamp(
+          0.0,
+          screenHeight,
+        );
+    final maxHeight = math.min(
+      screenHeight * widget.maxHeightFraction,
+      availableHeight,
+    );
 
     return _D3FormSheetScope(
       state: this,
@@ -245,9 +264,7 @@ class _D3FormSheetContentState<T> extends State<_D3FormSheetContent<T>> {
           duration: const Duration(milliseconds: 100),
           curve: Curves.easeOut,
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: screenHeight * widget.maxHeightFraction,
-            ),
+            constraints: BoxConstraints(maxHeight: maxHeight),
             child: _FormSheetSurface(
               colors: colors,
               title: widget.title,
