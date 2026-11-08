@@ -10,6 +10,28 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
+  testWidgets('the add tile grows with large text instead of overflowing', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: D3AppTheme.light(),
+        home: MediaQuery(
+          data: const MediaQueryData(textScaler: TextScaler.linear(2.5)),
+          child: Scaffold(
+            body: D3PhotoGallery(
+              photoPaths: const [],
+              itemLabel: 'Test item',
+              onAdd: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.text('Add photo'), findsOneWidget);
+  });
+
   group('D3PhotoGallery.thumbnailBadgeBuilder', () {
     testWidgets('draws a badge per thumbnail, tappable on its own index, '
         'without opening the viewer', (tester) async {

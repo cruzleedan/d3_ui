@@ -268,9 +268,13 @@ class _D3AddPhotoTile extends StatelessWidget {
     return Semantics(
       label: 'Add photo',
       button: true,
-      child: SizedBox(
-        width: tokens.thumbnailSize,
-        height: tokens.thumbnailSize,
+      // At least a thumbnail's size, but it grows with the text scale: a fixed
+      // square overflowed its caption at large text sizes.
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: tokens.thumbnailSize,
+          minHeight: tokens.thumbnailSize,
+        ),
         child: Material(
           color: colors.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
@@ -281,18 +285,22 @@ class _D3AddPhotoTile extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             // A caption under the plus: a bare plus does not say what it adds.
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.add, color: colors.onSurfaceVariant),
-                const SizedBox(height: D3Spacing.s4),
-                Text(
-                  'Add photo',
-                  style: Theme.of(context).textTheme.labelSmall
-                      ?.copyWith(color: colors.onSurfaceVariant),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(D3Spacing.s4),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add, color: colors.onSurfaceVariant),
+                  const SizedBox(height: D3Spacing.s4),
+                  Text(
+                    'Add photo',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelSmall
+                        ?.copyWith(color: colors.onSurfaceVariant),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
