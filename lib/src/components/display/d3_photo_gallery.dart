@@ -3,6 +3,43 @@ import 'package:d3_ui/src/components/display/helpers/d3_local_image.dart';
 import 'package:d3_ui/d3_ui.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// D3PhotoBadge
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// How loud a [D3PhotoBadge] is. The icon must differ between states too, so
+/// the state never rests on colour alone.
+enum D3PhotoBadgeTone {
+  /// Information: something is recorded about this photo.
+  neutral,
+
+  /// Needs a look: filled with the theme's warning colour.
+  warning,
+
+  /// Nothing recorded; present so the absence is visible.
+  muted,
+}
+
+/// A small tappable mark in a thumbnail's bottom-right corner, for facts about
+/// one photo that the viewer would otherwise hide (for example where it was
+/// taken). The app decides what it says and does; the gallery draws it with a
+/// 48dp hit area and a semantics label.
+class D3PhotoBadge {
+  const D3PhotoBadge({
+    required this.icon,
+    required this.semanticLabel,
+    required this.onTap,
+    this.tone = D3PhotoBadgeTone.neutral,
+  });
+
+  final IconData icon;
+
+  /// Read by screen readers, e.g. "Photo 4 location: 887 m from the project".
+  final String semanticLabel;
+  final VoidCallback onTap;
+  final D3PhotoBadgeTone tone;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // D3PhotoGallery
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -53,6 +90,7 @@ class D3PhotoGallery extends StatefulWidget {
     this.viewerActionsBuilder,
     this.viewerResolveImage,
     this.thumbnailResolveImage,
+    this.thumbnailBadgeBuilder,
   });
 
   /// Local file paths, in display order.
@@ -114,6 +152,10 @@ class D3PhotoGallery extends StatefulWidget {
   /// annotations) should keep it cheap or already-cached at its own
   /// layer, since a long gallery means many concurrent calls.
   final Future<String> Function(int index)? thumbnailResolveImage;
+
+  /// A badge in the bottom-right corner of thumbnail [index], or null for none.
+  /// Opposite the remove button, so the two never share a corner.
+  final D3PhotoBadge? Function(int index)? thumbnailBadgeBuilder;
 
   @override
   State<D3PhotoGallery> createState() => D3PhotoGalleryState();
@@ -199,6 +241,7 @@ class D3PhotoGalleryState extends State<D3PhotoGallery> {
             itemLabel: widget.itemLabel,
             tokens: tokens,
             resolveImage: widget.thumbnailResolveImage,
+            badge: widget.thumbnailBadgeBuilder?.call(index),
             onTap: () => _openViewer(context, index),
             onRemove: widget.onRemove == null
                 ? null
@@ -225,9 +268,13 @@ class _D3AddPhotoTile extends StatelessWidget {
     return Semantics(
       label: 'Add photo',
       button: true,
-      child: SizedBox(
-        width: tokens.thumbnailSize,
-        height: tokens.thumbnailSize,
+      // At least a thumbnail's size, but it grows with the text scale: a fixed
+      // square overflowed its caption at large text sizes.
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: tokens.thumbnailSize,
+          minHeight: tokens.thumbnailSize,
+        ),
         child: Material(
           color: colors.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
@@ -238,18 +285,22 @@ class _D3AddPhotoTile extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             // A caption under the plus: a bare plus does not say what it adds.
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.add, color: colors.onSurfaceVariant),
-                const SizedBox(height: D3Spacing.s4),
-                Text(
-                  'Add photo',
-                  style: Theme.of(context).textTheme.labelSmall
-                      ?.copyWith(color: colors.onSurfaceVariant),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(D3Spacing.s4),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add, color: colors.onSurfaceVariant),
+                  const SizedBox(height: D3Spacing.s4),
+                  Text(
+                    'Add photo',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelSmall
+                        ?.copyWith(color: colors.onSurfaceVariant),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -273,7 +324,10 @@ class _D3PhotoThumbnail extends StatefulWidget {
     required this.onTap,
     required this.onRemove,
     this.resolveImage,
+    this.badge,
   });
+
+  final D3PhotoBadge? badge;
 
   final String path;
   final int index;
@@ -333,6 +387,56 @@ class _D3PhotoThumbnailState extends State<_D3PhotoThumbnail> {
   /// See `D3PhotoGalleryState.replaceThumbnail`.
   void replace(String path) => setState(() => _displayPath = path);
 
+  /// The corner badge: a 24dp disc in a 48dp hit area, bottom-right. Added
+  /// before the remove button so, where the two hit areas overlap, the remove
+  /// button's own glyph still wins its corner.
+  Widget _badge(BuildContext context, D3PhotoBadge badge) {
+    final colors = context.d3Colors;
+    final (fill, ink) = switch (badge.tone) {
+      D3PhotoBadgeTone.warning => (colors.warning, colors.onWarning),
+      D3PhotoBadgeTone.neutral => (colors.surface, colors.onSurface),
+      D3PhotoBadgeTone.muted => (colors.surface, colors.onSurfaceVariant),
+    };
+    final glyph = widget.tokens.removeButtonGlyphSize + D3Spacing.s4;
+    return Positioned(
+      bottom: widget.tokens.removeButtonOffset,
+      right: widget.tokens.removeButtonOffset,
+      child: Semantics(
+        label: badge.semanticLabel,
+        button: true,
+        excludeSemantics: true,
+        child: SizedBox(
+          width: widget.tokens.removeButtonHitSize,
+          height: widget.tokens.removeButtonHitSize,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: badge.onTap,
+              child: Center(
+                child: Container(
+                  width: glyph,
+                  height: glyph,
+                  decoration: BoxDecoration(
+                    color: fill,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: badge.tone == D3PhotoBadgeTone.warning
+                          ? colors.surface
+                          : colors.outlineVariant,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(badge.icon, size: glyph * 0.66, color: ink),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.d3Colors;
@@ -367,6 +471,7 @@ class _D3PhotoThumbnailState extends State<_D3PhotoThumbnail> {
                 ),
               ),
             ),
+            if (widget.badge != null) _badge(context, widget.badge!),
             if (widget.onRemove != null)
               Positioned(
                 top: widget.tokens.removeButtonOffset,
