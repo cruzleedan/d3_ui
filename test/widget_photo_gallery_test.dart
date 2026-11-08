@@ -10,6 +10,59 @@ Widget _wrap(Widget child) {
 }
 
 void main() {
+  group('D3PhotoGallery.thumbnailBadgeBuilder', () {
+    testWidgets('draws a badge per thumbnail, tappable on its own index, '
+        'without opening the viewer', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoGallery(
+            photoPaths: const ['a.png', 'b.png'],
+            itemLabel: 'Test item',
+            thumbnailBadgeBuilder: (index) => index == 1
+                ? D3PhotoBadge(
+                    icon: Icons.warning_amber_rounded,
+                    tone: D3PhotoBadgeTone.warning,
+                    semanticLabel: 'badge $index',
+                    onTap: () => taps.add(index),
+                  )
+                : null,
+          ),
+        ),
+      );
+      expect(find.bySemanticsLabel('badge 1'), findsOneWidget);
+      expect(find.bySemanticsLabel('badge 0'), findsNothing);
+      await tester.tap(find.byIcon(Icons.warning_amber_rounded));
+      await tester.pumpAndSettle();
+      expect(taps, [1]);
+      expect(find.byType(D3ImageViewer), findsNothing);
+    });
+
+    testWidgets('the badge hit area is at least 48dp', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          D3PhotoGallery(
+            photoPaths: const ['a.png'],
+            itemLabel: 'Test item',
+            thumbnailBadgeBuilder: (_) => D3PhotoBadge(
+              icon: Icons.place_outlined,
+              semanticLabel: 'badge',
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+      final size = tester.getSize(
+        find.ancestor(
+          of: find.byIcon(Icons.place_outlined),
+          matching: find.byType(InkWell),
+        ),
+      );
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+    });
+  });
+
   group('D3PhotoGallery.viewerActionsBuilder', () {
     testWidgets('forwards actions into the pushed viewer, keyed by the '
         'tapped index', (tester) async {
