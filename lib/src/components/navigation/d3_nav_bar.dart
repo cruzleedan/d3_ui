@@ -393,11 +393,15 @@ class _NavBarItem extends StatelessWidget {
                     // 1.5x so the bar stays a bar at the largest system sizes.
                     child: MediaQuery.withClampedTextScaling(
                       maxScaleFactor: 1.5,
-                      child: Text(
-                        item.label,
-                        maxLines: 2,
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
+                      // The item's Semantics already carries the label; the
+                      // visible text would make TalkBack read it twice.
+                      child: ExcludeSemantics(
+                        child: Text(
+                          item.label,
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
                   ),

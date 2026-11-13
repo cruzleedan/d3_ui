@@ -184,36 +184,41 @@ class D3ListTile extends StatelessWidget {
             // Leading
             if (leading != null) ...[leading!, const SizedBox(width: 12)],
 
-            // Title + subtitle
+            // Title + subtitle. The visible text is the tile's label for
+            // screen readers; a caller's [semanticsLabel] replaces it rather
+            // than being read in addition to it.
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  titleWidget ??
-                      Text(
-                        title!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: titleColor,
-                          height: 1.3,
-                        ),
-                      ),
-                  if (subtitleWidget != null || subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    subtitleWidget ??
+              child: ExcludeSemantics(
+                excluding: semanticsLabel != null,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    titleWidget ??
                         Text(
-                          subtitle!,
+                          title!,
                           style: TextStyle(
-                            fontSize: 12,
-                            color: subtitleColor,
-                            height: 1.4,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: titleColor,
+                            height: 1.3,
                           ),
                         ),
+                    if (subtitleWidget != null || subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      subtitleWidget ??
+                          Text(
+                            subtitle!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: subtitleColor,
+                              height: 1.4,
+                            ),
+                          ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
 
@@ -255,8 +260,11 @@ class D3ListTile extends StatelessWidget {
       tile = Opacity(opacity: 0.5, child: tile);
     }
 
+    // Only a caller's label is added here: the title Text already speaks
+    // for itself, so labelling the row with it too made TalkBack read the
+    // title twice ("Dark mode, Dark mode").
     return Semantics(
-      label: semanticsLabel ?? title ?? '',
+      label: semanticsLabel,
       button: _isInteractive,
       enabled: enabled,
       child: tile,

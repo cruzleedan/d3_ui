@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **`D3ListTile` is read once by screen readers:** the row no longer labels itself with its title on top of the visible title text, so TalkBack said every title twice ("Dark mode, Dark mode"). A `semanticsLabel` now replaces the visible title and subtitle instead of being read before them. `D3NavBar` items likewise read their label once ("Home, Home" before).
 - **Popups are flat:** `D3Menu`, the rich `D3Tooltip` bubble, `D3TextField`'s info popover and `D3ListScreen`'s sort and filter menus no longer cast a drop shadow (they were at elevation 3 / a 16 px blur). They use a tonal fill and the 1 px `outlineVariant` border. `D3AppTheme` now sets `popupMenuTheme`, `menuTheme` and `dropdownMenuTheme` the same way, so a raw `PopupMenuButton`, `showMenu`, `DropdownMenu` or `MenuAnchor` in an app is flat without restyling. The popup fill moved from `surfaceContainerHigh` (read as a grey, legacy menu) to `surfaceContainerLow`.
 - **Every `D3Toast` with an action clears a FAB, not just `undo`:** `bottomOffset` now defaults to null, which lifts a toast that has an action by 64 dp and leaves one without at the bottom.
 - **`D3Toast.undo` clears a floating action button:** it now sits 64 dp higher by default (`bottomOffset`, also on `D3Toast.show`). On a screen with a FAB the button covered the toast's Undo and took its taps, so Undo could not be tapped. Pass `bottomOffset: 0` on a screen with no FAB.
